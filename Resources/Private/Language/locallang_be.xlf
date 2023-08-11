@@ -6,6 +6,12 @@
             <trans-unit id="index.headline" xml:space="preserve">
                 <source>Form results</source>
             </trans-unit>
+            <trans-unit id="index.filter.form_name" xml:space="preserve">
+                <source>Form Name</source>
+            </trans-unit>
+            <trans-unit id="index.filter.search_button" xml:space="preserve">
+                <source>Search</source>
+            </trans-unit>
             <trans-unit id="index.existing_forms" xml:space="preserve">
                 <source>Existing forms</source>
             </trans-unit>
@@ -20,6 +26,15 @@
             </trans-unit>
             <trans-unit id="index.new_entries" xml:space="preserve">
                 <source>New entries since last viewed</source>
+            </trans-unit>
+            <trans-unit id="show.filter.date_start">
+              <source>Start Date</source>
+            </trans-unit>
+            <trans-unit id="show.filter.date_end">
+              <source>End Date</source>
+            </trans-unit>
+            <trans-unit id="show.filter.search_button">
+              <source>Search</source>
             </trans-unit>
             <trans-unit id="show.results_for" xml:space="preserve">
                 <source>Results of form "%s"</source>

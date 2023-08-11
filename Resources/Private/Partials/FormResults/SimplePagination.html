@@ -4,12 +4,12 @@
             <f:if condition="{pagination.previousPageNumber} && {pagination.previousPageNumber} >= {pagination.firstPageNumber}">
                 <f:then>
                     <li class="page-item">
-                        <a href="{f:uri.action(action: 'show', arguments:{currentPage: 1, formPersistenceIdentifier: formPersistenceIdentifier})}" title="{f:translate(key:'pagination.first')}" class="page-link">
+                        <a href="{f:uri.action(action: 'show', arguments:{currentPage: 1, formPersistenceIdentifier: formPersistenceIdentifier, startDateSearched: startDateSearched, endDateSearched: endDateSearched})}" title="{f:translate(key:'pagination.first')}" class="page-link">
                             <core:icon identifier="actions-view-paging-first" />
                         </a>
                     </li>
                     <li class="page-item">
-                        <a href="{f:uri.action(action: 'show', arguments:{currentPage: pagination.previousPageNumber, formPersistenceIdentifier: formPersistenceIdentifier})}" title="{f:translate(key:'pagination.previous')}" class="page-link">
+                        <a href="{f:uri.action(action: 'show', arguments:{currentPage: pagination.previousPageNumber, formPersistenceIdentifier: formPersistenceIdentifier, startDateSearched: startDateSearched, endDateSearched: endDateSearched})}" title="{f:translate(key:'pagination.previous')}" class="page-link">
                             <core:icon identifier="actions-view-paging-previous" />
                         </a>
                     </li>
@@ -38,7 +38,7 @@
                     <form style="display:inline;"
                           data-global-event="submit"
                           data-action-navigate="$form=~s/$value/"
-                          data-navigate-value="{f:uri.action(action: 'show', arguments:'{currentPage: \'$[value]\', formPersistenceIdentifier: formPersistenceIdentifier}')}"
+                          data-navigate-value="{f:uri.action(action: 'show', arguments:'{currentPage: \'$[value]\', formPersistenceIdentifier: formPersistenceIdentifier, startDateSearched: startDateSearched, endDateSearched: endDateSearched}')}"
                           data-value-selector="input[name='paginator-target-page']">
                         <input
                                 min="{pagination.firstPageNumber}"
@@ -58,12 +58,12 @@
             <f:if condition="{pagination.nextPageNumber} && {pagination.nextPageNumber} <= {pagination.lastPageNumber}">
                 <f:then>
                     <li class="page-item">
-                        <a href="{f:uri.action(action: 'show', arguments:{currentPage: pagination.nextPageNumber, formPersistenceIdentifier: formPersistenceIdentifier})}" title="{f:translate(key:'pagination.next')}" class="page-link">
+                        <a href="{f:uri.action(action: 'show', arguments:{currentPage: pagination.nextPageNumber, formPersistenceIdentifier: formPersistenceIdentifier, startDateSearched: startDateSearched, endDateSearched: endDateSearched})}" title="{f:translate(key:'pagination.next')}" class="page-link">
                             <core:icon identifier="actions-view-paging-next" />
                         </a>
                     </li>
                     <li class="page-item">
-                        <a href="{f:uri.action(action: 'show', arguments:{currentPage: pagination.lastPageNumber, formPersistenceIdentifier: formPersistenceIdentifier})}" title="{f:translate(key:'pagination.last')}" class="page-link">
+                        <a href="{f:uri.action(action: 'show', arguments:{currentPage: pagination.lastPageNumber, formPersistenceIdentifier: formPersistenceIdentifier, startDateSearched: startDateSearched, endDateSearched: endDateSearched})}" title="{f:translate(key:'pagination.last')}" class="page-link">
                             <core:icon identifier="actions-view-paging-last" />
                         </a>
                     </li>
@@ -82,7 +82,7 @@
                 </f:else>
             </f:if>
             <li class="page-item">
-                <a href="{f:uri.action(action: 'show', arguments:{currentPage: paginator.currentPageNumber, formPersistenceIdentifier: formPersistenceIdentifier})}" title="{f:translate(key:'pagination.refresh')}" class="page-link">
+                <a href="{f:uri.action(action: 'show', arguments:{currentPage: paginator.currentPageNumber, formPersistenceIdentifier: formPersistenceIdentifier, startDateSearched: startDateSearched, endDateSearched: endDateSearched})}" title="{f:translate(key:'pagination.refresh')}" class="page-link">
                     <core:icon identifier="actions-refresh" />
                 </a>
             </li>

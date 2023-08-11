@@ -161,7 +161,11 @@ class FormResultsController extends FormManagerController
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
         $this->registerDocheaderButtons();
-        $availableFormDefinitions = $this->getAvailableFormDefinitions();
+        $filter = GeneralUtility::_GP('filter');
+        $availableFormDefinitions = $this->getAvailableFormDefinitions($filter['search'] ?? '');
+        if ($filter['search']) {
+            $this->view->assign('nameSearched', $filter['search']);
+        }
         $this->enrichFormDefinitionsWithHighestCrDate($availableFormDefinitions);
         $this->view->assign('forms', $availableFormDefinitions);
         $this->view->assign('deletedForms', $this->getDeletedFormDefinitions($availableFormDefinitions));
@@ -223,7 +227,7 @@ class FormResultsController extends FormManagerController
      * @noinspection PhpUndefinedMethodInspection
      * @noinspection PhpUnused
      */
-    public function showAction(string $formPersistenceIdentifier): ResponseInterface
+    public function showAction(string $formPersistenceIdentifier, ?string $startDateSearched = '', ?string $endDateSearched = ''): ResponseInterface
     {
         $fieldsWithData = [];
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
@@ -238,7 +242,24 @@ class FormResultsController extends FormManagerController
             'ftd_deleteDescription' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.description')
         ]);
 
-        $formResults = $this->formResultRepository->findByFormPersistenceIdentifier($formPersistenceIdentifier);
+        $startDate = 0;
+        $format = "H:i d-m-Y";
+        if ($startDateSearched) {
+            $startDate = strtotime(date_format(date_create($startDateSearched), $format));
+        }
+        else {
+            $startDate = $this->formResultRepository->getOldestDate($formPersistenceIdentifier);
+        }
+
+        if ($endDateSearched) {
+            $endDate = strtotime(date_format(date_create($endDateSearched), $format));
+        } else {
+            $endDate = strtotime(date($format));
+        }
+        $this->view->assign('startDateSearched', date($format, $startDate));
+        $this->view->assign('endDateSearched', date($format, $endDate));
+
+        $formResults = $this->formResultRepository->findByFormPersistenceIdentifierAndStartAndDate($formPersistenceIdentifier, $startDate, $endDate);
         $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier, true);
         $formRenderables = $this->getFormRenderables($formDefinition);
         $lastView = $this->getCurrentBEUserLastViewTime($formDefinition);
@@ -399,7 +420,7 @@ class FormResultsController extends FormManagerController
      *
      * @return array
      */
-    protected function getAvailableFormDefinitions(): array
+    protected function getAvailableFormDefinitions(string $searchWord = ''): array
     {
         $formResults = $this->formResultDatabaseService->getAllFormResultsForPersistenceIdentifier();
         $availableFormDefinitions = [];
@@ -408,6 +429,11 @@ class FormResultsController extends FormManagerController
             if (!empty($form['finishers']) && in_array('FormToDatabase', array_column($form['finishers'], 'identifier'),
                     true)) {
                 $formDefinition['numberOfResults'] = $formResults[$formDefinition['persistenceIdentifier']] ?? 0;
+                if ($searchWord) {
+                    if (!str_contains(strtolower((string)$formDefinition['name']), strtolower($searchWord))) {
+                        continue;
+                    }
+                }
                 $availableFormDefinitions[] = $formDefinition;
             }
         }

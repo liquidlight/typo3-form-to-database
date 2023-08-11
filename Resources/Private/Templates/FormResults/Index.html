@@ -8,6 +8,7 @@
 	</h1>
 	<f:if condition="{forms}">
 		<f:then>
+			<f:render section="filter" arguments="{_all}" />
 			<f:render partial="FormResults/Index/Results" arguments="{_all}"/>
 		</f:then>
 		<f:else>
@@ -34,5 +35,23 @@
 		<f:render partial="FormResults/Index/DeletedResults" arguments="{forms: deletedForms, extConf: extConf}"/>
 	</f:if>
 	<f:render partial="FormResults/Index/Footer" arguments="{_all}"/>
+</f:section>
+
+<f:section name="filter">
+	<form action="{f:be.uri(route:'web_FormToDatabaseFormresults', parameters: '{action: \'index\'}')}"
+				method="post"
+				enctype="multipart/form-data"
+				name="filter"
+				class="form-inline form-inline-spaced">
+		<div class="form-group">
+			<label for="filter-search">
+				<f:translate key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.filter.form_name"/>
+			</label>
+			<input type="text" id="filter-search" class="form-control input-sm" name="filter[search]" value="{nameSearched}"/>
+		</div>
+		<div class="form-group">
+			<input type="submit" value="{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.filter.search_button')}" class="btn btn-default btn-sm"/>
+		</div>
+	</form>
 </f:section>
 </html>
