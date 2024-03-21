@@ -7,6 +7,7 @@ body * {
 }
 
 #printSection {
+	display: block;
 	position: absolute;
 	left: 0;
 	top: 0;
@@ -15,6 +16,8 @@ body * {
 .modal-size-medium .modal-content {
 	width: 100%;
 	height: auto;
+	box-shadow: none;
+	border: var(--bs-modal-border-width) solid var(--bs-modal-border-color);
 }
 
 .t3js-modal-close {
