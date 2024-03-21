@@ -17,8 +17,8 @@ $EM_CONF[$_EXTKEY] = [
     'category' => 'frontend',
     'constraints' => [
         'depends' => [
-            'typo3' => '11.5.0-11.5.99',
-            'form' => '11.5.0-11.5.99'
+            'typo3' => '12.4.0-12.4.99',
+            'form' => '12.4.0-12.4.99'
         ],
         'conflicts' => [],
         'suggests' => []
@@ -29,9 +29,8 @@ $EM_CONF[$_EXTKEY] = [
         ],
     ],
     'state' => 'stable',
-    'createDirs' => '',
     'author' => 'Philipp Mueller',
     'author_email' => 'philipp.mueller@lavitto.ch',
     'author_company' => 'lavitto ag',
-    'version' => '3.0.1'
+    'version' => '4.0.0'
 ];

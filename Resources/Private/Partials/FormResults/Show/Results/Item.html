@@ -29,12 +29,16 @@
 			</a>
 			<f:variable name="deleteActionUri"
 						value="{f:uri.action(action: 'deleteFormResult', arguments: '{formResult: formResult}')}"/>
-			<a href="#"
-			   class="btn btn-default t3js-record-delete"
-			   title="{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.delete')}"
-			   onclick="top.TYPO3.Modal.confirm(TYPO3.lang.ftd_deleteTitle, TYPO3.lang.ftd_deleteDescription).on('button.clicked', function(e) { if (e.target.name == 'ok') { location.href='{deleteActionUri}'; } top.TYPO3.Modal.dismiss(); });">
+			<f:link.action
+				action="deleteFormResult"
+				arguments="{formResult: formResult}"
+				class="btn btn-default t3js-record-delete t3js-modal-trigger"
+				additionalAttributes="{
+                        'data-title': '{f:translate(key: \'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.delete\')}'
+                    }"
+			>
 				<core:icon identifier="actions-delete"/>
-			</a>
+			</f:link.action>
 		</div>
 	</td>
 </tr>

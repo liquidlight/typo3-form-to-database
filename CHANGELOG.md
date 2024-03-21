@@ -1,3 +1,9 @@
+# 4.0.0
+
+- [BREAKING] Drop TYPO3 11.5 support
+- [TASK] Set PHP to 8.1 as a minimum
+- [TASK] Refactoring of code for TYPO3 v12
+
 # 3.0.1
 
 - [BUGFIX] Make task schedulable

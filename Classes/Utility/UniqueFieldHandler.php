@@ -9,6 +9,7 @@
 
 namespace Lavitto\FormToDatabase\Utility;
 
+use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
 
@@ -49,7 +50,7 @@ class UniqueFieldHandler
      * @param $formDefinition
      * @return mixed
      */
-    public function updateNewFields($formPersistenceIdentifierBeforeSave, $formDefinition)
+    public function updateNewFields(string $formPersistenceIdentifierBeforeSave, $formDefinition)
     {
         $fieldCount = 0;
         $this->setExistingFieldStateBeforeSave($formPersistenceIdentifierBeforeSave);
@@ -62,7 +63,7 @@ class UniqueFieldHandler
             $this->makeNextIdentifiersMap($this->existingFieldStateBeforeSave);
 
             foreach (FormDefinitionUtility::convertFormDefinitionToObject($formDefinition)->getRenderablesRecursively() as $renderable) {
-                if($renderable instanceof \TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface) {
+                if($renderable instanceof CompositeRenderableInterface) {
                     continue;
                 }
                 $fieldCount++;
@@ -109,7 +110,7 @@ class UniqueFieldHandler
             }
         }
         unset($field);
-        array_walk($this->fieldTypesNextIdentifier, static function (&$val) {
+        array_walk($this->fieldTypesNextIdentifier, static function (&$val): void {
             $val['number']++;
         });
     }

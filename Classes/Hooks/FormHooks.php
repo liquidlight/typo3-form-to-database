@@ -9,6 +9,8 @@
 
 namespace Lavitto\FormToDatabase\Hooks;
 
+use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
+use TYPO3\CMS\Form\Mvc\Persistence\Exception\PersistenceManagerException;
 use Lavitto\FormToDatabase\Domain\Model\FormResult;
 use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
 use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
@@ -76,8 +78,8 @@ class FormHooks
      * @return void
      * @throws IllegalObjectTypeException
      * @throws UnknownObjectException
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
-     * @throws \TYPO3\CMS\Form\Mvc\Persistence\Exception\PersistenceManagerException
+     * @throws InvalidQueryException
+     * @throws PersistenceManagerException
      * @noinspection PhpParamsInspection
      */
     public function beforeFormDelete($formPersistenceIdentifier): void

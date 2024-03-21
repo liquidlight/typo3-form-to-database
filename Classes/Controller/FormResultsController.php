@@ -11,6 +11,7 @@
 
 namespace Lavitto\FormToDatabase\Controller;
 
+use Doctrine\DBAL\DBALException;
 use DateTime;
 use Doctrine\DBAL\FetchMode;
 use Exception;
@@ -33,6 +34,7 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
@@ -53,6 +55,7 @@ use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
 use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
+use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 
 /**
  * Class FormResultsController
@@ -71,7 +74,7 @@ class FormResultsController extends FormManagerController
      */
     protected const CSV_ENCLOSURE = '"';
 
-    const defaultNumberOfColumnsInListView = 4;
+    public const defaultNumberOfColumnsInListView = 4;
 
 
     /**
@@ -140,7 +143,7 @@ class FormResultsController extends FormManagerController
     /**
      * Displays the Form Overview
      *
-     * @throws InvalidQueryException|\Doctrine\DBAL\DBALException
+     * @throws InvalidQueryException|DBALException
      * @internal
      * @noinspection PhpUndefinedMethodInspection
      */
@@ -156,7 +159,7 @@ class FormResultsController extends FormManagerController
         $this->assignDefaults();
 
         $this->moduleTemplate->setModuleName($this->request->getPluginName() . '_' . $this->request->getControllerName());
-        $this->moduleTemplate->setFlashMessageQueue($this->controllerContext->getFlashMessageQueue());
+        $this->moduleTemplate->setFlashMessageQueue($this->getFlashMessageQueue(FlashMessageQueue::NOTIFICATION_QUEUE));
         $this->moduleTemplate->setContent($this->view->render());
 
         return $this->htmlResponse($this->moduleTemplate->renderContent());
@@ -174,9 +177,9 @@ class FormResultsController extends FormManagerController
 
     /**
      * @param $formDefinitions
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
-    private function enrichFormDefinitionsWithHighestCrDate(&$formDefinitions)
+    private function enrichFormDefinitionsWithHighestCrDate(&$formDefinitions): void
     {
         $identifiers = array_column($formDefinitions, 'identifier');
         /** @var ConnectionPool $connectionPool */
@@ -191,9 +194,7 @@ class FormResultsController extends FormManagerController
             ->where($qb->expr()->in(
                 'form_identifier',
                 $qb->createNamedParameter($identifiers, Connection::PARAM_STR_ARRAY))
-            )
-            ->groupBy('form_identifier')
-            ->execute()->fetchAll(FetchMode::NUMERIC);
+            )->groupBy('form_identifier')->executeQuery()->fetchAll(FetchMode::NUMERIC);
         $maxCrDates = array_combine(array_column($result, 0), array_column($result, 1));
         foreach ($formDefinitions as &$formDefinition) {
             $formDefinition['maxCrDate'] = $maxCrDates[$formDefinition['identifier']] ?? null;
@@ -293,17 +294,30 @@ class FormResultsController extends FormManagerController
      * @throws Exception
      * @todo Add more charsets?
      */
-    public function downloadCsvAction(): void
+    public function downloadCsvAction(): ResponseInterface
     {
         $charset = 'UTF-8';
         $formPersistenceIdentifier = $this->request->getArgument('formPersistenceIdentifier');
         $filtered = $this->request->hasArgument('filtered') === true && $this->request->getArgument('filtered') === '1';
+
         $csvContent = "\xEF\xBB\xBF" . $this->getCsvContent($formPersistenceIdentifier, $filtered);
-        header('Content-Type: application/csv; charset=' . $charset);
-        header('Content-Disposition: attachment; filename="' . $this->getCsvFileName($formPersistenceIdentifier) . '";');
-        header('Content-Length: ' . strlen($csvContent));
-        echo $csvContent;
-        die;
+
+        return $this->responseFactory
+            ->createResponse()
+            ->withHeader(
+                'Content-Type',
+                sprintf('application/json; charset=%s', $charset ?? 'utf-8')
+            )
+            ->withHeader(
+                'Content-Disposition',
+                sprintf('attachment; filename="%s";', $this->getCsvFileName($formPersistenceIdentifier))
+            )
+            ->withHeader(
+                'Content-Length',
+                (string)strlen($csvContent)
+            )
+            ->withBody($this->streamFactory->createStream((string)($csvContent)));
+
     }
 
     /**
@@ -314,7 +328,7 @@ class FormResultsController extends FormManagerController
      * @throws RenderingException
      * @throws StopActionException
      */
-    public function deleteFormResultAction(FormResult $formResult): void
+    public function deleteFormResultAction(FormResult $formResult): ResponseInterface
     {
         $formPersistenceIdentifier = $formResult->getFormPersistenceIdentifier();
         $this->formResultRepository->remove($formResult);
@@ -329,7 +343,10 @@ class FormResultsController extends FormManagerController
             )
         );
 
-        $this->redirect('show', null, null, ['formPersistenceIdentifier' => $formPersistenceIdentifier]);
+        return new RedirectResponse($this->uriBuilder->uriFor(
+            'show',
+            ['formPersistenceIdentifier' => $formPersistenceIdentifier]
+        ));
     }
 
     /**
@@ -340,7 +357,7 @@ class FormResultsController extends FormManagerController
      * @throws UnknownObjectException
      * @noinspection PhpParamsInspection
      */
-    public function unDeleteFormDefinitionAction(string $formDefinitionPath, string $formIdentifier): void
+    public function unDeleteFormDefinitionAction(string $formDefinitionPath, string $formIdentifier): RedirectResponse
     {
         /** @var FilePersistenceSlot $formPersistenceSlot */
         $formPersistenceSlot = GeneralUtility::makeInstance(FilePersistenceSlot::class);
@@ -365,14 +382,16 @@ class FormResultsController extends FormManagerController
             }
         }
 
-        $this->redirect('index');
+        return new RedirectResponse($this->uriBuilder->uriFor(
+            'index'
+        ));
     }
 
     /**
      * @throws NoSuchArgumentException
      * @throws StopActionException
      */
-    public function updateItemListSelectAction(): void
+    public function updateItemListSelectAction(): RedirectResponse
     {
         $formPersistenceIdentifier = $this->request->getArgument('formPersistenceIdentifier');
         $formDefinition = $this->getFormDefinition($formPersistenceIdentifier);
@@ -382,8 +401,11 @@ class FormResultsController extends FormManagerController
 
         $this->BEUser->uc['tx_formtodatabase']['listViewStates'][$formDefinition['identifier']] = $this->request->getArgument('field');
         $this->BEUser->writeUC();
-        $this->redirect('show', null, null,
-            ['formPersistenceIdentifier' => $this->request->getArgument('formPersistenceIdentifier')]);
+
+        return new RedirectResponse($this->uriBuilder->uriFor(
+            'show',
+            ['formPersistenceIdentifier' => $this->request->getArgument('formPersistenceIdentifier')]
+        ));
     }
 
     /**
@@ -425,7 +447,7 @@ class FormResultsController extends FormManagerController
             $storageFolder->setFileAndFolderNameFilters([[$filter, 'filterFileList']]);
             $accessibleDeletedFormDefinitions += $storageFolder->getFiles();
         }
-        $accessibleDeletedFormDefinitions = array_map(static function ($val) {
+        $accessibleDeletedFormDefinitions = array_map(static function ($val): string {
             $val = $val->getCombinedIdentifier();
             return $val;
         }, $accessibleDeletedFormDefinitions, []);
@@ -444,27 +466,22 @@ class FormResultsController extends FormManagerController
             ->addSelectLiteral($queryBuilder->expr()->count('form_identifier', 'count'))
             ->from('tx_formtodatabase_domain_model_formresult')
             ->where(
-                $queryBuilder->expr()->orX(
+                $queryBuilder->expr()->or(
                     $queryBuilder->expr()->in('form_plugin_uid',
                         $queryBuilder->createNamedParameter($pluginUids ?? [''], Connection::PARAM_STR_ARRAY)),
                     $queryBuilder->expr()->in('site_identifier',
                         $queryBuilder->createNamedParameter($siteIdentifiers ?? [''], Connection::PARAM_STR_ARRAY)),
                     //Backward compatibility with old data
-                    $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->eq('site_identifier', $queryBuilder->createNamedParameter('')),
-                        $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter(0, PDO::PARAM_INT))
-                    )
+                    $queryBuilder->expr()->and($queryBuilder->expr()->eq('site_identifier', $queryBuilder->createNamedParameter('')), $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter(0, PDO::PARAM_INT)))
                 ),
                 $queryBuilder->expr()->notIn('form_persistence_identifier',
                     $queryBuilder->createNamedParameter($persistenceIdentifier, Connection::PARAM_STR_ARRAY)),
                 $queryBuilder->expr()->in('form_persistence_identifier',
                     $queryBuilder->createNamedParameter($accessibleDeletedFormDefinitions, Connection::PARAM_STR_ARRAY))
 
-            )->groupBy('tx_formtodatabase_domain_model_formresult.form_persistence_identifier',
-                'tx_formtodatabase_domain_model_formresult.form_identifier')
-            ->execute()->fetchAll();
+            )->groupBy('tx_formtodatabase_domain_model_formresult.form_persistence_identifier', 'tx_formtodatabase_domain_model_formresult.form_identifier')->executeQuery()->fetchAll();
 
-        array_walk($result, static function (&$val) {
+        array_walk($result, static function (&$val): void {
             $val['name'] = $val['identifier'] = preg_replace("/.*\/(.*)-([a-z0-9]{13}).form.yaml.deleted/", '$1',
                 $val['form_persistence_identifier']);
             $val['persistenceIdentifier'] = $val['form_persistence_identifier'];
@@ -595,7 +612,7 @@ class FormResultsController extends FormManagerController
         }
 
         /** @var ArrayFormFactory $arrayFormFactory */
-        $arrayFormFactory = $this->objectManager->get(ArrayFormFactory::class);
+        $arrayFormFactory = GeneralUtility::makeInstance(ArrayFormFactory::class);
         return $arrayFormFactory->build($configuration);
     }
 
@@ -735,9 +752,11 @@ class FormResultsController extends FormManagerController
     protected function getCsvFilename(string $formPersistenceIdentifier): string
     {
         /** @var LocalDriver $localDriver */
-        $localDriver = $this->objectManager->get(LocalDriver::class);
-        $dateTime = new DateTime('now',
-            FormValueUtility::getValidTimezone((string)$GLOBALS['TYPO3_CONF_VARS']['SYS']['phpTimeZone']));
+        $localDriver = GeneralUtility::makeInstance(LocalDriver::class);
+        $dateTime = new DateTime(
+            'now',
+            FormValueUtility::getValidTimezone((string)$GLOBALS['TYPO3_CONF_VARS']['SYS']['phpTimeZone'])
+        );
         $filename = $dateTime->format(FormValueUtility::getDateFormat() . ' ' . FormValueUtility::getTimeFormat());
         $filename .= '_' . preg_replace('/\.form\.yaml$/', '', basename($formPersistenceIdentifier)) . '.csv';
         return $localDriver->sanitizeFileName($filename);
@@ -782,16 +801,12 @@ class FormResultsController extends FormManagerController
 
             if ($formPersistenceIdentifier !== null && $showCsvDownload === true) {
                 $urlParameters = [
-                    'tx_formtodatabase_web_formtodatabaseformresults' => [
-                        'formPersistenceIdentifier' => $formPersistenceIdentifier,
-                        'action' => 'downloadCsv',
-                        'controller' => 'FormResults'
-                    ]
+                    'formPersistenceIdentifier' => $formPersistenceIdentifier,
                 ];
 
                 // Full list download-button
                 $downloadCsvFormButton = $buttonBar->makeLinkButton()
-                    ->setHref($this->getModuleUrl('web_FormToDatabaseFormresults', $urlParameters))
+                    ->setHref($this->uriBuilder->uriFor('downloadCsv', $urlParameters))
                     ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.download_csv'))
                     ->setShowLabelText(true)
                     ->setIcon($this->iconFactory->getIcon('actions-download',
@@ -799,9 +814,9 @@ class FormResultsController extends FormManagerController
                 $buttonBar->addButton($downloadCsvFormButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
 
                 // Filtered list download-button
-                $urlParameters['tx_formtodatabase_web_formtodatabaseformresults']['filtered'] = true;
+                $urlParameters['filtered'] = true;
                 $downloadCsvFormButton = $buttonBar->makeLinkButton()
-                    ->setHref($this->getModuleUrl('web_FormToDatabaseFormresults', $urlParameters))
+                    ->setHref($this->uriBuilder->uriFor('downloadCsv', $urlParameters))
                     ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.download_csv_filtered'))
                     ->setShowLabelText(true)
                     ->setIcon($this->iconFactory->getIcon('actions-download', Icon::SIZE_SMALL));
@@ -810,11 +825,7 @@ class FormResultsController extends FormManagerController
         }
 
         // Reload title
-        if (version_compare(VersionNumberUtility::getNumericTypo3Version(), '9.5', '>=') === true) {
-            $reloadTitle = $this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload');
-        } else {
-            $reloadTitle = $this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload');
-        }
+        $reloadTitle = $this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload');
         $reloadButton = $buttonBar->makeLinkButton()
             ->setHref(GeneralUtility::getIndpEnv('REQUEST_URI'))
             ->setTitle($reloadTitle)
@@ -830,9 +841,9 @@ class FormResultsController extends FormManagerController
                 $getVars = ['id', 'route', $modulePrefix];
             }
             $shortcutButton = $buttonBar->makeShortcutButton()
-                ->setModuleName($moduleName)
+                ->setRouteIdentifier($moduleName)
                 ->setDisplayName($this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:module.shortcut_name'))
-                ->setGetVariables($getVars);
+                ->setArguments($getVars);
             $buttonBar->addButton($shortcutButton, ButtonBar::BUTTON_POSITION_RIGHT);
         }
     }

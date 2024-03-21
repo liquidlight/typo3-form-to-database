@@ -6,13 +6,12 @@
  * LICENSE file that was distributed with this source code.
  */
 
-defined('TYPO3_MODE') or die();
+defined('TYPO3') or die();
 
 return [
     'ctrl' => [
         'crdate' => 'crdate',
         'tstamp' => 'tstamp',
-        'cruser_id' => 'cruser_id',
         'hideTable' => true
     ],
     'columns' => [
