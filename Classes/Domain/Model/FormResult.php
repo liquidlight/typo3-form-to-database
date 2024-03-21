@@ -24,25 +24,22 @@ class FormResult extends AbstractEntity
      * The formPersistenceIdentifier
      *
      * @see FormDefinition->persistenceIdentifier
-     * @var string
      */
-    protected $formPersistenceIdentifier = '';
+    protected string $formPersistenceIdentifier = '';
 
     /**
      * Unique form identifier
      *
      * @see config/sites/{identifier}/config.yaml
-     * @var string
      */
-    protected $formIdentifier = '';
+    protected string $formIdentifier = '';
 
     /**
      * The Site Identifier
      *
      * @see config/sites/{identifier}/config.yaml
-     * @var string
      */
-    protected $siteIdentifier = '';
+    protected string $siteIdentifier = '';
 
     /**
      * Uid of the form plugin content element
@@ -53,24 +50,18 @@ class FormResult extends AbstractEntity
 
     /**
      * The form result as json
-     *
-     * @var string
      */
-    protected $result = '';
+    protected string $result = '';
 
     /**
      * Create date
-     *
-     * @var DateTime
      */
-    protected $crdate;
+    protected \DateTime $crdate;
 
     /**
      * Timestamp
-     *
-     * @var DateTime
      */
-    protected $tstamp;
+    protected \DateTime $tstamp;
 
     /**
      * Gets the formPersistenceIdentifier
@@ -165,7 +156,7 @@ class FormResult extends AbstractEntity
      */
     public function getResultAsArray(): array
     {
-        return $this->result !== '' ? json_decode($this->result, true) : [];
+        return $this->result !== '' ? json_decode($this->result, true, 512, JSON_THROW_ON_ERROR) : [];
     }
 
     /**
@@ -185,7 +176,7 @@ class FormResult extends AbstractEntity
      */
     public function setResultFromArray(array $resultArray): void
     {
-        $this->setResult(!empty($resultArray) ? json_encode($resultArray) : '');
+        $this->setResult(!empty($resultArray) ? json_encode($resultArray, JSON_THROW_ON_ERROR) : '');
     }
 
     /**

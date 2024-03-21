@@ -11,11 +11,13 @@ namespace Lavitto\FormToDatabase\Domain\Repository;
 use DateInterval;
 use DateTime;
 use Exception;
+use Lavitto\FormToDatabase\Helpers\MiscHelper;
 use Lavitto\FormToDatabase\Utility\FormValueUtility;
 use PDO;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
-use TYPO3\CMS\Core\Database\QueryGenerator;
+use TYPO3\CMS\Core\Database\Query\QueryHelper;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -101,20 +103,20 @@ class FormResultRepository extends Repository
                 $orConditions[] = $query->in('siteIdentifier', $siteIdentifiers);
             }
             // Includes result if result is old (those created before new identifying fields)
-            $orConditions[] = $query->logicalAnd([
+            $orConditions[] = $query->logicalAnd(
                 $query->equals('siteIdentifier', ''),
                 $query->equals('pid', 0)
-            ]);
+            );
             // Include result always if user is admin
             if ($GLOBALS['BE_USER']->isAdmin()) {
                 $orConditions[] = $query->greaterThan('uid', 0);
             }
 
             $query->matching(
-                $query->logicalAnd([
+                $query->logicalAnd(
                     $query->equals('formPersistenceIdentifier', $formPersistenceIdentifier),
-                    $query->logicalOr($orConditions)
-                ])
+                    $query->logicalOr(...$orConditions)
+                )
             );
         }
         return $query;
@@ -144,13 +146,8 @@ class FormResultRepository extends Repository
         $queryBuilder->getRestrictions()->removeAll();
         $result = $queryBuilder
             ->select('uid')
-            ->from('tt_content')
-            ->where(
-                $queryBuilder->expr()->in('pid', $pids),
-                $queryBuilder->expr()->eq('CType',
-                    $queryBuilder->createNamedParameter('form_formframework', PDO::PARAM_STR))
-            )
-            ->execute()->fetchAll();
+            ->from('tt_content')->where($queryBuilder->expr()->in('pid', $pids), $queryBuilder->expr()->eq('CType',
+            $queryBuilder->createNamedParameter('form_formframework', PDO::PARAM_STR)))->executeQuery()->fetchAll();
         return array_column($result, 'uid');
     }
 
@@ -166,10 +163,8 @@ class FormResultRepository extends Repository
         if ($webMounts !== null) {
             $depth = 99;
             $pidsArray = [];
-            /** @var QueryGenerator $queryGenerator */
-            $queryGenerator = GeneralUtility::makeInstance(QueryGenerator::class);
             foreach ($webMounts as $webMount) {
-                $childPids = $queryGenerator->getTreeList($webMount, $depth, 0, 1); //Will be a string like 1,2,3
+                $childPids = MiscHelper::getTreeList($webMount, $depth, 0, 1); //Will be a string like 1,2,3
                 foreach (GeneralUtility::intExplode(',', $childPids, true) as $childPid) {
                     $pidsArray[] = $childPid;
                 }

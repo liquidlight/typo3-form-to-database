@@ -9,6 +9,7 @@
 
 namespace Lavitto\FormToDatabase\Utility;
 
+use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Domain\Configuration\ConfigurationService;
@@ -29,7 +30,7 @@ use TYPO3\CMS\Form\Exception;
 class FormDefinitionUtility
 {
 
-    const fieldAttributeFilterKeys = ['identifier', 'label', 'type'];
+    public const fieldAttributeFilterKeys = ['identifier', 'label', 'type'];
 
     /**
      * @param array $formDefinition
@@ -57,11 +58,8 @@ class FormDefinitionUtility
             }, $newFieldState);
 
             // Clean up fieldState - remove if incomplete
-            $newFieldState = array_filter($newFieldState, function($field) {
-                return
-                    !self::isCompositeElement($field) &&
-                    count(array_intersect_key(array_flip(self::fieldAttributeFilterKeys), $field)) === count(self::fieldAttributeFilterKeys);
-            });
+            $newFieldState = array_filter($newFieldState, fn($field): bool => !self::isCompositeElement($field) &&
+            count(array_intersect_key(array_flip(self::fieldAttributeFilterKeys), $field)) === count(self::fieldAttributeFilterKeys));
 
 
             $formDefinition['renderingOptions']['fieldState'] = $newFieldState;
@@ -76,7 +74,7 @@ class FormDefinitionUtility
     protected static function addFieldsToStateFromFormDefinition(FormDefinition $formDefinition, array $fieldState = []): array
     {
         foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
-            if ($renderable instanceof \TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface) {
+            if ($renderable instanceof CompositeRenderableInterface) {
                 // Prevent composite elements within field state to avoid
                 // duplication errors within form definition build
                 continue;
@@ -90,7 +88,7 @@ class FormDefinitionUtility
      * @param $fieldState
      * @param RenderableInterface $renderable
      */
-    public static function addFieldToState(&$fieldState, RenderableInterface $renderable): void
+    public static function addFieldToState(array &$fieldState, RenderableInterface $renderable): void
     {
         ArrayUtility::mergeRecursiveWithOverrule($fieldState,
             [$renderable->getIdentifier() =>
@@ -144,7 +142,7 @@ class FormDefinitionUtility
             $compositeRenderables[$field['identifier']] = true;
         } elseif (!isset($compositeRenderables[$field['identifier']])) {
             $element = $page->createElement($field['identifier'], $field['type']);
-            $compositeRenderables[$field['identifier']] = $element instanceof \TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
+            $compositeRenderables[$field['identifier']] = $element instanceof CompositeRenderableInterface;
         }
         return $compositeRenderables[$field['identifier']];
     }

@@ -45,9 +45,7 @@ class FormResultDatabaseService
         return $queryBuilder
             ->select('form_persistence_identifier as identifier')
             ->addSelectLiteral('COUNT(' . $queryBuilder->quoteIdentifier('form_persistence_identifier') . ') as "numberOfResults"')
-            ->from('tx_formtodatabase_domain_model_formresult')
-            ->groupBy('form_persistence_identifier')
-            ->execute()
+            ->from('tx_formtodatabase_domain_model_formresult')->groupBy('form_persistence_identifier')->executeQuery()
             ->fetchAll();
     }
 }
