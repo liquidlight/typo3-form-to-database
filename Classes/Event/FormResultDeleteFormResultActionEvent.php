@@ -3,13 +3,12 @@
 namespace Lavitto\FormToDatabase\Event;
 
 use Lavitto\FormToDatabase\Domain\Model\FormResult;
-use TYPO3\CMS\Extbase\Persistence\Generic\QueryResult;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 
 final class FormResultDeleteFormResultActionEvent
 {
     private string $formPersistenceIdentifier;
-    private QueryResult $formResults;
+    private FormResult $formResult;
     private FormDefinition $formDefinition;
     private array $formRenderables;
 
