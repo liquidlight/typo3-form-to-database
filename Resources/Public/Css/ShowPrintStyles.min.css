@@ -1,1 +1,1 @@
-body *{visibility:hidden}#printSection,#printSection *{visibility:visible}#printSection{position:absolute;left:0;top:0}.modal-size-medium .modal-content{width:100%;height:auto}.t3js-modal-close{display:none}.hide-print{display:none}
+body *{visibility:hidden}#printSection,#printSection *{visibility:visible}#printSection{display:block;position:absolute;left:0;top:0}.modal-size-medium .modal-content{width:100%;height:auto;box-shadow:none;border:var(--bs-modal-border-width) solid var(--bs-modal-border-color)}.t3js-modal-close{display:none}.hide-print{display:none}

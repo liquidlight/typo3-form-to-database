@@ -138,18 +138,6 @@ class FormResultsController extends FormManagerController
     }
 
     /**
-     * @return void
-     */
-    public function initializeShowAction(): void
-    {
-        $this->pageRenderer->addCssFile(
-            'EXT:form_to_database/Resources/Public/Css/ShowPrintStyles.min.css',
-            'stylesheet',
-            'print'
-        );
-    }
-
-    /**
      * Displays the Form Overview
      *
      * @throws InvalidQueryException|\Doctrine\DBAL\DBALException
@@ -232,6 +220,11 @@ class FormResultsController extends FormManagerController
         $newDataExists = false;
         $languageFile = 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:';
 
+        $this->pageRenderer->addCssFile(
+            'EXT:form_to_database/Resources/Public/Css/ShowPrintStyles.min.css',
+            'stylesheet',
+            'print'
+        );
         $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/Modal');
         $this->pageRenderer->addInlineLanguageLabelArray([
             'ftd_deleteTitle' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.title'),
