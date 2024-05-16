@@ -4,7 +4,7 @@ return [
     'web_FormToDatabaseFormresults' => [
         'parent' => 'web',
         'position' => ['after' => 'web_FormFormbuilder'],
-        'access' => 'user,group',
+        'access' => 'user',
         'workspaces' => 'live',
         'icon'   => 'EXT:form_to_database/Resources/Public/Icons/Extension.svg',
         'path' => '/module/web/FormToDatabaseFormresults',
