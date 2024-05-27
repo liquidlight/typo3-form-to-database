@@ -274,7 +274,8 @@ class FormResultsController extends FormManagerController
             'paginator' => $paginator,
             'pagination' => $pagination,
             'fieldsWithData' => $fieldsWithData,
-            'fieldsWithNoData' => $fieldsWithNoData
+            'fieldsWithNoData' => $fieldsWithNoData,
+            'extConfig' => $this->extConfUtility->getFullConfig()
         ]);
         $this->assignDefaults();
 
@@ -693,11 +694,18 @@ class FormResultsController extends FormManagerController
         $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier, true);
         $formRenderables = $this->getFormRenderables($formDefinition);
 
-        if ($filtered === true) {
+        $displayActiveFieldsOnly = $this->extConfUtility->getConfig('displayActiveFieldsOnly') ?? false;
+
+        if ($filtered === true || $displayActiveFieldsOnly === true) {
             /** @var AbstractFormElement $renderable */
             foreach ($formRenderables as $i => $renderable) {
                 $renderingOptions = $renderable->getRenderingOptions();
-                if (isset($renderingOptions['listView']) && $renderingOptions['listView'] !== 1) {
+
+                if ($filtered && isset($renderingOptions['listView']) && $renderingOptions['listView'] !== 1) {
+                    unset($formRenderables[$i]);
+                }
+
+                if ($displayActiveFieldsOnly && $renderingOptions['deleted'] === 1) {
                     unset($formRenderables[$i]);
                 }
             }

@@ -27,17 +27,22 @@
 				</div>
 				<table class="table table-striped table-hover">
 					<f:for each="{formRenderables}" as="renderable">
-						<tr>
-							<th>
-								{renderable.label}
-							</th>
-							<td>
-								<f:format.raw>
-									<ftdb:formValue value="{renderable.identifier}" results="{formResult.resultAsArray}"
-													element="{renderable}" crop="false"/>
-								</f:format.raw>
-							</td>
-						</tr>
+						<f:if condition="
+						({extConfig.displayActiveFieldsOnly} && {renderable.renderingOptions.deleted} == 0)
+						|| {extConfig.displayActiveFieldsOnly} == 0"
+						>
+							<tr>
+								<th>
+									{renderable.label}
+								</th>
+								<td>
+									<f:format.raw>
+										<ftdb:formValue value="{renderable.identifier}" results="{formResult.resultAsArray}"
+														element="{renderable}" crop="false"/>
+									</f:format.raw>
+								</td>
+							</tr>
+						</f:if>
 					</f:for>
 				</table>
 			</div>
