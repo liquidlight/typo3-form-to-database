@@ -6,6 +6,15 @@
 	<h1>
 		<f:translate key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.headline"/>
 	</h1>
+
+	<form class="mb-2" action="{f:uri.action(action:'index')}" method="POST">
+		<div class="mb-2">
+			<label for="search" class="form-label">{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.do_search')}</label>
+			<input type="text" class="form-control" id="search" name="tx_form_to_database[search]" aria-describedby="emailHelp" value="{searchKey}">
+		</div>
+		<button type="submit" class="btn btn-primary">{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.search_button')}</button>
+	</form>
+
 	<f:if condition="{forms}">
 		<f:then>
 			<f:render partial="FormResults/Index/Results" arguments="{_all}"/>
