@@ -151,10 +151,30 @@ class FormResultsController extends FormManagerController
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
+        $availableFormDefinitions = [];
+        $searchKey = $this->request->getParsedBody()['tx_form_to_database']['search'] ?? '';
+        if (empty($searchKey)) {
+            $availableFormDefinitions = $this->getAvailableFormDefinitions();
+        } else {
+            foreach ($this->getAvailableFormDefinitions() as $formDefinition) {
+                foreach (['name'] as $searchField) {
+                    if (
+                        is_string($formDefinition[$searchField])
+                        && str_contains(
+                            strtolower($formDefinition[$searchField]),
+                            strtolower($searchKey)
+                        )
+                    ) {
+                        $availableFormDefinitions[$formDefinition['identifier']] = $formDefinition;
+                    }
+                }
+            }
+        }
+
         $this->registerDocheaderButtons();
-        $availableFormDefinitions = $this->getAvailableFormDefinitions();
         $this->enrichFormDefinitionsWithHighestCrDate($availableFormDefinitions);
         $this->view->assign('forms', $availableFormDefinitions);
+        $this->view->assign('searchKey', $searchKey);
         $this->view->assign('deletedForms', $this->getDeletedFormDefinitions($availableFormDefinitions));
         $this->assignDefaults();
 
