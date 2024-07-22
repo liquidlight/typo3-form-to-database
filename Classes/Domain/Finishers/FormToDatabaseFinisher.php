@@ -142,7 +142,7 @@ class FormToDatabaseFinisher extends AbstractFinisher
             $delimiter = strrpos($this->formDefinition->getIdentifier(), '-');
             $formPluginUid = substr($this->formDefinition->getIdentifier(), $delimiter + 1);
             $formIdentifier = substr($this->formDefinition->getIdentifier(), 0, $delimiter);
-            $formResult = new FormResult();
+            $formResult = GeneralUtility::makeInstance(FormResult::class);
             $formResult->setFormPersistenceIdentifier($formPersistenceIdentifier);
             $formResult->setSiteIdentifier($GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getIdentifier());
             $formResult->setPid($GLOBALS['TSFE']->id);
