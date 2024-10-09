@@ -23,10 +23,11 @@
 	</f:for>
 	<td class="col-control nowrap">
 		<div class="btn-group" role="group">
-			<a href="#" class="btn btn-default" data-bs-toggle="modal"
-			   data-bs-target="#resultDetail{formResult.uid}">
-				<core:icon identifier="actions-document-view"/>
-			</a>
+			<f:link.action action="result" arguments="{uid: formResult.uid}"
+				title="{f:translate(key: 'LLL:EXT:form/Resources/Private/Language/Database.xlf:formManager.edit_form')}"
+				class="btn btn-default form-record-open">
+				<core:icon identifier="actions-document-view" />
+			</f:link.action>
 			<f:variable name="deleteActionUri"
 						value="{f:uri.action(action: 'deleteFormResult', arguments: '{formResult: formResult}')}"/>
 			<f:link.action

@@ -28,8 +28,10 @@ use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
 use Lavitto\FormToDatabase\Utility\FormValueUtility;
 use PDO;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -302,6 +304,42 @@ class FormResultsController extends FormManagerController
         // For current formDefinition, add/replace lastView timestamp to uc with current time
         $this->BEUser->uc['tx_formtodatabase']['lastView'][$formDefinition->getIdentifier()] = time();
         $this->BEUser->writeUC();
+
+        $this->moduleTemplate->setContent($this->view->render());
+
+        return $this->htmlResponse($this->moduleTemplate->renderContent());
+    }
+
+    /**
+     * Shows the results of a form
+     *
+     * @param string $uid
+     * @return ResponseInterface
+     * @throws InvalidQueryException
+     * @throws RenderingException
+     * @noinspection PhpUndefinedMethodInspection
+     * @noinspection PhpUnused
+     */
+    public function resultAction(string $uid): ResponseInterface
+    {
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+
+        // $result =
+        $formResult = $this->formResultRepository->findByUid($uid);
+        $formPersistenceIdentifier = $formResult->getFormPersistenceIdentifier();
+
+        $formDefinition = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false);
+        $formRenderables = $this->getFormRenderables($formDefinition);
+
+        $this->registerDocheaderButtons($formPersistenceIdentifier);
+        $this->view->assignMultiple([
+            'formResult' => $formResult,
+            'formDefinition' => $formDefinition,
+            'formRenderables' => $formRenderables,
+            'formPersistenceIdentifier' => $formPersistenceIdentifier,
+        ]);
+        $this->assignDefaults();
+
 
         $this->moduleTemplate->setContent($this->view->render());
 
@@ -860,6 +898,26 @@ class FormResultsController extends FormManagerController
                     ->setIcon($this->iconFactory->getIcon('actions-download', Icon::SIZE_SMALL));
                 $buttonBar->addButton($downloadCsvFormButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
             }
+        }
+
+        if ($this->request->getControllerActionName() === 'result') {
+            $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+
+            $backFormButton = $buttonBar->makeLinkButton()
+                ->setHref($uriBuilder->buildUriFromRoute(
+                    'web_FormToDatabaseFormresults',
+                    [
+                        'tx_formtodatabase_web_formtodatabaseformresults' => [
+                            'formPersistenceIdentifier' => $formPersistenceIdentifier,
+                            'action' => 'show',
+                            'controller' => 'FormResults',
+                        ]
+                    ]
+                ))
+                ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.backlinkResults'))
+                ->setShowLabelText(true)
+                ->setIcon($this->iconFactory->getIcon('actions-view-go-back', Icon::SIZE_SMALL));
+            $buttonBar->addButton($backFormButton, ButtonBar::BUTTON_POSITION_LEFT);
         }
 
         // Reload title
