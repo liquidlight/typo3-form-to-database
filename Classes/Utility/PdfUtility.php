@@ -3,46 +3,64 @@
 namespace Lavitto\FormToDatabase\Utility;
 
 use Mpdf\Mpdf;
+use Mpdf\HTMLParserMode;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class PdfUtility
 {
-	/**
-	 * Generate a PDF and return the filename
-	 *
-	 * Borrowed and adapted from EXT:web2pdf
-	 */
+    public function __construct(
+        protected $settings = []
+    ) {
+
+    }
+
+    /**
+     * Generate a PDF and return the filename
+     *
+     * Borrowed and adapted from EXT:web2pdf
+     */
     public function generatePdf($html, $fileName = '')
     {
-        // Get options from TypoScript
-        $pageFormat = 'A4';
-        $pageOrientation = 'P';
-        $leftMargin = '15';
-        $rightMargin = '15';
-        $bottomMargin = '15';
-        $topMargin = '15';
-        $styleSheet = 'print';
-
-        $pdf = new Mpdf([
-            'format' => $pageFormat,
-            'default_font_size' => 12,
-            'margin_left' => $leftMargin,
-            'margin_right' => $rightMargin,
-            'margin_top' => $topMargin,
-            'margin_bottom' => $bottomMargin,
-            'orientation' => $pageOrientation,
+        // Set default options
+        $config = [
+            'default_font_size' => '12',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => '15',
+            'margin_right' => '15',
+            'margin_bottom' => '15',
+            'margin_top' => '15',
             'tempDir' => Environment::getVarPath() . '/form_to_database'
-        ]);
+        ];
 
-        $pdf->SetMargins($leftMargin, $rightMargin, $topMargin);
-        if ($styleSheet === 'print' || $styleSheet === 'screen') {
-            $pdf->CSSselectMedia = $styleSheet;
+        // Merge with TypoScript options
+        $config = array_merge($config, $this->settings['config'] ?? []);
+
+        // Generate PDF class
+        $pdf = new Mpdf($config);
+
+        $pdf->SetMargins($config['margin_left'], $config['margin_right'], $config['margin_top']);
+
+        if (
+            $this->settings['stylesheet']['media'] ?? false &&
+            in_array($this->settings['stylesheet']['media'], ['print', 'screen'])
+        ) {
+            $pdf->CSSselectMedia = $this->settings['stylesheet']['media'];
         }
 
         $fileName = $fileName . '.pdf';
         $filePath = Environment::getVarPath() . '/form_to_database/' . $fileName;
 
-        $pdf->WriteHTML($html);
+        if($this->settings['stylesheet']['link'] ?? false) {
+            $css = GeneralUtility::getFileAbsFileName($this->settings['stylesheet']['link']);
+            if(is_file($css)) {
+                $pdf->WriteHTML(file_get_contents($css), HTMLParserMode::HEADER_CSS);
+            }
+        }
+
+        // Pass in HTML
+        $pdf->WriteHTML($html, HTMLParserMode::HTML_BODY);
         $pdf->Output($filePath, 'F');
 
         return $filePath;
