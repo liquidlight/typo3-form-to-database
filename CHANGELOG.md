@@ -1,3 +1,8 @@
+# 4.1.0
+
+- [TASK] Allow FormResult model to be extended
+- [BUGFIX] Fixes access management for backend module
+
 # 4.0.0
 
 - [BREAKING] Drop TYPO3 11.5 support
