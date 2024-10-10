@@ -334,14 +334,14 @@ class FormResultsController extends FormManagerController
 
     public function downloadResultPdfAction(string $uid): ResponseInterface
     {
-        $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
-        $this->moduleTemplate->getDocHeaderComponent()->disable();
-
         $variables = $this->getSingleResultProperties($uid, false);
+        if(isset($this->settings['pdf']['disable']) && (int)$this->settings['pdf']['disable'] === 1) {
+            $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+            $this->moduleTemplate->getDocHeaderComponent()->disable();
+            $this->moduleTemplate->setContent($this->view->render());
 
-        $this->moduleTemplate->setContent($this->view->render());
-
-        // return $this->htmlResponse($this->moduleTemplate->renderContent());
+            return $this->htmlResponse($this->moduleTemplate->renderContent());
+        }
 
         $pdfUtility = GeneralUtility::makeInstance(PdfUtility::class, $this->settings['pdf'] ?? []);
 
