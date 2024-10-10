@@ -334,7 +334,9 @@ class FormResultsController extends FormManagerController
 
     public function downloadResultPdfAction(string $uid): ResponseInterface
     {
-        $variables = $this->getSingleResultProperties($uid, false);
+        $excludeFields = array_diff(FormToDatabaseFinisher::EXCLUDE_FIELDS, ['GridRow', 'SummaryPage', 'Page']);
+        $variables = $this->getSingleResultProperties($uid, $excludeFields);
+
         if(isset($this->settings['pdf']['disable']) && (int)$this->settings['pdf']['disable'] === 1) {
             $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
             $this->moduleTemplate->getDocHeaderComponent()->disable();
@@ -689,11 +691,12 @@ class FormResultsController extends FormManagerController
     protected function getFormDefinitionObject(
         string $formPersistenceIdentifier,
         $useFieldStateDataAsRenderables = false,
-        $filerExcludedFields = true
+        array $excludeFields = FormToDatabaseFinisher::EXCLUDE_FIELDS
     ): FormDefinition {
         $configuration = $this->getFormDefinition($formPersistenceIdentifier, $useFieldStateDataAsRenderables);
-        if ($filerExcludedFields && isset($configuration['renderables']) && !empty($configuration['renderables'])) {
-            $this->filterExcludedFormFieldsInConfiguration($configuration['renderables']);
+
+        if (count($excludeFields) > 0 && isset($configuration['renderables']) && !empty($configuration['renderables'])) {
+            $this->filterExcludedFormFieldsInConfiguration($configuration['renderables'], $excludeFields);
         }
 
         /** @var ArrayFormFactory $arrayFormFactory */
@@ -730,13 +733,13 @@ class FormResultsController extends FormManagerController
      *
      * @param array $renderables
      */
-    protected function filterExcludedFormFieldsInConfiguration(array &$renderables): void
+    protected function filterExcludedFormFieldsInConfiguration(array &$renderables, array $excludeFields = FormToDatabaseFinisher::EXCLUDE_FIELDS): void
     {
         foreach ($renderables as $i => $renderable) {
-            if (in_array($renderable['type'], FormToDatabaseFinisher::EXCLUDE_FIELDS, true) === true) {
+            if (in_array($renderable['type'], $excludeFields, true) === true) {
                 unset($renderables[$i]);
             } elseif (isset($renderable['renderables']) && !empty($renderable['renderables'])) {
-                $this->filterExcludedFormFieldsInConfiguration($renderables[$i]['renderables']);
+                $this->filterExcludedFormFieldsInConfiguration($renderables[$i]['renderables'], $excludeFields);
             }
         }
     }
@@ -747,41 +750,20 @@ class FormResultsController extends FormManagerController
      * @param FormDefinition $formDefinition
      * @return array
      */
-    protected function getFormRenderables(FormDefinition $formDefinition, $excludeFields = true): array
-    {
-
-        $formRenderables = $this->getAllFormRenderables($formDefinition);
-
-        if(!$excludeFields) {
-            return $formRenderables;
-        }
-
-        /** @var AbstractFormElement $renderable */
-        foreach ($formRenderables as $id => $renderable) {
-            if (
-                !($renderable instanceof AbstractFormElement) ||
-                (!in_array($renderable->getType(), FormToDatabaseFinisher::EXCLUDE_FIELDS, true) === false)
-            ) {
-                unset($formRenderables[$id]);
-            }
-        }
-
-        return $formRenderables;
-    }
-
-    /**
-     * Gets an array of all form renderables (recursive) by a form definition
-     *
-     * @param FormDefinition $formDefinition
-     * @return array
-     */
-    protected function getAllFormRenderables(FormDefinition $formDefinition): array
+    protected function getFormRenderables(FormDefinition $formDefinition, bool $filterFormFields = true): array
     {
         $formRenderables = [];
+
         /** @var AbstractFormElement $renderable */
         foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
-            $formRenderables[$renderable->getIdentifier()] = $renderable;
+            if(
+                $filterFormFields === false ||
+                ($filterFormFields && $renderable instanceof AbstractFormElement)
+            ) {
+                $formRenderables[$renderable->getIdentifier()] = $renderable;
+            }
         }
+
         return $formRenderables;
     }
 
@@ -879,7 +861,7 @@ class FormResultsController extends FormManagerController
         return $localDriver->sanitizeFileName($filename);
     }
 
-    protected function getSingleResultProperties($uid, $excludeFields = true): array
+    protected function getSingleResultProperties($uid, array $excludeFields = []): array
     {
         $formResult = $this->formResultRepository->findByUid($uid);
         $formPersistenceIdentifier = $formResult->getFormPersistenceIdentifier();
@@ -894,9 +876,9 @@ class FormResultsController extends FormManagerController
             'formPersistenceIdentifier' => $formPersistenceIdentifier,
         ];
 
-        if(!$excludeFields) {
+        if(count($excludeFields) > 0) {
             $variables['formDefinitionAll'] = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false, $excludeFields);
-            $variables['formRenderablesAll'] = $this->getFormRenderables($variables['formDefinitionAll'], $excludeFields);
+            $variables['formRenderablesAll'] = $this->getFormRenderables($variables['formDefinitionAll'], false);
         }
 
         $this->view->assignMultiple($variables);
