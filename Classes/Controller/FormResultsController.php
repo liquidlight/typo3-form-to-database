@@ -11,71 +11,52 @@
 
 namespace Lavitto\FormToDatabase\Controller;
 
-use DateTime;
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\FetchMode;
-use Exception;
-use Lavitto\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher;
-use Lavitto\FormToDatabase\Domain\Model\FormResult;
-use Lavitto\FormToDatabase\Domain\Model\FormResult;
-use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
-use Lavitto\FormToDatabase\Event\FormResultDeleteFormResultActionEvent;
-use Lavitto\FormToDatabase\Event\FormResultDownloadCSVActionEvent;
-use Lavitto\FormToDatabase\Event\FormResultShowActionEvent;
-use Lavitto\FormToDatabase\Event\FormResultShowActionEvent;
-use Lavitto\FormToDatabase\Helpers\MiscHelper;
-use Lavitto\FormToDatabase\Helpers\MiscHelper;
-use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
-use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
-use Lavitto\FormToDatabase\Utility\ExtConfUtility;
-use Lavitto\FormToDatabase\Utility\ExtConfUtility;
-use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
-use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
-use Lavitto\FormToDatabase\Utility\FormValueUtility;
-use Lavitto\FormToDatabase\Utility\FormValueUtility;
-use Lavitto\FormToDatabase\Utility\PdfUtility;
-use Lavitto\FormToDatabase\Utility\PdfUtility;
 use PDO;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ResponseInterface;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
-use TYPO3\CMS\Backend\Template\Components\ButtonBar;
-use TYPO3\CMS\Backend\Template\Components\ButtonBar;
-use TYPO3\CMS\Backend\Template\ModuleTemplate;
-use TYPO3\CMS\Backend\Template\ModuleTemplate;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
-use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
-use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\QueryBuilder;
-use TYPO3\CMS\Core\Database\Query\QueryBuilder;
-use TYPO3\CMS\Core\Http\RedirectResponse;
-use TYPO3\CMS\Core\Http\Response;
+use DateTime;
+use Exception;
+use Doctrine\DBAL\FetchMode;
+use Doctrine\DBAL\DBALException;
 use TYPO3\CMS\Core\Imaging\Icon;
-use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
+use TYPO3\CMS\Core\Http\Response;
+use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Core\Environment;
+use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
+use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
+use Lavitto\FormToDatabase\Helpers\MiscHelper;
+use Lavitto\FormToDatabase\Utility\PdfUtility;
+use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
-use TYPO3\CMS\Core\Resource\File;
-use TYPO3\CMS\Core\Resource\Filter\FileExtensionFilter;
-use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\VersionNumberUtility;
-use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
-use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
-use TYPO3\CMS\Form\Controller\FormManagerController;
-use TYPO3\CMS\Form\Domain\Exception\RenderingException;
-use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
+use Lavitto\FormToDatabase\Utility\ExtConfUtility;
+use Lavitto\FormToDatabase\Domain\Model\FormResult;
+use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
+use Lavitto\FormToDatabase\Utility\FormValueUtility;
+use TYPO3\CMS\Backend\Template\Components\ButtonBar;
+use TYPO3\CMS\Form\Controller\FormManagerController;
+use TYPO3\CMS\Core\Resource\Filter\FileExtensionFilter;
+use TYPO3\CMS\Form\Domain\Exception\RenderingException;
+use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
+use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
+use Lavitto\FormToDatabase\Event\FormResultShowActionEvent;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
+use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
-use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
+use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
+use Lavitto\FormToDatabase\Event\FormResultDownloadCSVActionEvent;
+use Lavitto\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher;
+use Lavitto\FormToDatabase\Event\FormResultDeleteFormResultActionEvent;
 
 /**
  * Class FormResultsController
@@ -356,7 +337,7 @@ class FormResultsController extends FormManagerController
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
         $this->moduleTemplate->getDocHeaderComponent()->disable();
 
-        $variables = $this->getSingleResultProperties($uid);
+        $variables = $this->getSingleResultProperties($uid, false);
 
         $this->moduleTemplate->setContent($this->view->render());
 
@@ -705,10 +686,11 @@ class FormResultsController extends FormManagerController
      */
     protected function getFormDefinitionObject(
         string $formPersistenceIdentifier,
-        $useFieldStateDataAsRenderables = false
+        $useFieldStateDataAsRenderables = false,
+        $filerExcludedFields = true
     ): FormDefinition {
         $configuration = $this->getFormDefinition($formPersistenceIdentifier, $useFieldStateDataAsRenderables);
-        if (isset($configuration['renderables']) && !empty($configuration['renderables'])) {
+        if ($filerExcludedFields && isset($configuration['renderables']) && !empty($configuration['renderables'])) {
             $this->filterExcludedFormFieldsInConfiguration($configuration['renderables']);
         }
 
@@ -763,15 +745,40 @@ class FormResultsController extends FormManagerController
      * @param FormDefinition $formDefinition
      * @return array
      */
-    protected function getFormRenderables(FormDefinition $formDefinition): array
+    protected function getFormRenderables(FormDefinition $formDefinition, $excludeFields = true): array
+    {
+
+        $formRenderables = $this->getAllFormRenderables($formDefinition);
+
+        if(!$excludeFields) {
+            return $formRenderables;
+        }
+
+        /** @var AbstractFormElement $renderable */
+        foreach ($formRenderables as $id => $renderable) {
+            if (
+                !($renderable instanceof AbstractFormElement) ||
+                (!in_array($renderable->getType(), FormToDatabaseFinisher::EXCLUDE_FIELDS, true) === false)
+            ) {
+                unset($formRenderables[$id]);
+            }
+        }
+
+        return $formRenderables;
+    }
+
+    /**
+     * Gets an array of all form renderables (recursive) by a form definition
+     *
+     * @param FormDefinition $formDefinition
+     * @return array
+     */
+    protected function getAllFormRenderables(FormDefinition $formDefinition): array
     {
         $formRenderables = [];
         /** @var AbstractFormElement $renderable */
         foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
-            if ($renderable instanceof AbstractFormElement && in_array($renderable->getType(),
-                    FormToDatabaseFinisher::EXCLUDE_FIELDS, true) === false) {
-                $formRenderables[$renderable->getIdentifier()] = $renderable;
-            }
+            $formRenderables[$renderable->getIdentifier()] = $renderable;
         }
         return $formRenderables;
     }
@@ -870,7 +877,7 @@ class FormResultsController extends FormManagerController
         return $localDriver->sanitizeFileName($filename);
     }
 
-    protected function getSingleResultProperties($uid): array
+    protected function getSingleResultProperties($uid, $excludeFields = true): array
     {
         $formResult = $this->formResultRepository->findByUid($uid);
         $formPersistenceIdentifier = $formResult->getFormPersistenceIdentifier();
@@ -884,6 +891,11 @@ class FormResultsController extends FormManagerController
             'formRenderables' => $formRenderables,
             'formPersistenceIdentifier' => $formPersistenceIdentifier,
         ];
+
+		if(!$excludeFields) {
+			$variables['formDefinitionAll'] = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false, $excludeFields);
+			$variables['formRenderablesAll'] = $this->getFormRenderables($variables['formDefinitionAll'], $excludeFields);
+		}
 
         $this->view->assignMultiple($variables);
         $this->assignDefaults();
