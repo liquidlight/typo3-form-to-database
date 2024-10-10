@@ -10,7 +10,12 @@
 			<core:icon identifier="actions-dot"/>
 		</f:if></td>
 	</f:if>
-	<td>{formResult.crdate -> f:format.date(format: '{dateFormat} {timeFormat}')}</td>
+	<td>
+		<f:link.action action="result" arguments="{uid: formResult.uid}"
+		title="{f:translate(key: 'LLL:EXT:form/Resources/Private/Language/Database.xlf:formManager.edit_form')}">
+			{formResult.crdate -> f:format.date(format: '{dateFormat} {timeFormat}')}
+		</f:link.action>
+	</td>
 	<f:for each="{formRenderables}" as="renderable">
 		<f:if condition="{renderable.renderingOptions.listView}">
 			<td>

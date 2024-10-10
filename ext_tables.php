@@ -14,7 +14,7 @@ defined('TYPO3_MODE') or die();
     'formresults',
     'after:FormFormbuilder',
     [
-        \Lavitto\FormToDatabase\Controller\FormResultsController::class => 'index, show, result, downloadCsv, deleteFormResult, updateItemListSelect, unDeleteFormDefinition',
+        \Lavitto\FormToDatabase\Controller\FormResultsController::class => 'index, show, result, downloadResultPdf, downloadCsv, deleteFormResult, updateItemListSelect, unDeleteFormDefinition',
     ],
     [
         'access' => 'user,group',

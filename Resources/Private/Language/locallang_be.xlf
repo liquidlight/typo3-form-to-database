@@ -90,6 +90,9 @@
             <trans-unit id="show.itemListSelect.fields_no_data" xml:space="preserve">
                 <source>Following fields had no data:</source>
             </trans-unit>
+            <trans-unit id="show.download_pdf" xml:space="preserve">
+                <source>Download as PDF</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

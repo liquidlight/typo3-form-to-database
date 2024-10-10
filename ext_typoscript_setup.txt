@@ -8,3 +8,17 @@ module.tx_form.settings.yamlConfigurations {
 	1560425499 = EXT:form_to_database/Configuration/Yaml/BaseSetup.yaml
 	1560425500 = EXT:form_to_database/Configuration/Yaml/FormEditorSetup.yaml
 }
+
+module.tx_formtodatabase_web_formtodatabaseformresults {
+	view {
+		templateRootPaths {
+			20 = {$module.tx_formtodatabase_web_formtodatabaseformresults.view.templateRootPath}
+		}
+		partialRootPaths {
+			20 = {$module.tx_formtodatabase_web_formtodatabaseformresults.view.partialRootPath}
+		}
+		layoutRootPaths {
+			20 = {$module.tx_formtodatabase_web_formtodatabaseformresults.view.layoutRootPath}
+		}
+	}
+}
