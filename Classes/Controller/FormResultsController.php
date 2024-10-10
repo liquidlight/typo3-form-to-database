@@ -14,12 +14,10 @@ namespace Lavitto\FormToDatabase\Controller;
 use PDO;
 use DateTime;
 use Exception;
-use Mpdf\Mpdf;
 use Doctrine\DBAL\FetchMode;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Resource\File;
-use TYPO3\CMS\Core\Core\Environment;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
@@ -42,7 +40,6 @@ use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use Lavitto\FormToDatabase\Utility\FormValueUtility;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Form\Controller\FormManagerController;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Resource\Filter\FileExtensionFilter;
 use TYPO3\CMS\Form\Domain\Exception\RenderingException;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
@@ -327,7 +324,7 @@ class FormResultsController extends FormManagerController
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
         $this->moduleTemplate->getDocHeaderComponent()->disable();
 
-        $variables = $this->getSingleResultProperties($uid);
+        $variables = $this->getSingleResultProperties($uid, false);
 
         $this->moduleTemplate->setContent($this->view->render());
 
@@ -650,10 +647,11 @@ class FormResultsController extends FormManagerController
      */
     protected function getFormDefinitionObject(
         string $formPersistenceIdentifier,
-        $useFieldStateDataAsRenderables = false
+        $useFieldStateDataAsRenderables = false,
+        $filerExcludedFields = true
     ): FormDefinition {
         $configuration = $this->getFormDefinition($formPersistenceIdentifier, $useFieldStateDataAsRenderables);
-        if (isset($configuration['renderables']) && !empty($configuration['renderables'])) {
+        if ($filerExcludedFields && isset($configuration['renderables']) && !empty($configuration['renderables'])) {
             $this->filterExcludedFormFieldsInConfiguration($configuration['renderables']);
         }
 
@@ -708,15 +706,40 @@ class FormResultsController extends FormManagerController
      * @param FormDefinition $formDefinition
      * @return array
      */
-    protected function getFormRenderables(FormDefinition $formDefinition): array
+    protected function getFormRenderables(FormDefinition $formDefinition, $excludeFields = true): array
+    {
+
+        $formRenderables = $this->getAllFormRenderables($formDefinition);
+
+        if(!$excludeFields) {
+            return $formRenderables;
+        }
+
+        /** @var AbstractFormElement $renderable */
+        foreach ($formRenderables as $id => $renderable) {
+            if (
+                !($renderable instanceof AbstractFormElement) ||
+                (!in_array($renderable->getType(), FormToDatabaseFinisher::EXCLUDE_FIELDS, true) === false)
+            ) {
+                unset($formRenderables[$id]);
+            }
+        }
+
+        return $formRenderables;
+    }
+
+    /**
+     * Gets an array of all form renderables (recursive) by a form definition
+     *
+     * @param FormDefinition $formDefinition
+     * @return array
+     */
+    protected function getAllFormRenderables(FormDefinition $formDefinition): array
     {
         $formRenderables = [];
         /** @var AbstractFormElement $renderable */
         foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
-            if ($renderable instanceof AbstractFormElement && in_array($renderable->getType(),
-                    FormToDatabaseFinisher::EXCLUDE_FIELDS, true) === false) {
-                $formRenderables[$renderable->getIdentifier()] = $renderable;
-            }
+            $formRenderables[$renderable->getIdentifier()] = $renderable;
         }
         return $formRenderables;
     }
@@ -806,7 +829,7 @@ class FormResultsController extends FormManagerController
         return $localDriver->sanitizeFileName($filename);
     }
 
-    protected function getSingleResultProperties($uid): array
+    protected function getSingleResultProperties($uid, $excludeFields = true): array
     {
         $formResult = $this->formResultRepository->findByUid($uid);
         $formPersistenceIdentifier = $formResult->getFormPersistenceIdentifier();
@@ -820,6 +843,11 @@ class FormResultsController extends FormManagerController
             'formRenderables' => $formRenderables,
             'formPersistenceIdentifier' => $formPersistenceIdentifier,
         ];
+
+		if(!$excludeFields) {
+			$variables['formDefinitionAll'] = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false, $excludeFields);
+			$variables['formRenderablesAll'] = $this->getFormRenderables($variables['formDefinitionAll'], $excludeFields);
+		}
 
         $this->view->assignMultiple($variables);
         $this->assignDefaults();
