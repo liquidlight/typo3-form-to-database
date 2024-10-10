@@ -11,53 +11,71 @@
 
 namespace Lavitto\FormToDatabase\Controller;
 
-use Doctrine\DBAL\DBALException;
 use DateTime;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
 use Exception;
 use Lavitto\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher;
+use Lavitto\FormToDatabase\Domain\Model\FormResult;
 use Lavitto\FormToDatabase\Domain\Model\FormResult;
 use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
 use Lavitto\FormToDatabase\Event\FormResultDeleteFormResultActionEvent;
 use Lavitto\FormToDatabase\Event\FormResultDownloadCSVActionEvent;
 use Lavitto\FormToDatabase\Event\FormResultShowActionEvent;
+use Lavitto\FormToDatabase\Event\FormResultShowActionEvent;
+use Lavitto\FormToDatabase\Helpers\MiscHelper;
 use Lavitto\FormToDatabase\Helpers\MiscHelper;
 use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
+use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
+use Lavitto\FormToDatabase\Utility\ExtConfUtility;
 use Lavitto\FormToDatabase\Utility\ExtConfUtility;
 use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
+use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
 use Lavitto\FormToDatabase\Utility\FormValueUtility;
+use Lavitto\FormToDatabase\Utility\FormValueUtility;
+use Lavitto\FormToDatabase\Utility\PdfUtility;
+use Lavitto\FormToDatabase\Utility\PdfUtility;
 use PDO;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
+use TYPO3\CMS\Backend\Template\Components\ButtonBar;
+use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Imaging\Icon;
+use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Filter\FileExtensionFilter;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
-use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
-use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
-use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Form\Controller\FormManagerController;
 use TYPO3\CMS\Form\Domain\Exception\RenderingException;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
 use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
-use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 
 /**
  * Class FormResultsController
@@ -324,26 +342,40 @@ class FormResultsController extends FormManagerController
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
-        // $result =
-        $formResult = $this->formResultRepository->findByUid($uid);
-        $formPersistenceIdentifier = $formResult->getFormPersistenceIdentifier();
+        $variables = $this->getSingleResultProperties($uid);
 
-        $formDefinition = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false);
-        $formRenderables = $this->getFormRenderables($formDefinition);
-
-        $this->registerDocheaderButtons($formPersistenceIdentifier);
-        $this->view->assignMultiple([
-            'formResult' => $formResult,
-            'formDefinition' => $formDefinition,
-            'formRenderables' => $formRenderables,
-            'formPersistenceIdentifier' => $formPersistenceIdentifier,
-        ]);
-        $this->assignDefaults();
-
+        $this->registerDocheaderButtons($variables['formPersistenceIdentifier']);
 
         $this->moduleTemplate->setContent($this->view->render());
 
         return $this->htmlResponse($this->moduleTemplate->renderContent());
+    }
+
+    public function downloadResultPdfAction(string $uid): ResponseInterface
+    {
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $this->moduleTemplate->getDocHeaderComponent()->disable();
+
+        $variables = $this->getSingleResultProperties($uid);
+
+        $this->moduleTemplate->setContent($this->view->render());
+
+        $pdfUtility = GeneralUtility::makeInstance(PdfUtility::class);
+
+        $filePath = $pdfUtility->generatePdf(
+            $this->moduleTemplate->renderContent(),
+            $variables['formDefinition']->getIdentifier() . '-' . $variables['formResult']->getCrDate()->format('U')
+        );
+
+        $destination = 'attachment';
+
+        $response = new Response();
+        $response = $response->withHeader('Content-Transfer-Encoding', 'binary');
+        $response->getBody()->write(file_get_contents($filePath));
+        $response = $response->withHeader('Content-Type', 'application/pdf');
+        $response = $response->withHeader('Content-Disposition', $destination . '; filename="' . basename($filePath) . '"');
+
+        return $response->withStatus(200);
     }
 
     /**
@@ -836,6 +868,27 @@ class FormResultsController extends FormManagerController
         $filename = $dateTime->format(FormValueUtility::getDateFormat() . ' ' . FormValueUtility::getTimeFormat());
         $filename .= '_' . preg_replace('/\.form\.yaml$/', '', basename($formPersistenceIdentifier)) . '.csv';
         return $localDriver->sanitizeFileName($filename);
+    }
+
+    protected function getSingleResultProperties($uid): array
+    {
+        $formResult = $this->formResultRepository->findByUid($uid);
+        $formPersistenceIdentifier = $formResult->getFormPersistenceIdentifier();
+
+        $formDefinition = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false);
+        $formRenderables = $this->getFormRenderables($formDefinition);
+
+        $variables = [
+            'formResult' => $formResult,
+            'formDefinition' => $formDefinition,
+            'formRenderables' => $formRenderables,
+            'formPersistenceIdentifier' => $formPersistenceIdentifier,
+        ];
+
+        $this->view->assignMultiple($variables);
+        $this->assignDefaults();
+
+        return $variables;
     }
 
     /**

@@ -38,6 +38,7 @@
     "typo3/cms-frontend": "^12.4",
     "typo3/cms-backend": "^12.4",
     "typo3/cms-form": "^12.4",
+    "mpdf/mpdf": "^8.0",
     "ext-json": "*",
     "ext-pdo": "*"
   },
