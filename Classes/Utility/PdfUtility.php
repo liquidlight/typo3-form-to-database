@@ -59,7 +59,13 @@ class PdfUtility
             }
         }
 
-        // Pass in HTML
+        if ($this->settings['letterheads']['header'] ?? false) {
+            $pdf->SetHTMLHeader($this->settings['letterheads']['header']);
+        }
+        if ($this->settings['letterheads']['footer'] ?? false) {
+            $pdf->SetHTMLFooter($this->settings['letterheads']['footer']);
+        }
+
         $pdf->WriteHTML($html, HTMLParserMode::HTML_BODY);
         $pdf->Output($filePath, 'F');
 
