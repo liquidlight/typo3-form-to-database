@@ -10,6 +10,19 @@ module.tx_form.settings.yamlConfigurations {
 }
 
 module.tx_formtodatabase_web_formtodatabaseformresults {
+	settings {
+		pdf {
+			config {
+
+			}
+
+			stylesheet {
+				// link
+				// media = print
+			}
+		}
+	}
+
 	view {
 		templateRootPaths {
 			20 = {$module.tx_formtodatabase_web_formtodatabaseformresults.view.templateRootPath}

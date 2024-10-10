@@ -328,10 +328,12 @@ class FormResultsController extends FormManagerController
 
         $this->moduleTemplate->setContent($this->view->render());
 
-        $pdfUtility = GeneralUtility::makeInstance(PdfUtility::class);
+        // return $this->htmlResponse($this->moduleTemplate->renderContent());
+
+        $pdfUtility = GeneralUtility::makeInstance(PdfUtility::class, $this->settings['pdf'] ?? []);
 
         $filePath = $pdfUtility->generatePdf(
-            $this->moduleTemplate->renderContent(),
+            $this->view->render(),
             $variables['formDefinition']->getIdentifier() . '-' . $variables['formResult']->getCrDate()->format('U')
         );
 
@@ -844,10 +846,10 @@ class FormResultsController extends FormManagerController
             'formPersistenceIdentifier' => $formPersistenceIdentifier,
         ];
 
-		if(!$excludeFields) {
-			$variables['formDefinitionAll'] = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false, $excludeFields);
-			$variables['formRenderablesAll'] = $this->getFormRenderables($variables['formDefinitionAll'], $excludeFields);
-		}
+        if(!$excludeFields) {
+            $variables['formDefinitionAll'] = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false, $excludeFields);
+            $variables['formRenderablesAll'] = $this->getFormRenderables($variables['formDefinitionAll'], $excludeFields);
+        }
 
         $this->view->assignMultiple($variables);
         $this->assignDefaults();
