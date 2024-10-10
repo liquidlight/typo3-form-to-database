@@ -337,7 +337,7 @@ class FormResultsController extends FormManagerController
             $variables['formDefinition']->getIdentifier() . '-' . $variables['formResult']->getCrDate()->format('U')
         );
 
-        $destination = 'attachment';
+        $destination = ($this->settings['pdf']['disposition'] ?? 'attachment') === 'attachment' ? 'attachment' : 'inline';
 
         $response = new Response();
         $response = $response->withHeader('Content-Transfer-Encoding', 'binary');
