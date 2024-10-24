@@ -5,7 +5,7 @@ return [
         'parent' => 'web',
         'position' => ['after' => 'web_FormFormbuilder'],
         'access' => 'user',
-        'workspaces' => 'live',
+        'workspaces' => '*',
         'icon'   => 'EXT:form_to_database/Resources/Public/Icons/Extension.svg',
         'path' => '/module/web/FormToDatabaseFormresults',
         'labels' => 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_mod.xlf',
