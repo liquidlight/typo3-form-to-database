@@ -31,13 +31,13 @@
     "bin-dir": ".Build/bin"
   },
   "require": {
-    "php": ">=8.1.0",
-    "typo3/cms-core": "^12.4",
-    "typo3/cms-extbase": "^12.4",
-    "typo3/cms-fluid": "^12.4",
-    "typo3/cms-frontend": "^12.4",
-    "typo3/cms-backend": "^12.4",
-    "typo3/cms-form": "^12.4",
+    "php": "^8.2 || ^8.3 || ^8.4",
+    "typo3/cms-core": "^13.4",
+    "typo3/cms-extbase": "^13.4",
+    "typo3/cms-fluid": "^13.4",
+    "typo3/cms-frontend": "^13.4",
+    "typo3/cms-backend": "^13.4",
+    "typo3/cms-form": "^13.4",
     "ext-json": "*",
     "ext-pdo": "*"
   },
