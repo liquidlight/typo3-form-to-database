@@ -55,5 +55,9 @@
       "cms-package-dir": "{$vendor-dir}/typo3/cms",
       "web-dir": ".Build/Web"
     }
+  },
+  "require-dev": {
+    "saschaegerer/phpstan-typo3": "^1.10",
+    "friendsofphp/php-cs-fixer": "^3.64"
   }
 }
