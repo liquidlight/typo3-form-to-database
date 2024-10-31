@@ -9,8 +9,6 @@
 
 namespace Lavitto\FormToDatabase\Hooks;
 
-use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
-use TYPO3\CMS\Form\Mvc\Persistence\Exception\PersistenceManagerException;
 use Lavitto\FormToDatabase\Domain\Model\FormResult;
 use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
 use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
@@ -18,15 +16,16 @@ use Lavitto\FormToDatabase\Utility\UniqueFieldHandler;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
+use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Extbase\Persistence\Generic\QueryResult;
+use TYPO3\CMS\Form\Mvc\Persistence\Exception\PersistenceManagerException;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
 
 /**
  * Class FormHooks
  *
  * todo: split hooks into separate files and load only necessary dependencies
- * @package Lavitto\FormToDatabase\Hooks
  */
 class FormHooks
 {
@@ -72,10 +71,8 @@ class FormHooks
         $this->formResultRepository = $formResultRepository;
     }
 
-
     /**
      * @param $formPersistenceIdentifier
-     * @return void
      * @throws IllegalObjectTypeException
      * @throws UnknownObjectException
      * @throws InvalidQueryException

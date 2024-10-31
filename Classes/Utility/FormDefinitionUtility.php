@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpInternalEntityUsedInspection */
+<?php
+
+/** @noinspection PhpInternalEntityUsedInspection */
 
 /**
  * This file is part of the "form_to_database" Extension for TYPO3 CMS.
@@ -9,7 +11,6 @@
 
 namespace Lavitto\FormToDatabase\Utility;
 
-use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Domain\Configuration\ConfigurationService;
@@ -19,17 +20,15 @@ use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\Page;
+use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Exception;
 
 /**
  * Class FormDefinitionUtility
- *
- * @package Lavitto\FormToDatabase\Utility
  */
 class FormDefinitionUtility
 {
-
     public const fieldAttributeFilterKeys = ['identifier', 'label', 'type'];
 
     /**
@@ -38,7 +37,7 @@ class FormDefinitionUtility
      */
     public static function addFieldStateIfDoesNotExist(
         array &$formDefinition,
-        bool  $force = false
+        bool $force = false
     ): void {
         $fieldState = $formDefinition['renderingOptions']['fieldState'] ?? [];
 
@@ -51,7 +50,7 @@ class FormDefinitionUtility
 
             //Mark all fields in state as not deleted
             $newFieldState = array_map(function ($field) {
-                if(!isset($field['renderingOptions']['deleted'])) {
+                if (!isset($field['renderingOptions']['deleted'])) {
                     $field['renderingOptions']['deleted'] = 0;
                 }
                 return $field;
@@ -60,7 +59,6 @@ class FormDefinitionUtility
             // Clean up fieldState - remove if incomplete
             $newFieldState = array_filter($newFieldState, fn($field): bool => !self::isCompositeElement($field) &&
             count(array_intersect_key(array_flip(self::fieldAttributeFilterKeys), $field)) === count(self::fieldAttributeFilterKeys));
-
 
             $formDefinition['renderingOptions']['fieldState'] = $newFieldState;
         }
@@ -90,13 +88,15 @@ class FormDefinitionUtility
      */
     public static function addFieldToState(array &$fieldState, RenderableInterface $renderable): void
     {
-        ArrayUtility::mergeRecursiveWithOverrule($fieldState,
+        ArrayUtility::mergeRecursiveWithOverrule(
+            $fieldState,
             [$renderable->getIdentifier() =>
                 ['identifier' => $renderable->getIdentifier(),
                     'label' => $renderable->getLabel(),
                     'type' => $renderable->getType(),
-                    'renderingOptions' => ['deleted' => 0]
-                ]]);
+                    'renderingOptions' => ['deleted' => 0],
+                ]]
+        );
     }
 
     /**
@@ -111,7 +111,6 @@ class FormDefinitionUtility
         return $arrayFormFactory->build($formDefinition);
     }
 
-
     /**
      * @param array $field
      * @return bool
@@ -124,7 +123,7 @@ class FormDefinitionUtility
     {
         static $page;
         static $compositeRenderables = [];
-        if(!isset($page)) {
+        if (!isset($page)) {
             $prototypeConfiguration = GeneralUtility::makeInstance(ConfigurationService::class)
                 ->getPrototypeConfiguration('standard');
 
@@ -138,7 +137,7 @@ class FormDefinitionUtility
             $page = GeneralUtility::makeInstance(Page::class, 'fieldStatePage', 'Page');
             $page->setParentRenderable($formDef);
         }
-        if(in_array($field['type'], ['SummaryPage','Page'])) {
+        if (in_array($field['type'], ['SummaryPage', 'Page'])) {
             $compositeRenderables[$field['identifier']] = true;
         } elseif (!isset($compositeRenderables[$field['identifier']])) {
             $element = $page->createElement($field['identifier'], $field['type']);

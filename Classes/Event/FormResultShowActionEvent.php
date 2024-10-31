@@ -58,7 +58,4 @@ final class FormResultShowActionEvent
         return $this->formRenderables;
     }
 
-
-
-
 }

@@ -8,18 +8,14 @@
 
 namespace Lavitto\FormToDatabase\Domain\Model;
 
-use DateTime;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 
 /**
  * Class FormResult
- *
- * @package Lavitto\FormToDatabase\Domain\Model
  */
 class FormResult extends AbstractEntity
 {
-
     /**
      * The formPersistenceIdentifier
      *
@@ -44,7 +40,7 @@ class FormResult extends AbstractEntity
     /**
      * Uid of the form plugin content element
      *
-     * @var integer
+     * @var int
      */
     protected $formPluginUid = 0;
 
@@ -182,9 +178,9 @@ class FormResult extends AbstractEntity
     /**
      * Gets the crdate
      *
-     * @return DateTime
+     * @return \DateTime
      */
-    public function getCrdate(): DateTime
+    public function getCrdate(): \DateTime
     {
         return $this->crdate;
     }
@@ -192,9 +188,9 @@ class FormResult extends AbstractEntity
     /**
      * Sets the crdate
      *
-     * @param DateTime $crdate
+     * @param \DateTime $crdate
      */
-    public function setCrdate(DateTime $crdate): void
+    public function setCrdate(\DateTime $crdate): void
     {
         $this->crdate = $crdate;
     }
@@ -202,9 +198,9 @@ class FormResult extends AbstractEntity
     /**
      * Gets the tstamp
      *
-     * @return DateTime
+     * @return \DateTime
      */
-    public function getTstamp(): DateTime
+    public function getTstamp(): \DateTime
     {
         return $this->tstamp;
     }
@@ -212,9 +208,9 @@ class FormResult extends AbstractEntity
     /**
      * Sets the tstamp
      *
-     * @param DateTime $tstamp
+     * @param \DateTime $tstamp
      */
-    public function setTstamp(DateTime $tstamp): void
+    public function setTstamp(\DateTime $tstamp): void
     {
         $this->tstamp = $tstamp;
     }

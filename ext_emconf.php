@@ -18,19 +18,19 @@ $EM_CONF[$_EXTKEY] = [
     'constraints' => [
         'depends' => [
             'typo3' => '12.4.0-12.4.99',
-            'form' => '12.4.0-12.4.99'
+            'form' => '12.4.0-12.4.99',
         ],
         'conflicts' => [],
-        'suggests' => []
+        'suggests' => [],
     ],
     'autoload' => [
         'psr-4' => [
-            'Lavitto\\FormToDatabase\\' => 'Classes'
+            'Lavitto\\FormToDatabase\\' => 'Classes',
         ],
     ],
     'state' => 'stable',
     'author' => 'Philipp Mueller',
     'author_email' => 'philipp.mueller@lavitto.ch',
     'author_company' => 'lavitto ag',
-    'version' => '4.1.0'
+    'version' => '4.1.0',
 ];

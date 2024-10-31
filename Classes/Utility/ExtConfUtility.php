@@ -8,18 +8,15 @@
 
 namespace Lavitto\FormToDatabase\Utility;
 
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 
 /**
  * Class FormValueUtility
- *
- * @package Lavitto\FormToDatabase\Utility
  */
 class ExtConfUtility implements SingletonInterface
 {
-
     /**
      * @var array
      */
@@ -32,7 +29,7 @@ class ExtConfUtility implements SingletonInterface
         'hideLocationInList' => false,
         'csvDelimiter' => ',',
         'csvOnlyFilenameOfUploadFields' => false,
-        'displayActiveFieldsOnly' => false
+        'displayActiveFieldsOnly' => false,
     ];
 
     /**
@@ -40,7 +37,7 @@ class ExtConfUtility implements SingletonInterface
      */
     public function initializeObject(): void
     {
-		$extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('form_to_database');
+        $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('form_to_database');
         $this->extConf = array_merge($this->defaultExtConf, $extConf);
         $this->validateExtConf();
     }

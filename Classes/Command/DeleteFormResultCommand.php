@@ -23,8 +23,6 @@ use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
  * Class DeleteFormResultCommand
- *
- * @package Lavitto\FormToDatabase\Command
  */
 class DeleteFormResultCommand extends Command
 {

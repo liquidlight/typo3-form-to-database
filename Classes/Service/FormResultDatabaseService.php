@@ -14,12 +14,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Class FormResultDatabaseService
- *
- * @package Lavitto\FormToDatabase\Service
  */
 class FormResultDatabaseService
 {
-
     /**
      * Returns an array with all form definition persistenceIdentifiers as keys and the number of form results as values.
      *

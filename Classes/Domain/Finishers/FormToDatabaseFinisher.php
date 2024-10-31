@@ -22,12 +22,9 @@ use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 
 /**
  * Class FormToDatabaseFinisher
- *
- * @package Lavitto\FormToDatabase\Domain\Finishers
  */
 class FormToDatabaseFinisher extends AbstractFinisher
 {
-
     /**
      * Dont save this fields in database (also used in FromResultsController)
      */
@@ -97,7 +94,7 @@ class FormToDatabaseFinisher extends AbstractFinisher
                 $newNestedIdentifier[] = $fieldName;
                 $formValues = array_merge($this->getFormFieldValues($fieldValue, $newNestedIdentifier), $formValues);
             } else {
-                if(count($nestedIdentifier)) {
+                if (count($nestedIdentifier)) {
                     $fieldNameIdentifier = array_merge($nestedIdentifier, [$fieldName]);
                     $fieldName = implode('.', $fieldNameIdentifier);
                 }

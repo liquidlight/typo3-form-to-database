@@ -14,12 +14,9 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * Class FormValueViewHelper
- *
- * @package Lavitto\FormToDatabase\ViewHelpers
  */
 class FormValueViewHelper extends AbstractViewHelper
 {
-
     /**
      * Do not escape the output
      *
@@ -46,7 +43,11 @@ class FormValueViewHelper extends AbstractViewHelper
      */
     public function render(): string
     {
-        return FormValueUtility::convertFormValue($this->arguments['element'], $this->arguments['results'][$this->arguments['value']] ?? '',
-            FormValueUtility::OUTPUT_TYPE_HTML, $this->arguments['crop'] === true);
+        return FormValueUtility::convertFormValue(
+            $this->arguments['element'],
+            $this->arguments['results'][$this->arguments['value']] ?? '',
+            FormValueUtility::OUTPUT_TYPE_HTML,
+            $this->arguments['crop'] === true
+        );
     }
 }

@@ -59,7 +59,4 @@ final class FormResultDownloadCSVActionEvent
         return $this->formRenderables;
     }
 
-
-
-
 }

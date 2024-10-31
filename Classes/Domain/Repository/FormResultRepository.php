@@ -8,16 +8,10 @@
 
 namespace Lavitto\FormToDatabase\Domain\Repository;
 
-use DateInterval;
-use DateTime;
-use Exception;
 use Lavitto\FormToDatabase\Helpers\MiscHelper;
 use Lavitto\FormToDatabase\Utility\FormValueUtility;
-use PDO;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
-use TYPO3\CMS\Core\Database\Query\QueryHelper;
-use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -29,19 +23,16 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Class FormResultRepository
- *
- * @package Lavitto\FormToDatabase\Domain\Repository
  */
 class FormResultRepository extends Repository
 {
-
     /**
      * Sort by tstamp desc
      *
      * @var array
      */
     protected $defaultOrderings = [
-        'tstamp' => QueryInterface::ORDER_DESCENDING
+        'tstamp' => QueryInterface::ORDER_DESCENDING,
     ];
 
     /**
@@ -146,8 +137,10 @@ class FormResultRepository extends Repository
         $queryBuilder->getRestrictions()->removeAll();
         $result = $queryBuilder
             ->select('uid')
-            ->from('tt_content')->where($queryBuilder->expr()->in('pid', $pids), $queryBuilder->expr()->eq('CType',
-            $queryBuilder->createNamedParameter('form_formframework', PDO::PARAM_STR)))->executeQuery()->fetchAll();
+            ->from('tt_content')->where($queryBuilder->expr()->in('pid', $pids), $queryBuilder->expr()->eq(
+                'CType',
+                $queryBuilder->createNamedParameter('form_formframework', \PDO::PARAM_STR)
+            ))->executeQuery()->fetchAll();
         return array_column($result, 'uid');
     }
 
@@ -203,13 +196,15 @@ class FormResultRepository extends Repository
      * @param int $maxAge
      * @return QueryResultInterface
      * @throws InvalidQueryException
-     * @throws Exception
+     * @throws \Exception
      */
     public function findByMaxAge(int $maxAge): QueryResultInterface
     {
-        $dateInterval = DateInterval::createFromDateString($maxAge . ' days');
-        $maxDate = new DateTime('now',
-            FormValueUtility::getValidTimezone((string)$GLOBALS['TYPO3_CONF_VARS']['SYS']['phpTimeZone']));
+        $dateInterval = \DateInterval::createFromDateString($maxAge . ' days');
+        $maxDate = new \DateTime(
+            'now',
+            FormValueUtility::getValidTimezone((string)$GLOBALS['TYPO3_CONF_VARS']['SYS']['phpTimeZone'])
+        );
         $maxDate->sub($dateInterval);
         $query = $this->createQuery();
         $query->matching($query->lessThan('tstamp', $maxDate));

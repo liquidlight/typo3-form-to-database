@@ -8,9 +8,7 @@
 
 namespace Lavitto\FormToDatabase\Utility;
 
-use DateTime;
 use DateTimeZone;
-use Exception;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\SingletonInterface;
@@ -21,12 +19,9 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /**
  * Class FormValueUtility
- *
- * @package Lavitto\FormToDatabase\Utility
  */
 class FormValueUtility implements SingletonInterface
 {
-
     /**
      * Output type definition "html"
      */
@@ -152,7 +147,7 @@ class FormValueUtility implements SingletonInterface
         $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
         try {
             $fileObject = $resourceFactory->getFileObjectFromCombinedIdentifier($combinedFileIdentifier);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $fileObject = null;
         }
         if ($fileObject instanceof FileInterface) {
@@ -177,12 +172,12 @@ class FormValueUtility implements SingletonInterface
     {
         $dateTime = null;
         try {
-            $dateTime = new DateTime($dateValue['date'], self::getValidTimezone($dateValue['timezone']));
-        } catch (Exception $e) {
+            $dateTime = new \DateTime($dateValue['date'], self::getValidTimezone($dateValue['timezone']));
+        } catch (\Exception $e) {
         }
         $properties = $element->getProperties();
         $format = $properties['dateFormat'] ?? $properties['displayFormat'] ?? self::getDateFormat();
-        return $dateTime instanceof DateTime ? $dateTime->format($format) : '';
+        return $dateTime instanceof \DateTime ? $dateTime->format($format) : '';
     }
 
     /**
@@ -196,8 +191,10 @@ class FormValueUtility implements SingletonInterface
     {
         /** @var ContentObjectRenderer $contentObject */
         $contentObject = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        return $contentObject->crop($text,
-            self::HTML_CROP_MAX_CHARS . '|' . self::HTML_CROP_APPEND . '|' . self::HTML_CROP_RESPECT_WORD_BOUNDARIES);
+        return $contentObject->crop(
+            $text,
+            self::HTML_CROP_MAX_CHARS . '|' . self::HTML_CROP_APPEND . '|' . self::HTML_CROP_RESPECT_WORD_BOUNDARIES
+        );
     }
 
     /**
@@ -224,9 +221,9 @@ class FormValueUtility implements SingletonInterface
      * Returns a valid DateTimeZone with fallback function TYPO3_CONF_VARS > default_timezone > UTC
      *
      * @param string $timeZone
-     * @return DateTimeZone
+     * @return \DateTimeZone
      */
-    public static function getValidTimezone(string $timeZone): DateTimeZone
+    public static function getValidTimezone(string $timeZone): \DateTimeZone
     {
         $timeZoneIdentifiers = timezone_identifiers_list();
         if (in_array($timeZone, $timeZoneIdentifiers, true) === true) {
@@ -234,9 +231,9 @@ class FormValueUtility implements SingletonInterface
         } elseif (in_array(date_default_timezone_get(), $timeZoneIdentifiers, true) === true) {
             $validTimeZone = date_default_timezone_get();
         } else {
-            $validTimeZone = DateTimeZone::UTC;
+            $validTimeZone = \DateTimeZone::UTC;
         }
-        return new DateTimeZone($validTimeZone);
+        return new \DateTimeZone($validTimeZone);
     }
 
     /**

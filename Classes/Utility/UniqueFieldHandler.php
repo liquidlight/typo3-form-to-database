@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpInternalEntityUsedInspection */
+<?php
+
+/** @noinspection PhpInternalEntityUsedInspection */
 
 /**
  * This file is part of the "form_to_database" Extension for TYPO3 CMS.
@@ -15,12 +17,9 @@ use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
 
 /**
  * Class FormDefinitionUtility
- *
- * @package Lavitto\FormToDatabase\Utility
  */
 class UniqueFieldHandler
 {
-
     protected array $existingFieldStateBeforeSave = [];
     protected array $activeFields = [];
 
@@ -54,16 +53,16 @@ class UniqueFieldHandler
     {
         $fieldCount = 0;
         $this->setExistingFieldStateBeforeSave($formPersistenceIdentifierBeforeSave);
-        $formStateDidAlreadyExist = !!($formDefinition['renderingOptions']['fieldState'] ?? false);
+        $formStateDidAlreadyExist = (bool)($formDefinition['renderingOptions']['fieldState'] ?? false);
         FormDefinitionUtility::addFieldStateIfDoesNotExist($formDefinition, true);
 
         // Only process if formState already existed - else no changes should be considered
-        if($formStateDidAlreadyExist) {
+        if ($formStateDidAlreadyExist) {
             //Make map of next identifier for each field type
             $this->makeNextIdentifiersMap($this->existingFieldStateBeforeSave);
 
             foreach (FormDefinitionUtility::convertFormDefinitionToObject($formDefinition)->getRenderablesRecursively() as $renderable) {
-                if($renderable instanceof CompositeRenderableInterface) {
+                if ($renderable instanceof CompositeRenderableInterface) {
                     continue;
                 }
                 $fieldCount++;
@@ -91,21 +90,25 @@ class UniqueFieldHandler
 
         foreach ($fieldState as $identifier => &$field) {
             // Do not consider new fields
-            if(!isset($this->existingFieldStateBeforeSave[$identifier])) continue;
+            if (!isset($this->existingFieldStateBeforeSave[$identifier])) {
+                continue;
+            }
 
             $identifierParts = explode('-', $field['identifier']);
             $identifierText = $identifierParts[0];
             $identifierNumber = $identifierParts[1] ?? '0';
-            if($identifierText !== strtolower($field['type'])) continue;
+            if ($identifierText !== strtolower($field['type'])) {
+                continue;
+            }
             if (!isset($this->fieldTypesNextIdentifier[$field['type']])) {
                 $this->fieldTypesNextIdentifier[$field['type']] = [
                     'text' => $identifierText,
-                    'number' => $identifierNumber
+                    'number' => $identifierNumber,
                 ];
             } else {
                 $this->fieldTypesNextIdentifier[$field['type']] = [
                     'text' => $identifierText,
-                    'number' => max($this->fieldTypesNextIdentifier[$field['type']]['number'], $identifierNumber)
+                    'number' => max($this->fieldTypesNextIdentifier[$field['type']]['number'], $identifierNumber),
                 ];
             }
         }
@@ -124,10 +127,12 @@ class UniqueFieldHandler
     {
         if (!empty($renderables)) {
             foreach ($renderables as &$renderable) {
-                if(isset($renderable['renderables'])) {
-                    if($this->updateNewFieldWithNextIdentifier($renderable['renderables'], $newFieldObject)) return true;
+                if (isset($renderable['renderables'])) {
+                    if ($this->updateNewFieldWithNextIdentifier($renderable['renderables'], $newFieldObject)) {
+                        return true;
+                    }
                 } else {
-                    if($renderable['identifier'] == $newFieldObject->getIdentifier()) {
+                    if ($renderable['identifier'] == $newFieldObject->getIdentifier()) {
                         if (isset($this->fieldTypesNextIdentifier[$newFieldObject->getType()])) {
                             $renderable['identifier'] = $this->fieldTypesNextIdentifier[$newFieldObject->getType()]['text'] . '-' . $this->fieldTypesNextIdentifier[$newFieldObject->getType()]['number'];
                             $this->fieldTypesNextIdentifier[$newFieldObject->getType()]['number']++;
@@ -154,7 +159,6 @@ class UniqueFieldHandler
 
     /**
      * @param string $formPersistenceIdentifier
-     * @return void
      */
     protected function setExistingFieldStateBeforeSave(string $formPersistenceIdentifier): void
     {

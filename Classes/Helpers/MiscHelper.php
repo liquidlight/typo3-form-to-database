@@ -1,8 +1,9 @@
-<?php /** @noinspection ALL */
+<?php
+
+/** @noinspection ALL */
 
 namespace Lavitto\FormToDatabase\Helpers;
 
-use PDO;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\QueryHelper;
@@ -13,13 +14,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class MiscHelper
 {
-
     /**
      * Get webmounts of BE User
      *
      * @return array
      */
-    static public function getWebMounts()
+    public static function getWebMounts()
     {
         $webMounts = [];
         if ($GLOBALS['BE_USER']->groupData['webmounts']) {
@@ -33,7 +33,7 @@ class MiscHelper
      *
      * @return string[]
      */
-    static public function getSiteIdentifiersFromRootPids($webMounts): array
+    public static function getSiteIdentifiersFromRootPids($webMounts): array
     {
         $siteIdentifiers = [];
         if ($webMounts) {
@@ -55,7 +55,7 @@ class MiscHelper
      * @param $webMounts
      * @return array
      */
-    static public function getPluginUids($webMounts): array
+    public static function getPluginUids($webMounts): array
     {
         $pids = self::getTreePids($webMounts);
         /** @var QueryBuilder $queryBuilder */
@@ -63,8 +63,10 @@ class MiscHelper
         $queryBuilder->getRestrictions()->removeAll();
         $result = $queryBuilder
             ->select('uid')
-            ->from('tt_content')->where($queryBuilder->expr()->in('pid', $pids ?: [0]), $queryBuilder->expr()->eq('CType',
-            $queryBuilder->createNamedParameter('form_formframework', PDO::PARAM_STR)))->executeQuery()->fetchAll();
+            ->from('tt_content')->where($queryBuilder->expr()->in('pid', $pids ?: [0]), $queryBuilder->expr()->eq(
+                'CType',
+                $queryBuilder->createNamedParameter('form_formframework', \PDO::PARAM_STR)
+            ))->executeQuery()->fetchAll();
         return array_column($result, 'uid');
     }
 
@@ -74,7 +76,7 @@ class MiscHelper
      * @param array $webMounts
      * @return array
      */
-    static public function getTreePids($webMounts = 0): array
+    public static function getTreePids($webMounts = 0): array
     {
         $childPidsArray = [];
         if ($webMounts) {
@@ -119,7 +121,7 @@ class MiscHelper
             $queryBuilder->select('uid')
                 ->from('pages')
                 ->where(
-                    $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($id, PDO::PARAM_INT)),
+                    $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($id, \PDO::PARAM_INT)),
                     $queryBuilder->expr()->eq('sys_language_uid', 0)
                 )
                 ->orderBy('uid');
