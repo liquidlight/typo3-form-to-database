@@ -151,10 +151,30 @@ class FormResultsController extends FormManagerController
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
+        $availableFormDefinitions = [];
+        $searchKey = $this->request->getParsedBody()['tx_form_to_database']['search'] ?? '';
+        if (empty($searchKey)) {
+            $availableFormDefinitions = $this->getAvailableFormDefinitions();
+        } else {
+            foreach ($this->getAvailableFormDefinitions() as $formDefinition) {
+                foreach (['name'] as $searchField) {
+                    if (
+                        is_string($formDefinition[$searchField])
+                        && str_contains(
+                            strtolower($formDefinition[$searchField]),
+                            strtolower($searchKey)
+                        )
+                    ) {
+                        $availableFormDefinitions[$formDefinition['identifier']] = $formDefinition;
+                    }
+                }
+            }
+        }
+
         $this->registerDocheaderButtons();
-        $availableFormDefinitions = $this->getAvailableFormDefinitions();
         $this->enrichFormDefinitionsWithHighestCrDate($availableFormDefinitions);
         $this->view->assign('forms', $availableFormDefinitions);
+        $this->view->assign('searchKey', $searchKey);
         $this->view->assign('deletedForms', $this->getDeletedFormDefinitions($availableFormDefinitions));
         $this->assignDefaults();
 
@@ -274,7 +294,8 @@ class FormResultsController extends FormManagerController
             'paginator' => $paginator,
             'pagination' => $pagination,
             'fieldsWithData' => $fieldsWithData,
-            'fieldsWithNoData' => $fieldsWithNoData
+            'fieldsWithNoData' => $fieldsWithNoData,
+            'extConfig' => $this->extConfUtility->getFullConfig()
         ]);
         $this->assignDefaults();
 
@@ -703,11 +724,18 @@ class FormResultsController extends FormManagerController
         $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier, true);
         $formRenderables = $this->getFormRenderables($formDefinition);
 
-        if ($filtered === true) {
+        $displayActiveFieldsOnly = $this->extConfUtility->getConfig('displayActiveFieldsOnly') ?? false;
+
+        if ($filtered === true || $displayActiveFieldsOnly === true) {
             /** @var AbstractFormElement $renderable */
             foreach ($formRenderables as $i => $renderable) {
                 $renderingOptions = $renderable->getRenderingOptions();
-                if (isset($renderingOptions['listView']) && $renderingOptions['listView'] !== 1) {
+
+                if ($filtered && isset($renderingOptions['listView']) && $renderingOptions['listView'] !== 1) {
+                    unset($formRenderables[$i]);
+                }
+
+                if ($displayActiveFieldsOnly && $renderingOptions['deleted'] === 1) {
                     unset($formRenderables[$i]);
                 }
             }

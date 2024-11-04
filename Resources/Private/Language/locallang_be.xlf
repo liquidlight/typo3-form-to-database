@@ -87,6 +87,14 @@
             <trans-unit id="show.itemListSelect.fields_no_data" xml:space="preserve">
                 <source>Following fields had no data:</source>
             </trans-unit>
+
+            <!-- Search -->
+            <trans-unit id="index.do_search" resname="index.do_search">
+                <source>Search</source>
+            </trans-unit>
+            <trans-unit id="index.search_button" resname="index.search_button">
+                <source>Search</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

@@ -5,8 +5,12 @@
 # cat=General; type=boolean; label=Hide column "location" in list
 hideLocationInList = 0
 
+# cat=General; type=boolean; label=Show only active renderables
+displayActiveFieldsOnly = 0
+
 # cat=CSV-Settings; type=string; label=CSV-Delimiter
 csvDelimiter = ,
 
 # cat=CSV-Settings; type=boolean; label=Show only filename of upload-fields in csv-file
 csvOnlyFilenameOfUploadFields = 0
+
