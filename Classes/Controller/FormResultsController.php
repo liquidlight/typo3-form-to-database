@@ -721,7 +721,7 @@ class FormResultsController extends FormManagerController
         $csvContent = [];
 
         $formResults = $this->formResultRepository->findByFormPersistenceIdentifier($formPersistenceIdentifier);
-        $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier, true);
+        $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier);
         $formRenderables = $this->getFormRenderables($formDefinition);
 
         $displayActiveFieldsOnly = $this->extConfUtility->getConfig('displayActiveFieldsOnly') ?? false;
