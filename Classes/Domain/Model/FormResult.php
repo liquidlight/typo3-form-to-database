@@ -42,7 +42,7 @@ class FormResult extends AbstractEntity
      *
      * @var int
      */
-    protected $formPluginUid = 0;
+    protected int $formPluginUid = 0;
 
     /**
      * The form result as json
@@ -148,7 +148,8 @@ class FormResult extends AbstractEntity
     /**
      * Gets the result as an array
      *
-     * @return array
+     * @return array<array-key, mixed>
+     * @throws \JsonException
      */
     public function getResultAsArray(): array
     {
@@ -168,7 +169,8 @@ class FormResult extends AbstractEntity
     /**
      * Sets the result from an array
      *
-     * @param array $resultArray
+     * @param array<array-key, mixed> $resultArray
+     * @throws \JsonException
      */
     public function setResultFromArray(array $resultArray): void
     {

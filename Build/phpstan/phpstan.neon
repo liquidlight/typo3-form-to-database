@@ -4,12 +4,14 @@ includes:
 
 parameters:
   # Use local .cache dir instead of /tmp
-  tmpDir: ../../../.cache/phpstan
-
+  tmpDir: ../../.cache/phpstan
+  ignoreErrors:
+    - '#Variable \$_EXTKEY might not be defined\.#'
   level: 8
 
   paths:
-    - ../../../.
+    - ../../.
 
   excludePaths:
-    - ../../../.Build/*
+    - ../../.Build/*
+    - ../../Build/*

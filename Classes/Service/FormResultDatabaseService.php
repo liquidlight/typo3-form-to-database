@@ -9,18 +9,19 @@
 
 namespace Lavitto\FormToDatabase\Service;
 
+use Doctrine\DBAL\Exception;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Class FormResultDatabaseService
  */
-class FormResultDatabaseService
+final class FormResultDatabaseService
 {
     /**
      * Returns an array with all form definition persistenceIdentifiers as keys and the number of form results as values.
      *
-     * @return array
+     * @return array<string, int|string>
      */
     public function getAllFormResultsForPersistenceIdentifier(): array
     {
@@ -34,15 +35,19 @@ class FormResultDatabaseService
     /**
      * Returns an array with the number of results for all available forms
      *
-     * @return array
+     * @return array<array-key, array<string, mixed>>
+     * @throws Exception
      */
     protected function getAllFormResults(): array
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_refindex');
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('sys_refindex');
         return $queryBuilder
             ->select('form_persistence_identifier as identifier')
             ->addSelectLiteral('COUNT(' . $queryBuilder->quoteIdentifier('form_persistence_identifier') . ') as "numberOfResults"')
-            ->from('tx_formtodatabase_domain_model_formresult')->groupBy('form_persistence_identifier')->executeQuery()
-            ->fetchAll();
+            ->from('tx_formtodatabase_domain_model_formresult')
+            ->groupBy('form_persistence_identifier')
+            ->executeQuery()
+            ->fetchAllAssociative();
     }
 }

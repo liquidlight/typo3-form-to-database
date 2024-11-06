@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Domain\Configuration\ConfigurationService;
 use TYPO3\CMS\Form\Domain\Configuration\Exception\PrototypeNotFoundException;
+use TYPO3\CMS\Form\Domain\Exception\RenderingException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
@@ -32,8 +33,11 @@ class FormDefinitionUtility
     public const fieldAttributeFilterKeys = ['identifier', 'label', 'type'];
 
     /**
-     * @param array $formDefinition
-     * @param bool $force
+     * @param array<array-key, mixed> $formDefinition
+     * @throws Exception
+     * @throws PrototypeNotFoundException
+     * @throws TypeDefinitionNotFoundException
+     * @throws TypeDefinitionNotValidException
      */
     public static function addFieldStateIfDoesNotExist(
         array &$formDefinition,
@@ -66,8 +70,8 @@ class FormDefinitionUtility
 
     /**
      * @param FormDefinition $formDefinition
-     * @param array $fieldState
-     * @return array
+     * @param array<array-key, mixed> $fieldState
+     * @return array<array-key, mixed>
      */
     protected static function addFieldsToStateFromFormDefinition(FormDefinition $formDefinition, array $fieldState = []): array
     {
@@ -83,8 +87,7 @@ class FormDefinitionUtility
     }
 
     /**
-     * @param $fieldState
-     * @param RenderableInterface $renderable
+     * @param array<array-key, mixed> $fieldState
      */
     public static function addFieldToState(array &$fieldState, RenderableInterface $renderable): void
     {
@@ -100,8 +103,8 @@ class FormDefinitionUtility
     }
 
     /**
-     * @param array $formDefinition
-     * @return FormDefinition
+     * @param array<array-key, mixed> $formDefinition
+     * @throws RenderingException
      */
     public static function convertFormDefinitionToObject(array $formDefinition): FormDefinition
     {
@@ -112,7 +115,7 @@ class FormDefinitionUtility
     }
 
     /**
-     * @param array $field
+     * @param array<array-key, mixed> $field
      * @return bool
      * @throws PrototypeNotFoundException
      * @throws TypeDefinitionNotFoundException

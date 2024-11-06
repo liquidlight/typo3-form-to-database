@@ -8,8 +8,11 @@
 
 namespace Lavitto\FormToDatabase\Domain\Repository;
 
+use Doctrine\DBAL\Exception;
+use Lavitto\FormToDatabase\Domain\Model\FormResult;
 use Lavitto\FormToDatabase\Helpers\MiscHelper;
 use Lavitto\FormToDatabase\Utility\FormValueUtility;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
@@ -23,13 +26,14 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Class FormResultRepository
+ * @extends Repository<FormResult>
  */
 class FormResultRepository extends Repository
 {
     /**
      * Sort by tstamp desc
      *
-     * @var array
+     * @var array<non-empty-string, QueryInterface::ORDER_*>
      */
     protected $defaultOrderings = [
         'tstamp' => QueryInterface::ORDER_DESCENDING,
@@ -49,8 +53,7 @@ class FormResultRepository extends Repository
     /**
      * Gets all results by form definition
      *
-     * @param string $formPersistenceIdentifier
-     * @return QueryResultInterface
+     * @return QueryResultInterface<FormResult>
      * @throws InvalidQueryException
      */
     public function findByFormPersistenceIdentifier(string $formPersistenceIdentifier): QueryResultInterface
@@ -61,8 +64,6 @@ class FormResultRepository extends Repository
     /**
      * Counts all results by form definition
      *
-     * @param string $formPersistenceIdentifier
-     * @return int
      * @throws InvalidQueryException
      */
     public function countByFormPersistenceIdentifier(string $formPersistenceIdentifier): int
@@ -73,8 +74,7 @@ class FormResultRepository extends Repository
     /**
      * Creates a query with by formPersistenceIdentifier
      *
-     * @param string $formPersistenceIdentifier
-     * @return QueryInterface
+     * @return QueryInterface<FormResult>
      * @throws InvalidQueryException
      */
     protected function createQueryByFormPersistenceIdentifier(string $formPersistenceIdentifier): QueryInterface
@@ -116,18 +116,19 @@ class FormResultRepository extends Repository
     /**
      * Get webMounts of BE User
      *
-     * @return array
+     * @return int[]
      */
     protected function getWebMounts(): array
     {
-        return $GLOBALS['BE_USER']->returnWebmounts();
+        return $GLOBALS['BE_USER']->getWebmounts();
     }
 
     /**
      * Gets the plugin uids
      *
-     * @param array $webMounts
-     * @return array
+     * @param int[] $webMounts
+     * @return int[]
+     * @throws Exception
      */
     protected function getPluginUids(array $webMounts): array
     {
@@ -139,38 +140,47 @@ class FormResultRepository extends Repository
             ->select('uid')
             ->from('tt_content')->where($queryBuilder->expr()->in('pid', $pids), $queryBuilder->expr()->eq(
                 'CType',
-                $queryBuilder->createNamedParameter('form_formframework', \PDO::PARAM_STR)
-            ))->executeQuery()->fetchAll();
-        return array_column($result, 'uid');
+                $queryBuilder->createNamedParameter('form_formframework', Connection::PARAM_STR)
+            ))
+            ->executeQuery();
+
+        $pluginUids = [];
+
+        while ($row = $result->fetchAssociative()) {
+            $pluginUids[] = $row['uid'];
+        }
+
+        return $pluginUids;
     }
 
     /**
      * Get all pids which user can access
      *
-     * @param array $webMounts
-     * @return array
+     * @param int[] $webMounts
+     * @return int[]
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Driver\Exception
      */
     protected function getTreePids(array $webMounts): array
     {
+        $depth = 99;
         $pidsArray = [];
-        if ($webMounts !== null) {
-            $depth = 99;
-            $pidsArray = [];
-            foreach ($webMounts as $webMount) {
-                $childPids = MiscHelper::getTreeList($webMount, $depth, 0, 1); //Will be a string like 1,2,3
-                foreach (GeneralUtility::intExplode(',', $childPids, true) as $childPid) {
-                    $pidsArray[] = $childPid;
-                }
-            }
+        foreach ($webMounts as $webMount) {
+            $childPids = MiscHelper::getTreeList($webMount, $depth); //Will be a string like 1,2,3
+            $pidsArray = array_merge(
+                $pidsArray,
+                GeneralUtility::intExplode(',', $childPids, true)
+            );
         }
+
         return array_unique($pidsArray);
     }
 
     /**
      * Get SiteIdentifiers from Root Pids
      *
-     * @param array $webMounts
-     * @return array
+     * @param int[] $webMounts
+     * @return string[]
      */
     protected function getSiteIdentifiersFromRootPids(array $webMounts): array
     {
@@ -181,9 +191,9 @@ class FormResultRepository extends Repository
             $siteMatcher = GeneralUtility::makeInstance(SiteFinder::class);
             foreach ($webMounts as $webMount) {
                 try {
-                    $site = $siteMatcher->getSiteByRootPageId((int)$webMount);
+                    $site = $siteMatcher->getSiteByRootPageId($webMount);
                     $siteIdentifiers[] = $site->getIdentifier();
-                } catch (SiteNotFoundException $exception) {
+                } catch (SiteNotFoundException) {
                 }
             }
         }
@@ -193,13 +203,13 @@ class FormResultRepository extends Repository
     /**
      * Returns all form results were older than "maxAge" (days)
      *
-     * @param int $maxAge
-     * @return QueryResultInterface
+     * @return QueryResultInterface<FormResult>
      * @throws InvalidQueryException
      * @throws \Exception
      */
     public function findByMaxAge(int $maxAge): QueryResultInterface
     {
+        /** @var \DateInterval $dateInterval */
         $dateInterval = \DateInterval::createFromDateString($maxAge . ' days');
         $maxDate = new \DateTime(
             'now',

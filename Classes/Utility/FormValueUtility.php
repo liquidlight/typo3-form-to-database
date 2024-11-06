@@ -9,6 +9,7 @@
 namespace Lavitto\FormToDatabase\Utility;
 
 use DateTimeZone;
+use Lavitto\FormToDatabase\Exception\FileNotFoundException;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\SingletonInterface;
@@ -52,30 +53,21 @@ class FormValueUtility implements SingletonInterface
      */
     protected const COMBINED_FILE_IDENTIFIER_REGEX = '^([1-9]{1}[0-9]*)(\:)(.*)$';
 
-    /**
-     * @var ExtConfUtility
-     */
-    protected static $extConfUtility;
+    protected static ?ExtConfUtility $extConfUtility = null;
 
     /**
      * Converts a form value from database value to a human readable output
-     *
-     * @param FormElementInterface $element
-     * @param $value
-     * @param string $outputType
-     * @param bool $cropText
-     * @return string
      */
     public static function convertFormValue(
         FormElementInterface $element,
-        $value,
+        mixed $value,
         string $outputType = self::OUTPUT_TYPE_HTML,
         bool $cropText = false
     ): string {
         switch ($element->getType()) {
             case 'Date':
             case 'DatePicker':
-                if (is_array($value) && !empty($value)) {
+                if (is_array($value) && array_key_exists('date', $value) && array_key_exists('timezone', $value)) {
                     $value = self::getDateValue($element, $value);
                 }
                 break;
@@ -139,6 +131,7 @@ class FormValueUtility implements SingletonInterface
      *
      * @param string $combinedFileIdentifier
      * @return string
+     * @throws FileNotFoundException
      */
     protected static function getFileLink(string $combinedFileIdentifier): string
     {
@@ -151,11 +144,24 @@ class FormValueUtility implements SingletonInterface
             $fileObject = null;
         }
         if ($fileObject instanceof FileInterface) {
-            if ($fileObject->getStorage()->isPublic() === true) {
-                $publicUrl = PathUtility::getAbsoluteWebPath($fileObject->getPublicUrl());
+            if ($fileObject->getStorage()->isPublic() && !$fileObject->isDeleted()) {
+                $internalPublicUrl = $fileObject->getPublicUrl();
+                if ($internalPublicUrl === null) {
+                    throw new FileNotFoundException(
+                        sprintf('The requested file "%s" was not found. It is either deleted or missing.', $fileObject->getIdentifier()),
+                        1730896217433
+                    );
+                }
+                $publicUrl = PathUtility::getAbsoluteWebPath($internalPublicUrl);
                 $fileLink = GeneralUtility::locationHeaderUrl($publicUrl);
             } else {
                 $fileLink = $fileObject->getPublicUrl();
+                if ($fileLink === null) {
+                    throw new FileNotFoundException(
+                        sprintf('The requested file "%s" was not found. It is either deleted or missing.', $fileObject->getIdentifier()),
+                        1730896340759
+                    );
+                }
             }
         }
         return $fileLink;
@@ -165,7 +171,10 @@ class FormValueUtility implements SingletonInterface
      * Converts a date(time) value array to a human readable string
      *
      * @param FormElementInterface $element
-     * @param array $dateValue
+     * @param array{
+     *     date: string,
+     *     timezone: string
+     * } $dateValue
      * @return string
      */
     protected static function getDateValue(FormElementInterface $element, array $dateValue): string
@@ -220,18 +229,20 @@ class FormValueUtility implements SingletonInterface
     /**
      * Returns a valid DateTimeZone with fallback function TYPO3_CONF_VARS > default_timezone > UTC
      *
-     * @param string $timeZone
      * @return \DateTimeZone
+     * @throws \DateInvalidTimeZoneException
      */
     public static function getValidTimezone(string $timeZone): \DateTimeZone
     {
         $timeZoneIdentifiers = timezone_identifiers_list();
-        if (in_array($timeZone, $timeZoneIdentifiers, true) === true) {
+        if (in_array($timeZone, $timeZoneIdentifiers, true)) {
             $validTimeZone = $timeZone;
-        } elseif (in_array(date_default_timezone_get(), $timeZoneIdentifiers, true) === true) {
+        } elseif (in_array(date_default_timezone_get(), $timeZoneIdentifiers, true)) {
             $validTimeZone = date_default_timezone_get();
         } else {
-            $validTimeZone = \DateTimeZone::UTC;
+            // changed from \DateTimeZone::UTC to hard-coded string 'UTC',
+            // as constructor expects string, but constant is integer
+            $validTimeZone = 'UTC';
         }
         return new \DateTimeZone($validTimeZone);
     }

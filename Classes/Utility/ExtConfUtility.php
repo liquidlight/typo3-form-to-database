@@ -8,9 +8,11 @@
 
 namespace Lavitto\FormToDatabase\Utility;
 
+use Lavitto\FormToDatabase\Exception\ExtensionConfigurationKeyNotFoundException;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
 
 /**
  * Class FormValueUtility
@@ -18,14 +20,18 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class ExtConfUtility implements SingletonInterface
 {
     /**
-     * @var array
+     * @var array<string, mixed>
      */
-    protected $extConf;
+    protected array $extConf;
 
     /**
-     * @var array
+     * @var array{
+     *     hideLocationInList: bool,
+     *     csvDelimiter: string,
+     *     csvOnlyFilenameOfUploadFields: bool
+     * }
      */
-    protected $defaultExtConf = [
+    protected const DEFAULT_EXT_CONF = [
         'hideLocationInList' => false,
         'csvDelimiter' => ',',
         'csvOnlyFilenameOfUploadFields' => false,
@@ -38,14 +44,14 @@ class ExtConfUtility implements SingletonInterface
     public function initializeObject(): void
     {
         $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('form_to_database');
-        $this->extConf = array_merge($this->defaultExtConf, $extConf);
+        $this->extConf = array_merge(self::DEFAULT_EXT_CONF, $extConf);
         $this->validateExtConf();
     }
 
     /**
      * Returns the full configuration
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getFullConfig(): array
     {
@@ -57,9 +63,16 @@ class ExtConfUtility implements SingletonInterface
      *
      * @param string $key
      * @return mixed
+     * @throws ExtensionConfigurationKeyNotFoundException
      */
-    public function getConfig(string $key)
+    public function getConfig(string $key): mixed
     {
+        if (!array_key_exists($key, $this->extConf)) {
+            throw new ExtensionConfigurationKeyNotFoundException(
+                sprintf('The value for configuration key "%s" was not found', $key),
+                1730895228747
+            );
+        }
         return $this->extConf[$key];
     }
 
@@ -68,16 +81,17 @@ class ExtConfUtility implements SingletonInterface
      */
     protected function validateExtConf(): void
     {
-        foreach ($this->defaultExtConf as $field => $value) {
-            if (is_bool($value) === true) {
-                $this->extConf[$field] = (bool)$this->extConf[$field];
-            } elseif (is_int($value) === true) {
-                $this->extConf[$field] = (int)$this->extConf[$field];
-            } elseif (is_float($value) === true) {
-                $this->extConf[$field] = (float)$this->extConf[$field];
-            } elseif (is_string($value) === true) {
-                $this->extConf[$field] = trim((string)$this->extConf[$field]);
-            }
+        /**
+         * @var string $field
+         * @var int|string|float|bool $value
+         */
+        foreach ($this->extConf as $field => $value) {
+            $this->extConf[$field] = match(true) {
+                is_bool($value) => (bool)$this->extConf[$field],
+                MathUtility::canBeInterpretedAsInteger($value) => (int)$this->extConf[$field],
+                MathUtility::canBeInterpretedAsFloat($value) => (float)$this->extConf[$field],
+                default => trim((string)$this->extConf[$field]),
+            };
         }
     }
 }

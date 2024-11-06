@@ -3,3 +3,4 @@
 /composer.lock
 /.Build/
 /var/
+/.cache

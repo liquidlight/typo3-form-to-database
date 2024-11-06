@@ -11,8 +11,13 @@
 
 namespace Lavitto\FormToDatabase\Utility;
 
+use TYPO3\CMS\Form\Domain\Configuration\Exception\PrototypeNotFoundException;
+use TYPO3\CMS\Form\Domain\Exception\RenderingException;
+use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException;
+use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
+use TYPO3\CMS\Form\Exception;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
 
 /**
@@ -20,38 +25,34 @@ use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
  */
 class UniqueFieldHandler
 {
+    /** @var array<array-key, mixed> */
     protected array $existingFieldStateBeforeSave = [];
+
+    /** @var array<array-key, mixed> */
     protected array $activeFields = [];
 
-    /**
-     * @var array
-     */
+    /** @var array<array-key, mixed> */
     protected array $fieldTypesNextIdentifier = [];
 
-    /**
-     * @var FormPersistenceManager
-     */
-    protected FormPersistenceManager $formPersistenceManager;
-
-    /**
-     * @param FormPersistenceManager $formPersistenceManager
-     */
-    public function __construct(FormPersistenceManager $formPersistenceManager)
+    public function __construct(protected FormPersistenceManager $formPersistenceManager)
     {
-        $this->formPersistenceManager = $formPersistenceManager;
     }
 
     /**
      * Makes sure that field identifiers are unique (identifiers of deleted fields are not reused)
      * Field state is saved to keep track of old fields
      *
-     * @param $formPersistenceIdentifierBeforeSave
-     * @param $formDefinition
-     * @return mixed
+     * @param string $formPersistenceIdentifierBeforeSave
+     * @param array<array-key, mixed> $formDefinition
+     * @return array<array-key, mixed>
+     * @throws PrototypeNotFoundException
+     * @throws RenderingException
+     * @throws TypeDefinitionNotFoundException
+     * @throws TypeDefinitionNotValidException
+     * @throws Exception
      */
-    public function updateNewFields(string $formPersistenceIdentifierBeforeSave, $formDefinition)
+    public function updateNewFields(string $formPersistenceIdentifierBeforeSave, array $formDefinition): array
     {
-        $fieldCount = 0;
         $this->setExistingFieldStateBeforeSave($formPersistenceIdentifierBeforeSave);
         $formStateDidAlreadyExist = (bool)($formDefinition['renderingOptions']['fieldState'] ?? false);
         FormDefinitionUtility::addFieldStateIfDoesNotExist($formDefinition, true);
@@ -65,7 +66,6 @@ class UniqueFieldHandler
                 if ($renderable instanceof CompositeRenderableInterface) {
                     continue;
                 }
-                $fieldCount++;
                 if (
                     !($this->existingFieldStateBeforeSave[$renderable->getIdentifier()] ?? false)
                     ||
@@ -83,9 +83,9 @@ class UniqueFieldHandler
     }
 
     /**
-     * @param $fieldState
+     * @param array<array-key, mixed> $fieldState
      */
-    protected function makeNextIdentifiersMap($fieldState): void
+    protected function makeNextIdentifiersMap(array $fieldState): void
     {
 
         foreach ($fieldState as $identifier => &$field) {
@@ -119,13 +119,12 @@ class UniqueFieldHandler
     }
 
     /**
-     * @param array $renderables
+     * @param array<array-key, mixed> $renderables
      * @param RenderableInterface $newFieldObject
-     * @return true
      */
     protected function updateNewFieldWithNextIdentifier(array &$renderables, RenderableInterface &$newFieldObject): bool
     {
-        if (!empty($renderables)) {
+        if ($renderables !== []) {
             foreach ($renderables as &$renderable) {
                 if (isset($renderable['renderables'])) {
                     if ($this->updateNewFieldWithNextIdentifier($renderable['renderables'], $newFieldObject)) {
@@ -147,9 +146,16 @@ class UniqueFieldHandler
     }
 
     /**
-     * @param $formDefinition
+     * @param array{
+     *     renderingOptions: array{
+     *       fieldState: array<array-key, array{
+     *          renderingOptions?: array<array-key, mixed>,
+     *          identifier: string
+     *       }>
+     *   }
+     * } $formDefinition
      */
-    protected function updateStateDeletedState(&$formDefinition): void
+    protected function updateStateDeletedState(array &$formDefinition): void
     {
         $formDefinition['renderingOptions']['fieldState'] = array_map(function ($field) {
             $field['renderingOptions']['deleted'] = in_array($field['identifier'], $this->activeFields) ? 0 : 1;
@@ -162,7 +168,7 @@ class UniqueFieldHandler
      */
     protected function setExistingFieldStateBeforeSave(string $formPersistenceIdentifier): void
     {
-        $formDefinitionBeforeSave = $this->formPersistenceManager->load($formPersistenceIdentifier);
+        $formDefinitionBeforeSave = $this->formPersistenceManager->load($formPersistenceIdentifier, [], []);
         $this->existingFieldStateBeforeSave = $formDefinitionBeforeSave['renderingOptions']['fieldState'] ?? [];
     }
 }
