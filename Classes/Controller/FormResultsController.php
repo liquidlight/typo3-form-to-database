@@ -255,7 +255,7 @@ class FormResultsController extends FormManagerController
             'print'
         );
         // @todo replace with current loader
-        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/Modal');
+        //$this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/Modal');
         $this->pageRenderer->addInlineLanguageLabelArray([
             'ftd_deleteTitle' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.title'),
             'ftd_deleteDescription' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.description'),
