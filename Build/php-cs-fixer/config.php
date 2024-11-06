@@ -46,10 +46,9 @@ return (new \PhpCsFixer\Config())
         (new PhpCsFixer\Finder())
             ->ignoreVCSIgnored(true)
             ->in([
-                __DIR__ . '/../../.',
-            ])
-            ->exclude([
-                __DIR__ . '/../../.Build',
+                __DIR__ . '/../../Classes',
+                __DIR__ . '/../../Configuration',
+                __DIR__ . '/../../Tests',
             ])
     )
     ->setRiskyAllowed(true)
