@@ -35,15 +35,15 @@
     }
   },
   "require": {
-    "php": "^8.1 || ^8.2 || ^8.3 || ^8.4",
+    "php": "^8.2 || ^8.3 || ^8.4",
     "ext-json": "*",
     "ext-pdo": "*",
-    "typo3/cms-backend": "^12.4 || ^13.4",
-    "typo3/cms-core": "^12",
-    "typo3/cms-extbase": "^12.4 || ^13.4",
-    "typo3/cms-fluid": "^12.4 || ^13.4",
-    "typo3/cms-form": "^12.4 || ^13.4",
-    "typo3/cms-frontend": "^12.4 || ^13.4"
+    "typo3/cms-backend": "^13.4",
+    "typo3/cms-core": "^13.4",
+    "typo3/cms-extbase": "^13.4",
+    "typo3/cms-fluid": "^13.4",
+    "typo3/cms-form": "^13.4",
+    "typo3/cms-frontend": "^13.4"
   },
   "suggest": {
     "mpdf/mpdf": "Allows downloading form results as a PDF"
@@ -51,6 +51,11 @@
   "autoload": {
     "psr-4": {
       "Lavitto\\FormToDatabase\\": "Classes"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Lavitto\\FormToDatabase\\Test\\": "Tests"
     }
   },
   "extra": {
@@ -62,7 +67,9 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.64",
+    "helmich/typo3-typoscript-lint": "^3.2",
+    "nikic/php-parser": "^5.3",
     "saschaegerer/phpstan-typo3": "^1.10",
-    "typo3/testing-framework": "^8.2"
+    "typo3/testing-framework": "^9.0"
   }
 }

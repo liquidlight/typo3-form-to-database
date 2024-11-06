@@ -9,8 +9,6 @@
     - .basic-setup
   parallel:
     matrix:
-      - TYPO3: "12"
-        PHP: [ "8.1", "8.2", "8.3", "8.4" ]
       - TYPO3: "13"
         PHP: [ "8.2", "8.3", "8.4" ]
 
@@ -31,8 +29,6 @@
     - .basic-setup
   parallel:
     matrix:
-      - TYPO3: "12"
-        PHP: "8.1"
       - TYPO3: "13"
         PHP: "8.2"
 
@@ -50,7 +46,8 @@ code-quality:
     - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s cgl
     - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkTestMethodsPrefix
     - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkBom
-    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkRst
+    # Disabled, as Documentation is not shipped by extension itself
+#    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkRst
     - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkExceptionCodes
     - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s phpstan
 
@@ -58,8 +55,6 @@ Unit Testing:
   stage: testing
   extends:
     - .testing-matrix
-  before_script:
-    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composerUpdate
   script:
     - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s unit
 
