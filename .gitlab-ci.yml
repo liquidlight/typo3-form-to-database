@@ -1,47 +1,74 @@
+.basic-setup:
+  image: mgoltzsche/podman:5.2
+  before_script:
+    - apk add bash
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composer require typo3/cms-core:^$TYPO3
+
 .testing-matrix:
-  image: "ubuntu:24.04"
+  extends:
+    - .basic-setup
   parallel:
     matrix:
-#      - TYPO3: "12.4"
-#        PHP: "8.1"
-#      - TYPO3: "12.4"
-#        PHP: "8.2"
-#      - TYPO3: "12.4"
-#        PHP: "8.3"
-#      - TYPO3: "12.4"
-#        PHP: "8.4"
-      - TYPO3: "13.4"
+      - TYPO3: "12"
+        PHP: [ "8.1", "8.2", "8.3", "8.4" ]
+      - TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
+
+.functional-testing:
+  parallel:
+    matrix:
+      - DB_TYPE: [ "sqlite" ]
+        DRIVER: [ "" ]
+      - DB_TYPE: [ "mysql" ]
+        DRIVER: [ "pdo_mysql", "mysqli" ]
+      - DB_TYPE: [ "mariadb" ]
+        DRIVER: [ "pdo_mysql", "mysqli" ]
+      - DB_TYPE: [ "postgres" ]
+        DRIVER: [ "" ]
+
+.basic-testing-matrix:
+  extends:
+    - .basic-setup
+  parallel:
+    matrix:
+      - TYPO3: "12"
+        PHP: "8.1"
+      - TYPO3: "13"
         PHP: "8.2"
-      - TYPO3: "13.4"
-        PHP: "8.3"
-      - TYPO3: "13.4"
-        PHP: "8.4"
 
 stages:
-  - precheck
+  - code-quality
+  - testing
 
-CGL Test:
+code-quality:
+  stage: code-quality
+  extends:
+    - .basic-testing-matrix
+  script:
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s lintTypoScript
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s lintPhp
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s cgl
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkTestMethodsPrefix
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkBom
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkRst
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkExceptionCodes
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s phpstan
+
+Unit Testing:
+  stage: testing
   extends:
     - .testing-matrix
-  interruptible: true
-  stage: precheck
-  only:
-    refs:
-      - main
-      - merge_requests
-      - tags
+  before_script:
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composerUpdate
   script:
-    - Build/Scripts/runTests.sh -s cgl -p $PHP
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s unit
 
-Static Code analyzer:
+Functional Testing:
+  stage: testing
   extends:
     - .testing-matrix
-  interruptible: true
-  stage: precheck
-  only:
-    refs:
-      - main
-      - merge_requests
-      - tags
+    - .functional-testing
+  before_script:
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composerUpdate
   script:
-    - Build/Scripts/runTests.sh -s phpstan -p $PHP
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s functional -d $DB_TYPE -a DRIVER
