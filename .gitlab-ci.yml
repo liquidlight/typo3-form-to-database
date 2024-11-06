@@ -1,32 +1,38 @@
-.basic-setup:
+.testing-matrix:
   image: mgoltzsche/podman:5.2
   before_script:
     - apk add bash
-    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composer require typo3/cms-core:^$TYPO3
-
-.testing-matrix:
-  extends:
-    - .basic-setup
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composer install
   parallel:
     matrix:
       - TYPO3: "13"
         PHP: [ "8.2", "8.3", "8.4" ]
 
 .functional-testing:
+  image: mgoltzsche/podman:5.2
+  before_script:
+    - apk add bash
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composer install
   parallel:
     matrix:
       - DB_TYPE: [ "sqlite" ]
-        DRIVER: [ "" ]
+        TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
       - DB_TYPE: [ "mysql" ]
-        DRIVER: [ "pdo_mysql", "mysqli" ]
+        TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
       - DB_TYPE: [ "mariadb" ]
-        DRIVER: [ "pdo_mysql", "mysqli" ]
+        TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
       - DB_TYPE: [ "postgres" ]
-        DRIVER: [ "" ]
+        TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
 
 .basic-testing-matrix:
-  extends:
-    - .basic-setup
+  image: mgoltzsche/podman:5.2
+  before_script:
+    - apk add bash
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composer install
   parallel:
     matrix:
       - TYPO3: "13"
@@ -61,9 +67,6 @@ Unit Testing:
 Functional Testing:
   stage: testing
   extends:
-    - .testing-matrix
     - .functional-testing
-  before_script:
-    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composerUpdate
   script:
-    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s functional -d $DB_TYPE -a DRIVER
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s functional -d $DB_TYPE

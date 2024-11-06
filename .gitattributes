@@ -1,2 +1,3 @@
 /Build export-ignore
 /Tests/ export-ignore
+/.ddev export-ignore
