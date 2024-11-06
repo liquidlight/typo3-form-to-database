@@ -218,12 +218,10 @@ Options:
     -t <13>
         Only with -s composerInstall|composerInstallMin|composerInstallMax
         Specifies the TYPO3 CORE Version to be used
-            - 12: use TYPO3 v12
             - 13: (default) use TYPO3 v13
 
-    -p <8.1|8.2|8.3|8.4>
+    -p <8.2|8.3|8.4>
         Specifies the PHP minor version to be used
-            - 8.1: use PHP 8.1
             - 8.2: (default) use PHP 8.2
             - 8.3: use PHP 8.3
             - 8.4: use PHP 8.4
@@ -333,13 +331,13 @@ while getopts "a:b:s:d:i:p:t:xy:o:nhu" OPT; do
             ;;
         p)
             PHP_VERSION=${OPTARG}
-            if ! [[ ${PHP_VERSION} =~ ^(8.1|8.2|8.3|8.4)$ ]]; then
+            if ! [[ ${PHP_VERSION} =~ ^(8.2|8.3|8.4)$ ]]; then
                 INVALID_OPTIONS+=("p ${OPTARG}")
             fi
             ;;
         t)
             CORE_VERSION=${OPTARG}
-            if ! [[ ${CORE_VERSION} =~ ^(12|13)$ ]]; then
+            if ! [[ ${CORE_VERSION} =~ ^(13)$ ]]; then
                 INVALID_OPTIONS+=("t ${OPTARG}")
             fi
             ;;
@@ -524,9 +522,7 @@ case ${TEST_SUITE} in
         SUITE_EXIT_CODE=$?
         ;;
     functional)
-        PHPUNIT_CONFIG_FILE="Build/phpunit/FunctionalTests-10.xml"
-        # @todo Remove version switch after TYPO3 v11 / phpunit 9 support has been dropped.
-        [[ "${CORE_VERSION}" -eq 11 ]] && PHPUNIT_CONFIG_FILE="Build/phpunit/FunctionalTests.xml"
+        PHPUNIT_CONFIG_FILE="Build/phpunit/FunctionalTests.xml"
         COMMAND=(.Build/bin/phpunit -c ${PHPUNIT_CONFIG_FILE} --exclude-group not-${DBMS} "$@")
         case ${DBMS} in
             mariadb)
@@ -597,17 +593,13 @@ case ${TEST_SUITE} in
         SUITE_EXIT_CODE=$?
         ;;
     unit)
-        PHPUNIT_CONFIG_FILE="Build/phpunit/UnitTests-10.xml"
-        # @todo Remove version switch after TYPO3 v11 / phpunit 9 support has been dropped.
-        [[ "${CORE_VERSION}" -eq 11 ]] && PHPUNIT_CONFIG_FILE="Build/phpunit/UnitTests.xml"
+        PHPUNIT_CONFIG_FILE="Build/phpunit/UnitTests.xml"
         COMMAND=(.Build/bin/phpunit -c ${PHPUNIT_CONFIG_FILE} "$@")
         ${CONTAINER_BIN} run ${CONTAINER_COMMON_PARAMS} --name unit-${SUFFIX} ${XDEBUG_MODE} -e XDEBUG_CONFIG="${XDEBUG_CONFIG}" ${IMAGE_PHP} "${COMMAND[@]}"
         SUITE_EXIT_CODE=$?
         ;;
     unitRandom)
-        PHPUNIT_CONFIG_FILE="Build/phpunit/UnitTests-10.xml"
-        # @todo Remove version switch after TYPO3 v11 / phpunit 9 support has been dropped.
-        [[ "${CORE_VERSION}" -eq 11 ]] && PHPUNIT_CONFIG_FILE="Build/phpunit/UnitTests.xml"
+        PHPUNIT_CONFIG_FILE="Build/phpunit/UnitTests.xml"
         COMMAND=(.Build/bin/phpunit -c ${PHPUNIT_CONFIG_FILE} --order-by=random ${PHPUNIT_RANDOM} "$@")
         ${CONTAINER_BIN} run ${CONTAINER_COMMON_PARAMS} --name unit-random-${SUFFIX} ${XDEBUG_MODE} -e XDEBUG_CONFIG="${XDEBUG_CONFIG}" ${IMAGE_PHP} "${COMMAND[@]}"
         SUITE_EXIT_CODE=$?
