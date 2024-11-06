@@ -1,0 +1,47 @@
+.testing-matrix:
+  image: "ubuntu:24.04"
+  parallel:
+    matrix:
+#      - TYPO3: "12.4"
+#        PHP: "8.1"
+#      - TYPO3: "12.4"
+#        PHP: "8.2"
+#      - TYPO3: "12.4"
+#        PHP: "8.3"
+#      - TYPO3: "12.4"
+#        PHP: "8.4"
+      - TYPO3: "13.4"
+        PHP: "8.2"
+      - TYPO3: "13.4"
+        PHP: "8.3"
+      - TYPO3: "13.4"
+        PHP: "8.4"
+
+stages:
+  - precheck
+
+CGL Test:
+  extends:
+    - .testing-matrix
+  interruptible: true
+  stage: precheck
+  only:
+    refs:
+      - main
+      - merge_requests
+      - tags
+  script:
+    - Build/Scripts/runTests.sh -s cgl -p $PHP
+
+Static Code analyzer:
+  extends:
+    - .testing-matrix
+  interruptible: true
+  stage: precheck
+  only:
+    refs:
+      - main
+      - merge_requests
+      - tags
+  script:
+    - Build/Scripts/runTests.sh -s phpstan -p $PHP
