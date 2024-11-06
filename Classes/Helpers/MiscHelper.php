@@ -7,7 +7,6 @@ namespace Lavitto\FormToDatabase\Helpers;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\QueryHelper;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
@@ -62,11 +61,13 @@ class MiscHelper
         $result = $queryBuilder
             ->select('uid')
             ->from('tt_content')
-            ->where($queryBuilder->expr()->in('pid', $pids ?: [0]),
+            ->where(
+                $queryBuilder->expr()->in('pid', $pids ?: [0]),
                 $queryBuilder->expr()->eq(
-                'CType',
-                $queryBuilder->createNamedParameter('form_formframework', Connection::PARAM_STR)
-            ))->executeQuery();
+                    'CType',
+                    $queryBuilder->createNamedParameter('form_formframework', Connection::PARAM_STR)
+                )
+            )->executeQuery();
 
         $pluginUids = [];
 

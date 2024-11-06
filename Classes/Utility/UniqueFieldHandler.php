@@ -34,9 +34,7 @@ class UniqueFieldHandler
     /** @var array<array-key, mixed> */
     protected array $fieldTypesNextIdentifier = [];
 
-    public function __construct(protected FormPersistenceManager $formPersistenceManager)
-    {
-    }
+    public function __construct(protected FormPersistenceManager $formPersistenceManager) {}
 
     /**
      * Makes sure that field identifiers are unique (identifiers of deleted fields are not reused)

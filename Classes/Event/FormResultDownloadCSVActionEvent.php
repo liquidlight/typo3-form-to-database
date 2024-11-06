@@ -15,12 +15,11 @@ final class FormResultDownloadCSVActionEvent
      * @param array<array-key, mixed> $formRenderables
      */
     public function __construct(
-        private readonly string               $formPersistenceIdentifier,
+        private readonly string $formPersistenceIdentifier,
         private readonly QueryResultInterface $formResults,
-        private readonly FormDefinition       $formDefinition,
+        private readonly FormDefinition $formDefinition,
         private readonly array $formRenderables
-    ) {
-    }
+    ) {}
 
     /**
      * @return string

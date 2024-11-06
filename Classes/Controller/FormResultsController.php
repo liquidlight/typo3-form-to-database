@@ -305,8 +305,8 @@ class FormResultsController extends FormManagerController
                 'pagination' => $pagination,
                 'fieldsWithData' => $fieldsWithData,
                 'fieldsWithNoData' => $fieldsWithNoData,
-            'extConfig' => $this->extConfUtility->getFullConfig(),
-        ]
+                'extConfig' => $this->extConfUtility->getFullConfig(),
+            ]
         );
         $this->moduleTemplate->assignMultiple($assignedValues);
 
@@ -516,13 +516,16 @@ class FormResultsController extends FormManagerController
                 []
             );
             $finisherInVariant = false;
-            if(isset($form['variants'])){
-                foreach($form['variants'] as $variant){
-                  if (in_array('FormToDatabase', array_column($variant['finishers'], 'identifier'),
-                    true)) {
-                    $finisherInVariant = true;
-                    break;
-                  }
+            if (isset($form['variants'])) {
+                foreach ($form['variants'] as $variant) {
+                    if (in_array(
+                        'FormToDatabase',
+                        array_column($variant['finishers'], 'identifier'),
+                        true
+                    )) {
+                        $finisherInVariant = true;
+                        break;
+                    }
                 }
             }
             if (!empty($form['finishers']) && in_array(

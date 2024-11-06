@@ -7,7 +7,6 @@ use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 
 final class FormResultDeleteFormResultActionEvent
 {
-
     /**
      * @param string $formPersistenceIdentifier
      * @param FormResult $formResult
@@ -15,13 +14,11 @@ final class FormResultDeleteFormResultActionEvent
      * @param array<array-key, mixed> $formRenderables
      */
     public function __construct(
-        private readonly string         $formPersistenceIdentifier,
-        private readonly FormResult     $formResult,
+        private readonly string $formPersistenceIdentifier,
+        private readonly FormResult $formResult,
         private readonly FormDefinition $formDefinition,
-        private readonly array          $formRenderables
-    )
-    {
-    }
+        private readonly array $formRenderables
+    ) {}
 
     /**
      * @return string

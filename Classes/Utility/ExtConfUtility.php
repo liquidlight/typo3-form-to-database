@@ -86,7 +86,7 @@ class ExtConfUtility implements SingletonInterface
          * @var int|string|float|bool $value
          */
         foreach ($this->extConf as $field => $value) {
-            $this->extConf[$field] = match(true) {
+            $this->extConf[$field] = match (true) {
                 is_bool($value) => (bool)$this->extConf[$field],
                 MathUtility::canBeInterpretedAsInteger($value) => (int)$this->extConf[$field],
                 MathUtility::canBeInterpretedAsFloat($value) => (float)$this->extConf[$field],

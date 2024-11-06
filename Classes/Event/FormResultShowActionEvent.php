@@ -8,7 +8,6 @@ use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 
 final class FormResultShowActionEvent
 {
-
     /**
      * @param string $formPersistenceIdentifier
      * @param QueryResultInterface<FormResult> $formResults
@@ -20,9 +19,7 @@ final class FormResultShowActionEvent
         private readonly QueryResultInterface $formResults,
         private readonly FormDefinition $formDefinition,
         private readonly array $formRenderables
-    )
-    {
-    }
+    ) {}
 
     /**
      * @return string
