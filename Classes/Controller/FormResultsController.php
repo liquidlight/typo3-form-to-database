@@ -151,21 +151,20 @@ class FormResultsController extends FormManagerController
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
         $availableFormDefinitions = [];
-        $searchKey = $this->request->getParsedBody()['tx_form_to_database']['search'] ?? '';
+        $searchKey = ((array)$this->request->getParsedBody())['tx_form_to_database']['search'] ?? '';
         if (empty($searchKey)) {
             $availableFormDefinitions = $this->getAvailableFormDefinitions($this->getFormSettings());
         } else {
-            foreach ($this->getAvailableFormDefinitions() as $formDefinition) {
-                foreach (['name'] as $searchField) {
-                    if (
-                        is_string($formDefinition[$searchField])
-                        && str_contains(
-                            strtolower($formDefinition[$searchField]),
-                            strtolower($searchKey)
-                        )
-                    ) {
-                        $availableFormDefinitions[$formDefinition['identifier']] = $formDefinition;
-                    }
+            foreach ($this->getAvailableFormDefinitions($this->getFormSettings()) as $formDefinition) {
+                $searchField = 'name';
+                if (
+                    is_string($formDefinition[$searchField])
+                    && str_contains(
+                        strtolower($formDefinition[$searchField]),
+                        strtolower($searchKey)
+                    )
+                ) {
+                    $availableFormDefinitions[$formDefinition['identifier']] = $formDefinition;
                 }
             }
         }
@@ -498,7 +497,9 @@ class FormResultsController extends FormManagerController
      * @param string $searchTerm
      * @return array<array-key, array{
      *     persistenceIdentifier: string,
-     *     numberOfResults: int
+     *     numberOfResults: int,
+     *     name: string,
+     *     identifier: string
      * }>
      */
     protected function getAvailableFormDefinitions(array $formSettings, string $searchTerm = ''): array

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Lavitto\FormToDatabase\Test\Functional\Service;
 
 use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
