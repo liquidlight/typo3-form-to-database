@@ -42,6 +42,7 @@
     "typo3/cms-core": "^13.4",
     "typo3/cms-extbase": "^13.4",
     "typo3/cms-fluid": "^13.4",
+    "typo3/cms-fluid-styled-content": "^13.4",
     "typo3/cms-form": "^13.4",
     "typo3/cms-frontend": "^13.4"
   },
@@ -67,9 +68,12 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.64",
+    "helhum/typo3-console": "^8.2",
     "helmich/typo3-typoscript-lint": "^3.2",
     "nikic/php-parser": "^5.3",
     "saschaegerer/phpstan-typo3": "^1.10",
+    "typo3/cms-install": "^13.4",
+    "typo3/cms-tstemplate": "^13.4",
     "typo3/testing-framework": "^9.0"
   }
 }

@@ -182,7 +182,7 @@ class FormResultsController extends FormManagerController
         $this->moduleTemplate->setModuleName($this->request->getPluginName() . '_' . $this->request->getControllerName());
         $this->moduleTemplate->setFlashMessageQueue($this->getFlashMessageQueue(FlashMessageQueue::NOTIFICATION_QUEUE));
 
-        return $this->moduleTemplate->renderResponse('Index');
+        return $this->moduleTemplate->renderResponse('FormResults/Index');
     }
 
     /**
@@ -236,8 +236,6 @@ class FormResultsController extends FormManagerController
      * @throws InvalidQueryException
      * @throws RenderingException
      * @throws \JsonException
-     * @noinspection PhpUndefinedMethodInspection
-     * @noinspection PhpUnused
      */
     public function showAction(string $formPersistenceIdentifier): ResponseInterface
     {
@@ -253,8 +251,8 @@ class FormResultsController extends FormManagerController
             'stylesheet',
             'print'
         );
-        // @todo replace with current loader
-        //$this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/Modal');
+        // @todo check for correct implementation
+        $this->pageRenderer->loadJavaScriptModule('@typo3/backend/modal.js');
         $this->pageRenderer->addInlineLanguageLabelArray([
             'ftd_deleteTitle' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.title'),
             'ftd_deleteDescription' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.description'),
@@ -313,7 +311,7 @@ class FormResultsController extends FormManagerController
         $this->BEUser->uc['tx_formtodatabase']['lastView'][$formDefinition->getIdentifier()] = time();
         $this->BEUser->writeUC();
 
-        return $this->moduleTemplate->renderResponse('Show');
+        return $this->moduleTemplate->renderResponse('FormResults/Show');
     }
 
     /**
