@@ -1,0 +1,34 @@
+
+renderingOptions:
+  submitButtonLabel: Submit
+  fieldState:
+    text-1:
+      identifier: text-1
+      label: 'Full name'
+      type: Text
+      renderingOptions:
+        deleted: 0
+type: Form
+identifier: testform
+label: Testform
+prototypeName: standard
+finishers:
+  -
+    identifier: FormToDatabase
+renderables:
+  -
+    renderingOptions:
+      previousButtonLabel: 'Previous step'
+      nextButtonLabel: 'Next step'
+    type: Page
+    identifier: page-1
+    label: Step
+    renderables:
+      -
+        defaultValue: ''
+        type: Text
+        identifier: name
+        label: 'Full name'
+        properties:
+          fluidAdditionalAttributes:
+            autocomplete: name

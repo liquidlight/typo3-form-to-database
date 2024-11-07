@@ -1,0 +1,50 @@
+pages,,,,,,
+,uid,pid,is_siteroot,title,doktype,slug
+,1,0,1,"Home",1,"/"
+
+tt_content,,,,,,,
+,uid,pid,deleted,CType,colPos,sorting,pi_flexform
+,1,1,0,"form_formframework",0,256,"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes"" ?>
+<T3FlexForms>
+	<data>
+		<sheet index=""sDEF"">
+			<language index=""lDEF"">
+				<field index=""settings.persistenceIdentifier"">
+					<value index=""vDEF"">1:/form_definitions/testform.form.yaml</value>
+				</field>
+				<field index=""settings.overrideFinishers"">
+					<value index=""vDEF"">0</value>
+				</field>
+			</language>
+		</sheet>
+	</data>
+</T3FlexForms>"
+
+sys_file_storage,,,,,,,,,,
+,uid,pid,is_public,name,is_browsable,is_default,is_writable,is_online,driver,configuration
+,1,0,1,"fileadmin",1,1,1,1,"Local","<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes"" ?>
+<T3FlexForms>
+    <data>
+        <sheet index=""sDEF"">
+            <language index=""lDEF"">
+                <field index=""basePath"">
+                    <value index=""vDEF"">fileadmin/</value>
+                </field>
+                <field index=""pathType"">
+                    <value index=""vDEF"">relative</value>
+                </field>
+                <field index=""caseSensitive"">
+                    <value index=""vDEF"">1</value>
+                </field>
+            </language>
+        </sheet>
+    </data>
+</T3FlexForms>"
+
+sys_file,,,,,
+,uid,pid,storage,identifier,extension,name
+,1,0,1,"/form_definitions/testform.form.yaml","yaml","testform.form.yaml"
+
+# sys_refindex,,,,,,,,,
+# ,hash,tablename,recuid,field,flexpointer,softref_key,softref_id,ref_table,ref_uid
+# ,4a2586772f498156a34860f20c595c2b,"tt_content",1,"pi_flexform","sDEF/lDEF/settings.persistenceIdentifier/vDEF/","formPersistenceIdentifier","62345694151d63d15f4d2681ff96845f","sys_file",1
