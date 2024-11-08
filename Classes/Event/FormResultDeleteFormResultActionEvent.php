@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lavitto\FormToDatabase\Event;
 
 use Lavitto\FormToDatabase\Domain\Model\FormResult;
