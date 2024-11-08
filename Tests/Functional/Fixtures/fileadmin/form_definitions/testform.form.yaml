@@ -2,8 +2,8 @@
 renderingOptions:
   submitButtonLabel: Submit
   fieldState:
-    text-1:
-      identifier: text-1
+    name:
+      identifier: name
       label: 'Full name'
       type: Text
       renderingOptions:

@@ -37,7 +37,6 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Http\Response;
-use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
@@ -392,7 +391,7 @@ class FormResultsController extends FormManagerController
             ->createResponse()
             ->withHeader(
                 'Content-Type',
-                sprintf('application/json; charset=%s', $charset)
+                sprintf('text/csv; charset=%s', $charset)
             )
             ->withHeader(
                 'Content-Disposition',
@@ -973,7 +972,6 @@ class FormResultsController extends FormManagerController
      *
      * @param string|null $formPersistenceIdentifier
      * @param bool $showCsvDownload
-     * @noinspection PhpUndefinedMethodInspection
      */
     protected function registerDocheaderButtons(
         ?string $formPersistenceIdentifier = null,
@@ -990,7 +988,7 @@ class FormResultsController extends FormManagerController
                 ->setHref($this->getModuleUrl('web_FormToDatabaseFormresults'))
                 ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.backlink'))
                 ->setShowLabelText(true)
-                ->setIcon($this->iconFactory->getIcon('actions-view-go-back', Icon::SIZE_SMALL));
+                ->setIcon($this->iconFactory->getIcon('actions-view-go-back', IconSize::SMALL));
             $buttonBar->addButton($backFormButton, ButtonBar::BUTTON_POSITION_LEFT);
 
             if ($formPersistenceIdentifier !== null && $showCsvDownload === true) {
@@ -1015,7 +1013,7 @@ class FormResultsController extends FormManagerController
                     ->setHref($this->uriBuilder->uriFor('downloadCsv', $urlParameters))
                     ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.download_csv_filtered'))
                     ->setShowLabelText(true)
-                    ->setIcon($this->iconFactory->getIcon('actions-download', Icon::SIZE_SMALL));
+                    ->setIcon($this->iconFactory->getIcon('actions-download', IconSize::SMALL));
                 $buttonBar->addButton($downloadCsvFormButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
             }
         }
@@ -1034,7 +1032,7 @@ class FormResultsController extends FormManagerController
                 ))
                 ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.backlinkResults'))
                 ->setShowLabelText(true)
-                ->setIcon($this->iconFactory->getIcon('actions-view-go-back', Icon::SIZE_SMALL));
+                ->setIcon($this->iconFactory->getIcon('actions-view-go-back', IconSize::SMALL));
             $buttonBar->addButton($backFormButton, ButtonBar::BUTTON_POSITION_LEFT);
         }
 
@@ -1043,7 +1041,7 @@ class FormResultsController extends FormManagerController
         $reloadButton = $buttonBar->makeLinkButton()
             ->setHref(GeneralUtility::getIndpEnv('REQUEST_URI'))
             ->setTitle($reloadTitle)
-            ->setIcon($this->iconFactory->getIcon('actions-refresh', Icon::SIZE_SMALL));
+            ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
         $buttonBar->addButton($reloadButton, ButtonBar::BUTTON_POSITION_RIGHT);
 
         // Shortcut
@@ -1054,7 +1052,9 @@ class FormResultsController extends FormManagerController
                 $modulePrefix = strtolower('tx_' . $extensionName . '_' . $moduleName);
                 $getVars = ['id', 'route', $modulePrefix];
             }
-            $shortcutButton = $buttonBar->makeShortcutButton()
+
+            $shortcutButton = $buttonBar
+                ->makeShortcutButton()
                 ->setRouteIdentifier($moduleName)
                 ->setDisplayName($this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:module.shortcut_name'))
                 ->setArguments($getVars);

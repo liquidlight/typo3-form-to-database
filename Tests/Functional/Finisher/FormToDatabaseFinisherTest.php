@@ -33,7 +33,7 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
     ];
 
     protected array $pathsToProvideInTestInstance = [
-        'typo3conf/ext/form_to_database/Tests/Functional/Finisher/Fixtures/fileadmin/' => 'fileadmin',
+        'typo3conf/ext/form_to_database/Tests/Functional/Fixtures/fileadmin/' => 'fileadmin',
     ];
 
     protected array $coreExtensionsToLoad = [
