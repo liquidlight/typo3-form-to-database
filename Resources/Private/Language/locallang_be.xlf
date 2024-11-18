@@ -42,6 +42,9 @@
             <trans-unit id="show.buttons.backlink" xml:space="preserve">
                 <source>Back to overview</source>
             </trans-unit>
+            <trans-unit id="show.buttons.backlinkResults" xml:space="preserve">
+                <source>Back to form results</source>
+            </trans-unit>
             <trans-unit id="show.buttons.download_csv" xml:space="preserve">
                 <source>CSV-Download (all columns)</source>
             </trans-unit>
@@ -86,6 +89,9 @@
             </trans-unit>
             <trans-unit id="show.itemListSelect.fields_no_data" xml:space="preserve">
                 <source>Following fields had no data:</source>
+            </trans-unit>
+            <trans-unit id="show.download_pdf" xml:space="preserve">
+                <source>Download as PDF</source>
             </trans-unit>
         </body>
     </file>
