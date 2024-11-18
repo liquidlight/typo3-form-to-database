@@ -85,6 +85,52 @@ There are several options available for customisation. To change these, go to **
   - `csvDelimiter` - What character should separate fields in the CSV export (Default: `,`)
   - `csvOnlyFilenameOfUploadFields` - Should the CSV list the whole path or just the file name?
 
+#### Single View PDF
+
+Each form response can be downloaded as a PDF which can be customised in TypoScript.
+
+The code uses [mPDF](https://mpdf.github.io/) and settings can be directly passed in by using
+
+```
+module.tx_formtodatabase_web_formtodatabaseformresults.settings.pdf.config
+```
+
+The defaults are the following, however they can be overwritten:
+
+```
+'default_font_size' => '12',
+'format' => 'A4',
+'orientation' => 'P',
+'margin_left' => '15',
+'margin_right' => '15',
+'margin_bottom' => '15',
+'margin_top' => '15',
+'tempDir' => Environment::getVarPath() . '/form_to_database'
+```
+
+##### Stylesheets
+
+If you wish to pass in a custom CSS stylesheet, you can do so with the following:
+
+```
+module.tx_formtodatabase_web_formtodatabaseformresults.settings.pdf.stylesheet {
+  link = EXT:your_extension/Resources/Public/Css/print-form-to-database.css
+  media = all
+}
+```
+
+##### Letterheads
+
+Letterheads can add information to the top and bottom of each page, it uses [SetHTMLHeader](https://mpdf.github.io/reference/mpdf-functions/sethtmlheader.html) and [SetHTMLFooter](https://mpdf.github.io/reference/mpdf-functions/sethtmlfooter.html) directly.
+
+This means all the mPDF variables are accessible. These can be added via TypoScript (`letterheads.header` and `letterheads.footer`). For example:
+
+```
+module.tx_formtodatabase_web_formtodatabaseformresults.settings.pdf.letterheads.footer (
+  <table class="footer"><tr><td>Form to Database - {PAGENO}/{nbpg}</td></tr></table>
+)
+```
+
 ## Contribute
 
 Please create an issue at https://gitlab.com/lavitto/typo3-form-to-database/issues.
