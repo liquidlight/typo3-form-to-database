@@ -1,3 +1,8 @@
+# 3.1.0
+
+- [FEATURE] Remove single response modal and convert to a view
+- [FEATURE] Allow single responses to be downloaded as a PDF
+
 # 3.0.1
 
 - [BUGFIX] Make task schedulable

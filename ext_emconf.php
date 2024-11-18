@@ -33,5 +33,5 @@ $EM_CONF[$_EXTKEY] = [
     'author' => 'Philipp Mueller',
     'author_email' => 'philipp.mueller@lavitto.ch',
     'author_company' => 'lavitto ag',
-    'version' => '3.0.1'
+    'version' => '3.1.0'
 ];
