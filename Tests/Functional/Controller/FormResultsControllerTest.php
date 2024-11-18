@@ -79,7 +79,7 @@ final class FormResultsControllerTest extends FunctionalTestCase
      *     expectedContentLength: string
      * }>
      */
-    public static function exportDataProvider(): Generator
+    public static function exportDataProvider(): \Generator
     {
         yield 'Basic Export' => [
             'form' => '1:/form_definitions/testform.form.yaml',

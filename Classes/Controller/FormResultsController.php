@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Lavitto\FormToDatabase\Controller;
 
-use DateTime;
 use Doctrine\DBAL\Exception;
 use Lavitto\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher;
 use Lavitto\FormToDatabase\Domain\Model\FormResult;
@@ -19,6 +18,10 @@ use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
 use Lavitto\FormToDatabase\Event\FormResultDeleteFormResultActionEvent;
 use Lavitto\FormToDatabase\Event\FormResultDownloadCSVActionEvent;
 use Lavitto\FormToDatabase\Event\FormResultShowActionEvent;
+use Lavitto\FormToDatabase\Exception\FileWriteNotPossibleException;
+use Lavitto\FormToDatabase\Exception\FormResultNotFoundException;
+use Lavitto\FormToDatabase\Exception\MpdfNotLoadedException;
+use Lavitto\FormToDatabase\Exception\ResourceIsNotCreatableException;
 use Lavitto\FormToDatabase\Helpers\MiscHelper;
 use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
 use Lavitto\FormToDatabase\Utility\ExtConfUtility;
@@ -26,9 +29,10 @@ use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
 use Lavitto\FormToDatabase\Utility\FormValueUtility;
 use Lavitto\FormToDatabase\Utility\PdfUtility;
 use Mpdf\Mpdf;
+use Mpdf\MpdfException;
 use Psr\Http\Message\ResponseInterface;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Attribute\AsController;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
@@ -37,6 +41,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Http\Response;
+use TYPO3\CMS\Core\Http\StreamFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
@@ -187,49 +192,6 @@ class FormResultsController extends FormManagerController
     }
 
     /**
-     * @param array{
-     *     identifier: string
-     * }|FormDefinition $formDefinition
-     * @return mixed|null
-     */
-    private function getCurrentBEUserLastViewTime(array|FormDefinition $formDefinition): mixed
-    {
-        $identifier = ($formDefinition instanceof FormDefinition) ? $formDefinition->getIdentifier() : $formDefinition['identifier'];
-        return $this->BEUser->uc['tx_formtodatabase']['lastView'][$identifier] ?? null;
-    }
-
-    /**
-     * @param array<array-key, array{
-     *     identifier: string
-     * }> $formDefinitions
-     * @throws Exception
-     */
-    private function enrichFormDefinitionsWithHighestCrDate(array &$formDefinitions): void
-    {
-        $identifiers = array_column($formDefinitions, 'identifier');
-        /** @var ConnectionPool $connectionPool */
-        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
-        $table = 'tx_formtodatabase_domain_model_formresult';
-        $qb = $connectionPool->getQueryBuilderForTable($table);
-        $result = $qb->select('form_identifier')
-            ->addSelectLiteral(
-                $qb->expr()->max('crdate', 'maxcrdate')
-            )
-            ->from($table)
-            ->where(
-                $qb->expr()->in(
-                    'form_identifier',
-                    $qb->createNamedParameter($identifiers, Connection::PARAM_STR_ARRAY)
-                )
-            )->groupBy('form_identifier')->executeQuery()->fetchAllNumeric();
-        $maxCrDates = array_combine(array_column($result, 0), array_column($result, 1));
-        foreach ($formDefinitions as &$formDefinition) {
-            $formDefinition['maxCrDate'] = $maxCrDates[$formDefinition['identifier']] ?? null;
-            $formDefinition['newDataExists'] = $formDefinition['maxCrDate'] > $this->getCurrentBEUserLastViewTime($formDefinition);
-        }
-    }
-
-    /**
      * Shows the results of a form
      *
      * @param string $formPersistenceIdentifier
@@ -317,60 +279,59 @@ class FormResultsController extends FormManagerController
 
     /**
      * Shows the results of a form
-     *
-     * @param string $uid
-     * @return ResponseInterface
-     * @throws InvalidQueryException
-     * @throws RenderingException
-     * @noinspection PhpUndefinedMethodInspection
-     * @noinspection PhpUnused
      */
-    public function resultAction(string $uid): ResponseInterface
+    public function resultAction(int $uid): ResponseInterface
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
         $variables = $this->getSingleResultProperties($uid);
+        $this->moduleTemplate->assignMultiple($variables);
 
         $this->registerDocheaderButtons($variables['formPersistenceIdentifier']);
 
-        $this->moduleTemplate->setContent($this->view->render());
-
-        return $this->htmlResponse($this->moduleTemplate->renderContent());
+        return $this->moduleTemplate->renderResponse('FormResults/Result');
     }
 
-    public function downloadResultPdfAction(string $uid): ResponseInterface
+    /**
+     * @throws MpdfException
+     * @throws MpdfNotLoadedException
+     * @throws ResourceIsNotCreatableException
+     * @throws FileWriteNotPossibleException
+     */
+    public function downloadResultPdfAction(int $uid): ResponseInterface
     {
-        if(!class_exists(Mpdf::class)) {
-            $this->htmlResponse('');
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        if (!class_exists(Mpdf::class)) {
+            return $this->htmlResponse('');
         }
 
         $excludeFields = array_diff(FormToDatabaseFinisher::EXCLUDE_FIELDS, ['GridRow', 'SummaryPage', 'Page']);
         $variables = $this->getSingleResultProperties($uid, $excludeFields);
+        $this->moduleTemplate->assignMultiple($variables);
 
-        if(isset($this->settings['pdf']['disable']) && (int)$this->settings['pdf']['disable'] === 1) {
-            $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        if ((int)($this->settings['pdf']['disable'] ?? 1) === 1) {
             $this->moduleTemplate->getDocHeaderComponent()->disable();
-            $this->moduleTemplate->setContent($this->view->render());
 
-            return $this->htmlResponse($this->moduleTemplate->renderContent());
+            return $this->moduleTemplate->renderResponse('FormResults/DownloadResultPdf');
         }
 
         $pdfUtility = GeneralUtility::makeInstance(PdfUtility::class, $this->settings['pdf'] ?? []);
 
-        $filePath = $pdfUtility->generatePdf(
-            $this->view->render(),
-            $variables['formDefinition']->getIdentifier() . '-' . $variables['formResult']->getCrDate()->format('U')
+        ['fileResource' => $fileResource, 'fileLength' => $fileLength] = $pdfUtility->generatePdf(
+            $this->view->render()
         );
+
+        $fileName = $variables['formDefinition']->getIdentifier() . '-' . $variables['formResult']->getCrDate()->format('U');
 
         $destination = ($this->settings['pdf']['disposition'] ?? 'attachment') === 'attachment' ? 'attachment' : 'inline';
 
-        $response = new Response();
-        $response = $response->withHeader('Content-Transfer-Encoding', 'binary');
-        $response->getBody()->write(file_get_contents($filePath));
-        $response = $response->withHeader('Content-Type', 'application/pdf');
-        $response = $response->withHeader('Content-Disposition', $destination . '; filename="' . basename($filePath) . '"');
-
-        return $response->withStatus(200);
+        return (new Response())
+            ->withStatus(200)
+            ->withHeader('Content-Type', 'application/pdf')
+            ->withHeader('Content-Transfer-Encoding', 'binary')
+            ->withHeader('Content-Length', (string)$fileLength)
+            ->withHeader('Content-Disposition', $destination . '; filename="' . $fileName . '"')
+            ->withBody((new StreamFactory())->createStreamFromResource($fileResource));
     }
 
     /**
@@ -739,6 +700,8 @@ class FormResultsController extends FormManagerController
     /**
      * Gets a form definition by a persistence form identifier
      *
+     * @param string[] $excludeFields
+     *
      * @throws PrototypeNotFoundException
      * @throws RenderingException
      * @throws TypeDefinitionNotFoundException
@@ -791,6 +754,7 @@ class FormResultsController extends FormManagerController
      * Removes excluded renderables from configuration
      *
      * @param array<array-key, mixed> $renderables
+     * @param string[] $excludeFields
      */
     protected function filterExcludedFormFieldsInConfiguration(array &$renderables, array $excludeFields = FormToDatabaseFinisher::EXCLUDE_FIELDS): void
     {
@@ -814,10 +778,7 @@ class FormResultsController extends FormManagerController
 
         /** @var AbstractFormElement $renderable */
         foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
-            if(
-                $filterFormFields === false ||
-                ($filterFormFields && $renderable instanceof AbstractFormElement)
-                ) {
+            if ($filterFormFields === false || $renderable instanceof AbstractFormElement) {
                 $formRenderables[$renderable->getIdentifier()] = $renderable;
             }
         }
@@ -923,29 +884,45 @@ class FormResultsController extends FormManagerController
         return $localDriver->sanitizeFileName($filename);
     }
 
-    protected function getSingleResultProperties($uid, array $excludeFields = []): array
+    /**
+     * @param string[] $excludeFields
+     * @return array<string, mixed>
+     * @throws PrototypeNotFoundException
+     * @throws RenderingException
+     * @throws TypeDefinitionNotFoundException
+     * @throws TypeDefinitionNotValidException
+     * @throws \TYPO3\CMS\Form\Exception
+     * @throws FormResultNotFoundException
+     */
+    protected function getSingleResultProperties(int $uid, array $excludeFields = []): array
     {
         $formResult = $this->formResultRepository->findByUid($uid);
+        if ($formResult === null) {
+            throw new FormResultNotFoundException(
+                sprintf('No form result found for uid "%d"', $uid),
+                1731958286873
+            );
+        }
         $formPersistenceIdentifier = $formResult->getFormPersistenceIdentifier();
 
-        $formDefinition = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false);
+        $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier, false);
         $formRenderables = $this->getFormRenderables($formDefinition);
 
-        $variables = [
-            'formResult' => $formResult,
-            'formDefinition' => $formDefinition,
-            'formRenderables' => $formRenderables,
-            'formPersistenceIdentifier' => $formPersistenceIdentifier,
-            'hasPdfAbility' => class_exists(Mpdf::class)
-        ];
+        $variables = array_merge(
+            $this->getDefaultValuesForAssignment(),
+            [
+                'formResult' => $formResult,
+                'formDefinition' => $formDefinition,
+                'formRenderables' => $formRenderables,
+                'formPersistenceIdentifier' => $formPersistenceIdentifier,
+                'hasPdfAbility' => class_exists(Mpdf::class),
+            ]
+        );
 
-        if(count($excludeFields) > 0) {
-            $variables['formDefinitionAll'] = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false, $excludeFields);
+        if (count($excludeFields) > 0) {
+            $variables['formDefinitionAll'] = $this->getFormDefinitionObject($formPersistenceIdentifier, false, $excludeFields);
             $variables['formRenderablesAll'] = $this->getFormRenderables($variables['formDefinitionAll'], false);
         }
-
-        $this->view->assignMultiple($variables);
-        $this->assignDefaults();
 
         return $variables;
     }
@@ -1022,7 +999,7 @@ class FormResultsController extends FormManagerController
             $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
 
             $backFormButton = $buttonBar->makeLinkButton()
-                ->setHref($uriBuilder->buildUriFromRoute(
+                ->setHref((string)$uriBuilder->buildUriFromRoute(
                     'web_FormToDatabaseFormresults',
                     [
                         'formPersistenceIdentifier' => $formPersistenceIdentifier,
@@ -1059,6 +1036,49 @@ class FormResultsController extends FormManagerController
                 ->setDisplayName($this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:module.shortcut_name'))
                 ->setArguments($getVars);
             $buttonBar->addButton($shortcutButton, ButtonBar::BUTTON_POSITION_RIGHT);
+        }
+    }
+
+    /**
+     * @param array{
+     *     identifier: string
+     * }|FormDefinition $formDefinition
+     * @return mixed|null
+     */
+    private function getCurrentBEUserLastViewTime(array|FormDefinition $formDefinition): mixed
+    {
+        $identifier = ($formDefinition instanceof FormDefinition) ? $formDefinition->getIdentifier() : $formDefinition['identifier'];
+        return $this->BEUser->uc['tx_formtodatabase']['lastView'][$identifier] ?? null;
+    }
+
+    /**
+     * @param array<array-key, array{
+     *     identifier: string
+     * }> $formDefinitions
+     * @throws Exception
+     */
+    private function enrichFormDefinitionsWithHighestCrDate(array &$formDefinitions): void
+    {
+        $identifiers = array_column($formDefinitions, 'identifier');
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $table = 'tx_formtodatabase_domain_model_formresult';
+        $qb = $connectionPool->getQueryBuilderForTable($table);
+        $result = $qb->select('form_identifier')
+            ->addSelectLiteral(
+                $qb->expr()->max('crdate', 'maxcrdate')
+            )
+            ->from($table)
+            ->where(
+                $qb->expr()->in(
+                    'form_identifier',
+                    $qb->createNamedParameter($identifiers, Connection::PARAM_STR_ARRAY)
+                )
+            )->groupBy('form_identifier')->executeQuery()->fetchAllNumeric();
+        $maxCrDates = array_combine(array_column($result, 0), array_column($result, 1));
+        foreach ($formDefinitions as &$formDefinition) {
+            $formDefinition['maxCrDate'] = $maxCrDates[$formDefinition['identifier']] ?? null;
+            $formDefinition['newDataExists'] = $formDefinition['maxCrDate'] > $this->getCurrentBEUserLastViewTime($formDefinition);
         }
     }
 

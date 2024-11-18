@@ -138,12 +138,13 @@ class FormToDatabaseFinisher extends AbstractFinisher
         $formValues = $this->getFormFieldValues($this->finisherContext->getFormValues());
 
         $formPluginUid = 0;
-            $formIdentifier = $this->formDefinition->getIdentifier();
+        $formIdentifier = $this->formDefinition->getIdentifier();
 
-            $delimiter = (int)strrpos($this->formDefinition->getIdentifier(), '-');
-if ($delimiter) {
-                $formPluginUid = (int)substr($this->formDefinition->getIdentifier(), $delimiter + 1);
-        $formIdentifier = substr($this->formDefinition->getIdentifier(), 0, $delimiter);}
+        $delimiter = (int)strrpos($this->formDefinition->getIdentifier(), '-');
+        if ($delimiter) {
+            $formPluginUid = (int)substr($this->formDefinition->getIdentifier(), $delimiter + 1);
+            $formIdentifier = substr($this->formDefinition->getIdentifier(), 0, $delimiter);
+        }
         $formResult = GeneralUtility::makeInstance(FormResult::class);
         $formResult->setFormPersistenceIdentifier($formPersistenceIdentifier);
         $formResult->setSiteIdentifier($GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getIdentifier());

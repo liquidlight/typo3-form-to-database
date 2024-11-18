@@ -70,6 +70,7 @@
     "friendsofphp/php-cs-fixer": "^3.64",
     "helhum/typo3-console": "^8.2",
     "helmich/typo3-typoscript-lint": "^3.2",
+    "mpdf/mpdf": "^8.2",
     "nikic/php-parser": "^5.3",
     "saschaegerer/phpstan-typo3": "^1.10",
     "typo3/cms-install": "^13.4",
