@@ -3,6 +3,9 @@
     <file t3:id="1560424879" source-language="en" datatype="plaintext" original="messages" date="2019-06-12T10:10:00Z" product-name="form_to_database">
         <header/>
         <body>
+            <trans-unit id="tx_formtodatabase_domain_model_formresult" xml:space="preserve">
+                <source>Form to Database - Result</source>
+            </trans-unit>
             <trans-unit id="index.headline" xml:space="preserve">
                 <source>Form results</source>
             </trans-unit>

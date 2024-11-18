@@ -10,10 +10,13 @@ defined('TYPO3_MODE') or die();
 
 return [
     'ctrl' => [
+        'title' => 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:tx_formtodatabase_domain_model_formresult',
         'crdate' => 'crdate',
         'tstamp' => 'tstamp',
-        'cruser_id' => 'cruser_id',
-        'hideTable' => true
+        'hideTable' => true,
+        'typeicon_classes' => [
+            'default' => 'tx-formtodatabase',
+        ],
     ],
     'columns' => [
         'crdate' => [
