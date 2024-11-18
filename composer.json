@@ -37,9 +37,11 @@
     "typo3/cms-frontend": "^11.5",
     "typo3/cms-backend": "^11.5",
     "typo3/cms-form": "^11.5",
-    "mpdf/mpdf": "^8.0",
     "ext-json": "*",
     "ext-pdo": "*"
+  },
+  "suggest": {
+    "mpdf/mpdf": "Allows downloading form results as a PDF"
   },
   "autoload": {
     "psr-4": {

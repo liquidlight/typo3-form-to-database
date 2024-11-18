@@ -87,9 +87,15 @@ There are several options available for customisation. To change these, go to **
 
 #### Single View PDF
 
-Each form response can be downloaded as a PDF which can be customised in TypoScript.
+Each form response can be downloaded as a PDF which can be customised in TypoScript if [mPDF](https://mpdf.github.io/) is installed.
 
-The code uses [mPDF](https://mpdf.github.io/) and settings can be directly passed in by using
+TO utilise this feature, install mPDF as an additional dependency
+
+```
+composer req mpdf/mpdf
+```
+
+Settings can be directly passed in to mPDF by using
 
 ```
 module.tx_formtodatabase_web_formtodatabaseformresults.settings.pdf.config
