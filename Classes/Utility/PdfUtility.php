@@ -9,10 +9,10 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class PdfUtility
 {
-    public function __construct(
-        protected $settings = []
-    ) {
+    protected $settings = [];
 
+    public function __construct($settings = []) {
+        $this->settings = $settings;
     }
 
     /**
