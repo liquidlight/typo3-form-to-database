@@ -41,6 +41,9 @@
     "ext-json": "*",
     "ext-pdo": "*"
   },
+  "suggest": {
+    "mpdf/mpdf": "Allows downloading form results as a PDF"
+  },
   "autoload": {
     "psr-4": {
       "Lavitto\\FormToDatabase\\": "Classes"

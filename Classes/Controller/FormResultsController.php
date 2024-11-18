@@ -11,8 +11,8 @@
 
 namespace Lavitto\FormToDatabase\Controller;
 
-use Doctrine\DBAL\DBALException;
 use DateTime;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
 use Exception;
 use Lavitto\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher;
@@ -26,8 +26,11 @@ use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
 use Lavitto\FormToDatabase\Utility\ExtConfUtility;
 use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
 use Lavitto\FormToDatabase\Utility\FormValueUtility;
+use Lavitto\FormToDatabase\Utility\PdfUtility;
+use Mpdf\Mpdf;
 use PDO;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
@@ -35,7 +38,9 @@ use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Imaging\Icon;
+use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
@@ -43,7 +48,6 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Filter\FileExtensionFilter;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
@@ -55,7 +59,6 @@ use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
 use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
-use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 
 /**
  * Class FormResultsController
@@ -306,6 +309,64 @@ class FormResultsController extends FormManagerController
         $this->moduleTemplate->setContent($this->view->render());
 
         return $this->htmlResponse($this->moduleTemplate->renderContent());
+    }
+
+    /**
+     * Shows the results of a form
+     *
+     * @param string $uid
+     * @return ResponseInterface
+     * @throws InvalidQueryException
+     * @throws RenderingException
+     * @noinspection PhpUndefinedMethodInspection
+     * @noinspection PhpUnused
+     */
+    public function resultAction(string $uid): ResponseInterface
+    {
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+
+        $variables = $this->getSingleResultProperties($uid);
+
+        $this->registerDocheaderButtons($variables['formPersistenceIdentifier']);
+
+        $this->moduleTemplate->setContent($this->view->render());
+
+        return $this->htmlResponse($this->moduleTemplate->renderContent());
+    }
+
+    public function downloadResultPdfAction(string $uid): ResponseInterface
+    {
+        if(!class_exists(Mpdf::class)) {
+            $this->htmlResponse('');
+        }
+
+        $excludeFields = array_diff(FormToDatabaseFinisher::EXCLUDE_FIELDS, ['GridRow', 'SummaryPage', 'Page']);
+        $variables = $this->getSingleResultProperties($uid, $excludeFields);
+
+        if(isset($this->settings['pdf']['disable']) && (int)$this->settings['pdf']['disable'] === 1) {
+            $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+            $this->moduleTemplate->getDocHeaderComponent()->disable();
+            $this->moduleTemplate->setContent($this->view->render());
+
+            return $this->htmlResponse($this->moduleTemplate->renderContent());
+        }
+
+        $pdfUtility = GeneralUtility::makeInstance(PdfUtility::class, $this->settings['pdf'] ?? []);
+
+        $filePath = $pdfUtility->generatePdf(
+            $this->view->render(),
+            $variables['formDefinition']->getIdentifier() . '-' . $variables['formResult']->getCrDate()->format('U')
+        );
+
+        $destination = ($this->settings['pdf']['disposition'] ?? 'attachment') === 'attachment' ? 'attachment' : 'inline';
+
+        $response = new Response();
+        $response = $response->withHeader('Content-Transfer-Encoding', 'binary');
+        $response->getBody()->write(file_get_contents($filePath));
+        $response = $response->withHeader('Content-Type', 'application/pdf');
+        $response = $response->withHeader('Content-Disposition', $destination . '; filename="' . basename($filePath) . '"');
+
+        return $response->withStatus(200);
     }
 
     /**
@@ -635,11 +696,13 @@ class FormResultsController extends FormManagerController
      */
     protected function getFormDefinitionObject(
         string $formPersistenceIdentifier,
-        $useFieldStateDataAsRenderables = false
+        $useFieldStateDataAsRenderables = false,
+        array $excludeFields = FormToDatabaseFinisher::EXCLUDE_FIELDS
     ): FormDefinition {
         $configuration = $this->getFormDefinition($formPersistenceIdentifier, $useFieldStateDataAsRenderables);
-        if (isset($configuration['renderables']) && !empty($configuration['renderables'])) {
-            $this->filterExcludedFormFieldsInConfiguration($configuration['renderables']);
+
+        if (count($excludeFields) > 0 && isset($configuration['renderables']) && !empty($configuration['renderables'])) {
+            $this->filterExcludedFormFieldsInConfiguration($configuration['renderables'], $excludeFields);
         }
 
         /** @var ArrayFormFactory $arrayFormFactory */
@@ -676,13 +739,13 @@ class FormResultsController extends FormManagerController
      *
      * @param array $renderables
      */
-    protected function filterExcludedFormFieldsInConfiguration(array &$renderables): void
+    protected function filterExcludedFormFieldsInConfiguration(array &$renderables, array $excludeFields = FormToDatabaseFinisher::EXCLUDE_FIELDS): void
     {
         foreach ($renderables as $i => $renderable) {
-            if (in_array($renderable['type'], FormToDatabaseFinisher::EXCLUDE_FIELDS, true) === true) {
+            if (in_array($renderable['type'], $excludeFields, true) === true) {
                 unset($renderables[$i]);
             } elseif (isset($renderable['renderables']) && !empty($renderable['renderables'])) {
-                $this->filterExcludedFormFieldsInConfiguration($renderables[$i]['renderables']);
+                $this->filterExcludedFormFieldsInConfiguration($renderables[$i]['renderables'], $excludeFields);
             }
         }
     }
@@ -693,16 +756,20 @@ class FormResultsController extends FormManagerController
      * @param FormDefinition $formDefinition
      * @return array
      */
-    protected function getFormRenderables(FormDefinition $formDefinition): array
+    protected function getFormRenderables(FormDefinition $formDefinition, bool $filterFormFields = true): array
     {
         $formRenderables = [];
+
         /** @var AbstractFormElement $renderable */
         foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
-            if ($renderable instanceof AbstractFormElement && in_array($renderable->getType(),
-                    FormToDatabaseFinisher::EXCLUDE_FIELDS, true) === false) {
+            if(
+                $filterFormFields === false ||
+                ($filterFormFields && $renderable instanceof AbstractFormElement)
+            ) {
                 $formRenderables[$renderable->getIdentifier()] = $renderable;
             }
         }
+
         return $formRenderables;
     }
 
@@ -800,6 +867,33 @@ class FormResultsController extends FormManagerController
         return $localDriver->sanitizeFileName($filename);
     }
 
+    protected function getSingleResultProperties($uid, array $excludeFields = []): array
+    {
+        $formResult = $this->formResultRepository->findByUid($uid);
+        $formPersistenceIdentifier = $formResult->getFormPersistenceIdentifier();
+
+        $formDefinition = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false);
+        $formRenderables = $this->getFormRenderables($formDefinition);
+
+        $variables = [
+            'formResult' => $formResult,
+            'formDefinition' => $formDefinition,
+            'formRenderables' => $formRenderables,
+            'formPersistenceIdentifier' => $formPersistenceIdentifier,
+            'hasPdfAbility' => class_exists(Mpdf::class)
+        ];
+
+        if(count($excludeFields) > 0) {
+            $variables['formDefinitionAll'] = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false, $excludeFields);
+            $variables['formRenderablesAll'] = $this->getFormRenderables($variables['formDefinitionAll'], false);
+        }
+
+        $this->view->assignMultiple($variables);
+        $this->assignDefaults();
+
+        return $variables;
+    }
+
     /**
      * Assigns the default variables
      */
@@ -860,6 +954,24 @@ class FormResultsController extends FormManagerController
                     ->setIcon($this->iconFactory->getIcon('actions-download', Icon::SIZE_SMALL));
                 $buttonBar->addButton($downloadCsvFormButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
             }
+        }
+
+        if ($this->request->getControllerActionName() === 'result') {
+            $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+
+            $backFormButton = $buttonBar->makeLinkButton()
+                ->setHref($uriBuilder->buildUriFromRoute(
+                    'web_FormToDatabaseFormresults',
+                    [
+                        'formPersistenceIdentifier' => $formPersistenceIdentifier,
+                        'action' => 'show',
+                        'controller' => 'FormResults',
+                    ]
+                ))
+                ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.backlinkResults'))
+                ->setShowLabelText(true)
+                ->setIcon($this->iconFactory->getIcon('actions-view-go-back', Icon::SIZE_SMALL));
+            $buttonBar->addButton($backFormButton, ButtonBar::BUTTON_POSITION_LEFT);
         }
 
         // Reload title

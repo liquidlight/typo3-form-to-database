@@ -12,7 +12,7 @@ return [
         'extensionName' => 'FormToDatabase',
         'controllerActions' => [
             \Lavitto\FormToDatabase\Controller\FormResultsController::class => [
-                'index', 'show', 'downloadCsv', 'deleteFormResult', 'updateItemListSelect', 'unDeleteFormDefinition'
+                'index', 'show', 'result', 'downloadResultPdf', 'downloadCsv', 'deleteFormResult', 'updateItemListSelect', 'unDeleteFormDefinition'
             ],
         ],
         'inheritNavigationComponentFromMainModule' => false

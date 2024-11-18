@@ -10,7 +10,12 @@
 			<core:icon identifier="actions-dot"/>
 		</f:if></td>
 	</f:if>
-	<td>{formResult.crdate -> f:format.date(format: '{dateFormat} {timeFormat}')}</td>
+	<td>
+		<f:link.action action="result" arguments="{uid: formResult.uid}"
+		title="{f:translate(key: 'LLL:EXT:form/Resources/Private/Language/Database.xlf:formManager.edit_form')}">
+			{formResult.crdate -> f:format.date(format: '{dateFormat} {timeFormat}')}
+		</f:link.action>
+	</td>
 	<f:for each="{formRenderables}" as="renderable">
 		<f:if condition="{renderable.renderingOptions.listView}">
 			<td>
@@ -23,10 +28,11 @@
 	</f:for>
 	<td class="col-control nowrap">
 		<div class="btn-group" role="group">
-			<a href="#" class="btn btn-default" data-bs-toggle="modal"
-			   data-bs-target="#resultDetail{formResult.uid}">
-				<core:icon identifier="actions-document-view"/>
-			</a>
+			<f:link.action action="result" arguments="{uid: formResult.uid}"
+				title="{f:translate(key: 'LLL:EXT:form/Resources/Private/Language/Database.xlf:formManager.edit_form')}"
+				class="btn btn-default form-record-open">
+				<core:icon identifier="actions-document-view" />
+			</f:link.action>
 			<f:variable name="deleteActionUri"
 						value="{f:uri.action(action: 'deleteFormResult', arguments: '{formResult: formResult}')}"/>
 			<f:link.action
