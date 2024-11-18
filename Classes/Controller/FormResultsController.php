@@ -14,6 +14,7 @@ namespace Lavitto\FormToDatabase\Controller;
 use PDO;
 use DateTime;
 use Exception;
+use Mpdf\Mpdf;
 use Doctrine\DBAL\FetchMode;
 use Doctrine\DBAL\DBALException;
 use TYPO3\CMS\Core\Imaging\Icon;
@@ -334,6 +335,10 @@ class FormResultsController extends FormManagerController
 
     public function downloadResultPdfAction(string $uid): ResponseInterface
     {
+        if(!class_exists(Mpdf::class)) {
+            $this->htmlResponse('');
+        }
+
         $excludeFields = array_diff(FormToDatabaseFinisher::EXCLUDE_FIELDS, ['GridRow', 'SummaryPage', 'Page']);
         $variables = $this->getSingleResultProperties($uid, $excludeFields);
 
@@ -874,6 +879,7 @@ class FormResultsController extends FormManagerController
             'formDefinition' => $formDefinition,
             'formRenderables' => $formRenderables,
             'formPersistenceIdentifier' => $formPersistenceIdentifier,
+            'hasPdfAbility' => class_exists(Mpdf::class)
         ];
 
         if(count($excludeFields) > 0) {

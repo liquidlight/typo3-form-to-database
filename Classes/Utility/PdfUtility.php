@@ -22,6 +22,11 @@ class PdfUtility
      */
     public function generatePdf($html, $fileName = '')
     {
+        // If mPDF isn't installed
+        if (!class_exists(Mpdf::class)) {
+            return '';
+        }
+
         // Set default options
         $config = [
             'default_font_size' => '12',
