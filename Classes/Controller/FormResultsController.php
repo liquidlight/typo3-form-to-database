@@ -962,11 +962,9 @@ class FormResultsController extends FormManagerController
                 ->setHref($uriBuilder->buildUriFromRoute(
                     'web_FormToDatabaseFormresults',
                     [
-                        'tx_formtodatabase_web_formtodatabaseformresults' => [
-                            'formPersistenceIdentifier' => $formPersistenceIdentifier,
-                            'action' => 'show',
-                            'controller' => 'FormResults',
-                        ]
+                        'formPersistenceIdentifier' => $formPersistenceIdentifier,
+                        'action' => 'show',
+                        'controller' => 'FormResults',
                     ]
                 ))
                 ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.backlinkResults'))
