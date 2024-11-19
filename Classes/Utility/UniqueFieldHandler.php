@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Lavitto\FormToDatabase\Utility;
 
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use TYPO3\CMS\Form\Domain\Configuration\ConfigurationService;
 use TYPO3\CMS\Form\Domain\Configuration\Exception\PrototypeNotFoundException;
 use TYPO3\CMS\Form\Domain\Exception\RenderingException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException;
@@ -18,7 +20,9 @@ use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Exception;
+use TYPO3\CMS\Form\Mvc\Configuration\ConfigurationManagerInterface as ExtFormConfigurationManagerInterface;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
+use TYPO3\CMS\Form\Service\TranslationService;
 
 /**
  * Class FormDefinitionUtility
@@ -34,7 +38,11 @@ class UniqueFieldHandler
     /** @var array<array-key, mixed> */
     protected array $fieldTypesNextIdentifier = [];
 
-    public function __construct(protected FormPersistenceManager $formPersistenceManager) {}
+    public function __construct(
+        protected FormPersistenceManager $formPersistenceManager,
+        protected readonly ExtFormConfigurationManagerInterface $extFormConfigurationManager,
+        protected ConfigurationManagerInterface $configurationManager,
+    ) {}
 
     /**
      * Makes sure that field identifiers are unique (identifiers of deleted fields are not reused)
@@ -162,11 +170,27 @@ class UniqueFieldHandler
     }
 
     /**
+     * @return array<array-key, mixed>
+     */
+    protected function getFormSettings(): array
+    {
+        $typoScriptSettings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'form');
+        $formSettings = $this->extFormConfigurationManager->getYamlConfiguration($typoScriptSettings, false);
+        if (!isset($formSettings['formManager'])) {
+            // Config sub array formManager is crucial and should always exist. If it does
+            // not, this indicates an issue in config loading logic. Except in this case.
+            throw new \LogicException('Configuration could not be loaded', 1681549038);
+        }
+        return $formSettings;
+    }
+
+    /**
      * @param string $formPersistenceIdentifier
      */
     protected function setExistingFieldStateBeforeSave(string $formPersistenceIdentifier): void
     {
-        $formDefinitionBeforeSave = $this->formPersistenceManager->load($formPersistenceIdentifier, [], []);
+        $formSettings = $this->getFormSettings();
+        $formDefinitionBeforeSave = $this->formPersistenceManager->load($formPersistenceIdentifier, $formSettings, []);
         $this->existingFieldStateBeforeSave = $formDefinitionBeforeSave['renderingOptions']['fieldState'] ?? [];
     }
 }
