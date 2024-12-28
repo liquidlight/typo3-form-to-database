@@ -21,8 +21,6 @@ final class DeleteFormResultCommandTest extends FunctionalTestCase
         'typo3/cms-form',
     ];
 
-    protected array $pathsToProvideInTestInstance = [];
-
     protected function setUp(): void
     {
         parent::setUp();

@@ -22,7 +22,7 @@ class FormResult extends AbstractEntity
     /**
      * The formPersistenceIdentifier
      *
-     * @see FormDefinition->persistenceIdentifier
+     * @see FormDefinition::persistenceIdentifier
      */
     protected string $formPersistenceIdentifier = '';
 
@@ -42,8 +42,6 @@ class FormResult extends AbstractEntity
 
     /**
      * Uid of the form plugin content element
-     *
-     * @var int
      */
     protected int $formPluginUid = 0;
 
@@ -64,8 +62,6 @@ class FormResult extends AbstractEntity
 
     /**
      * Gets the formPersistenceIdentifier
-     *
-     * @return string
      */
     public function getFormPersistenceIdentifier(): string
     {

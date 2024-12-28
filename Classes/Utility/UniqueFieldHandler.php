@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Lavitto\FormToDatabase\Utility;
 
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
-use TYPO3\CMS\Form\Domain\Configuration\ConfigurationService;
 use TYPO3\CMS\Form\Domain\Configuration\Exception\PrototypeNotFoundException;
 use TYPO3\CMS\Form\Domain\Exception\RenderingException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException;
@@ -22,7 +21,6 @@ use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Exception;
 use TYPO3\CMS\Form\Mvc\Configuration\ConfigurationManagerInterface as ExtFormConfigurationManagerInterface;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
-use TYPO3\CMS\Form\Service\TranslationService;
 
 /**
  * Class FormDefinitionUtility
@@ -39,9 +37,9 @@ class UniqueFieldHandler
     protected array $fieldTypesNextIdentifier = [];
 
     public function __construct(
-        protected FormPersistenceManager $formPersistenceManager,
+        protected readonly FormPersistenceManager $formPersistenceManager,
         protected readonly ExtFormConfigurationManagerInterface $extFormConfigurationManager,
-        protected ConfigurationManagerInterface $configurationManager,
+        protected readonly ConfigurationManagerInterface $configurationManager,
     ) {}
 
     /**
@@ -164,7 +162,7 @@ class UniqueFieldHandler
     protected function updateStateDeletedState(array &$formDefinition): void
     {
         $formDefinition['renderingOptions']['fieldState'] = array_map(function ($field) {
-            $field['renderingOptions']['deleted'] = in_array($field['identifier'], $this->activeFields) ? 0 : 1;
+            $field['renderingOptions']['deleted'] = in_array($field['identifier'], $this->activeFields, true) ? 0 : 1;
             return $field;
         }, $formDefinition['renderingOptions']['fieldState']);
     }

@@ -11,8 +11,9 @@ parameters:
   level: 8
 
   paths:
-    - ../../.
-
-  excludePaths:
-    - ../../.Build/*
-    - ../../Build/*
+    - ../../Classes/
+    - ../../Tests/
+    - ../../Configuration/
+    - ../../ext_localconf.php
+    - ../../ext_tables.php
+    - ../../ext_emconf.php

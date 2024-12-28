@@ -18,7 +18,7 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
 {
     use SiteBasedTestTrait;
 
-    final protected const LANGUAGE_PRESETS = [
+    protected const LANGUAGE_PRESETS = [
         'en' => [
             'id' => 0,
             'title' => 'TYPO3 Form Save To Database',
@@ -29,7 +29,7 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
 
     protected array $testExtensionsToLoad = [
         'lavitto/typo3-form-to-database',
-        'typo3conf/ext/form_to_database/Tests/Functional/Fixtures/test_extension',
+        __DIR__ . '/../Fixtures/test_extension',
     ];
 
     protected array $pathsToProvideInTestInstance = [

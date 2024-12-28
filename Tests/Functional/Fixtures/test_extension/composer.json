@@ -2,6 +2,7 @@
   "name": "lavitto/form-to-database-test-extension",
   "type": "typo3-cms-extension",
   "require": {
+    "lavitto/typo3-form-to-database": "*"
   },
   "extra": {
     "typo3/cms": {

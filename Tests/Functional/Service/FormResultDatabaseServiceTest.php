@@ -22,11 +22,6 @@ final class FormResultDatabaseServiceTest extends FunctionalTestCase
         'typo3/cms-form',
     ];
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     #[Test]
     public function noFormsInSystemReturnsEmptyArray(): void
     {

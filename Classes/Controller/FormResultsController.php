@@ -83,35 +83,18 @@ class FormResultsController extends FormManagerController
 
     public const defaultNumberOfColumnsInListView = 4;
 
-    /**
-     * @var ExtConfUtility
-     */
     protected ExtConfUtility $extConfUtility;
 
-    /**
-     * @var FormResultRepository
-     */
     protected FormResultRepository $formResultRepository;
 
-    /**
-     * @var BackendUserAuthentication
-     */
     protected BackendUserAuthentication $BEUser;
 
-    /**
-     * @var FormResultDatabaseService
-     */
     protected FormResultDatabaseService $formResultDatabaseService;
 
-    /**
-     * @var ModuleTemplate
-     */
     protected ModuleTemplate $moduleTemplate;
 
     /**
      * Injects the FormResultRepository
-     *
-     * @param FormResultRepository $formResultRepository
      */
     public function injectFormResultRepository(FormResultRepository $formResultRepository): void
     {
@@ -119,9 +102,7 @@ class FormResultsController extends FormManagerController
     }
 
     /**
-     * Injects the FormResultRepository
-     *
-     * @param FormResultDatabaseService $formResultDatabaseService
+     * Injects the FormResultDatabaseService
      */
     public function injectFormResultDatabaseService(FormResultDatabaseService $formResultDatabaseService): void
     {
@@ -130,8 +111,6 @@ class FormResultsController extends FormManagerController
 
     /**
      * Injects the ExtConfUtility
-     *
-     * @param ExtConfUtility $extConfUtility
      */
     public function injectExtConfUtility(ExtConfUtility $extConfUtility): void
     {

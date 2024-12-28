@@ -22,7 +22,7 @@ final class FormResultsControllerTest extends FunctionalTestCase
 {
     use SiteBasedTestTrait;
 
-    final protected const LANGUAGE_PRESETS = [
+    protected const LANGUAGE_PRESETS = [
         'en' => [
             'id' => 0,
             'title' => 'TYPO3 Form Save To Database',

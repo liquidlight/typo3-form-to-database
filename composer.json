@@ -37,7 +37,6 @@
   "require": {
     "php": "^8.2 || ^8.3 || ^8.4",
     "ext-json": "*",
-    "ext-pdo": "*",
     "typo3/cms-backend": "^13.4",
     "typo3/cms-core": "^13.4",
     "typo3/cms-extbase": "^13.4",
@@ -62,7 +61,6 @@
   "extra": {
     "typo3/cms": {
       "extension-key": "form_to_database",
-      "cms-package-dir": "{$vendor-dir}/typo3/cms",
       "web-dir": ".Build/Web"
     }
   },

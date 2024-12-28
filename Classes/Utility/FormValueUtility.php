@@ -255,9 +255,7 @@ class FormValueUtility implements SingletonInterface
      */
     protected static function getExtConfUtility(): ExtConfUtility
     {
-        if (self::$extConfUtility === null) {
-            self::$extConfUtility = GeneralUtility::makeInstance(ExtConfUtility::class);
-        }
+        self::$extConfUtility ??= GeneralUtility::makeInstance(ExtConfUtility::class);
         return self::$extConfUtility;
     }
 }
