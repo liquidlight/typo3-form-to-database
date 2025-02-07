@@ -7,8 +7,6 @@ namespace Lavitto\FormToDatabase\Test\Functional\Command;
 use Lavitto\FormToDatabase\Command\DeleteFormResultCommand;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Tester\CommandTester;
-use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
-use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 final class DeleteFormResultCommandTest extends FunctionalTestCase
@@ -25,12 +23,6 @@ final class DeleteFormResultCommandTest extends FunctionalTestCase
     {
         parent::setUp();
         $this->importCSVDataSet(__DIR__ . '/Fixtures/deleteCommandDataset.csv');
-
-        // needed for Extbase configuration
-        // if not set, Configuration will not get loaded
-        // and the repository can't create a query
-        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest('/'))
-            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE);
     }
 
     /**

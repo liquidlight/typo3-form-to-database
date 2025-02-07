@@ -19,6 +19,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
@@ -42,6 +44,12 @@ final class DeleteFormResultCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
+        // needed for Extbase configuration
+        // if not set, Configuration will not get loaded
+        // and the repository can't create a query
+        // @todo this is hacky! The command should be refactored not using Extbase!
+        $GLOBALS['TYPO3_REQUEST'] ??= (new ServerRequest('/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE);
         $this->formResultRepository = GeneralUtility::makeInstance(FormResultRepository::class);
         $this->persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
     }
