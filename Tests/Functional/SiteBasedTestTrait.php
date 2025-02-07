@@ -16,6 +16,8 @@ namespace Lavitto\FormToDatabase\Test\Functional;
  * @todo This trait has been copied from the TYPO3 core tests, because the `typo3/testing-framework` do not contain
  *       this trait or similar feature set for now. This may change in the future, and this trait should then removed
  *       along with adopting tests to the introduced TF way to deal with this.
+ *
+ * Adopted from https://github.com/web-vision/deepltranslate-core/blob/main/Tests/Functional/Fixtures/Traits/SiteBasedTestTrait.php
  */
 
 use TYPO3\CMS\Core\Configuration\SiteWriter;
