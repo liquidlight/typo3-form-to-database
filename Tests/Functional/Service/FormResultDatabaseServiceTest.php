@@ -15,7 +15,7 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 final class FormResultDatabaseServiceTest extends FunctionalTestCase
 {
     protected array $testExtensionsToLoad = [
-        'lavitto/form-to-database',
+        'lavitto/typo3-form-to-database',
     ];
 
     protected array $coreExtensionsToLoad = [
