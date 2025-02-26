@@ -515,6 +515,7 @@ class FormResultsController extends FormManagerController
                 }
 
                 $childFields = $this->getFieldElements($renderable['renderables']);
+                $renderableFields = [];
 
                 for ($x = 0; $x < $renderable['properties']['maximumCopies']; $x++) {
                     foreach($childFields as $field) {
