@@ -176,7 +176,7 @@ class FormResult extends AbstractEntity
      */
     public function setResultFromArray(array $resultArray): void
     {
-        $this->setResult(!empty($resultArray) ? json_encode($resultArray, JSON_THROW_ON_ERROR) : '');
+        $this->setResult(!empty($resultArray) ? json_encode($resultArray, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) : '');
     }
 
     /**
