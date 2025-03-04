@@ -81,9 +81,11 @@ There are several options available for customisation. To change these, go to **
 
 - **General**
   - `hideLocationInList` - Should the location of the form be hidden on the Form results overview module? (Default: No)
+  - `displayActiveFieldsOnly` - If true will only output active renderables in backendModule and CSV (will not display deleted renderables stored in the formDefinition) (Default: false)
 - **CSV Settings**
   - `csvDelimiter` - What character should separate fields in the CSV export (Default: `,`)
   - `csvOnlyFilenameOfUploadFields` - Should the CSV list the whole path or just the file name?
+  - `csvHtmlSpecialChars` - If true will encode special chars (`'` => `&quot;`, `<` => `&lt;`) (Default: true)
 
 #### Single View PDF
 
