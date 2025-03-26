@@ -57,8 +57,6 @@ final class FormResultsControllerTest extends FunctionalTestCase
         $site['dependencies'] = [
             'lavitto/form-to-database-test',
             'lavitto/typo3-form-to-database',
-            'typo3/fluid-styled-content',
-            'typo3/fluid-styled-content-css',
         ];
         $this->writeSiteConfiguration(
             'test-base',

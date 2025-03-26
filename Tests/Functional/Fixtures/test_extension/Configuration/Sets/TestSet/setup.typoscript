@@ -17,3 +17,23 @@ page.100 {
         where = {#colPos}=0
     }
 }
+
+# fluid-styled-content content element definition
+# Default configuration for content elements which are using FLUIDTEMPLATE directly
+lib.contentElement >
+lib.contentElement = FLUIDTEMPLATE
+lib.contentElement {
+  templateName = Default
+  templateRootPaths {
+    0 = EXT:test_extension/Resources/Private/Templates/
+  }
+  partialRootPaths {
+    0 = EXT:test_extension/Resources/Private/Partials/
+  }
+  layoutRootPaths {
+    0 = EXT:test_extension/Resources/Private/Layouts/
+  }
+  settings {
+    defaultHeaderType = 2
+  }
+}
