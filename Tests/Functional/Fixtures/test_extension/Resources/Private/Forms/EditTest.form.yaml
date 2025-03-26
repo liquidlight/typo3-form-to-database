@@ -1,6 +1,7 @@
 
 renderingOptions:
-  submitButtonLabel: Absenden
+  submitButtonLabel: Send
+  fieldState: {  }
 type: Form
 identifier: test_1
 label: Test
@@ -8,8 +9,8 @@ prototypeName: standard
 renderables:
   -
     renderingOptions:
-      previousButtonLabel: Vorherige+Seite
-      nextButtonLabel: Nächster+Schritt
+      previousButtonLabel: Previous+page
+      nextButtonLabel: Next+step
     type: Page
     identifier: page-1
     label: Step
