@@ -102,6 +102,7 @@ class FormToDatabaseFinisher extends AbstractFinisher
      */
     protected function executeInternal(): void
     {
+        $request = $this->finisherContext->getRequest();
         $this->formDefinition = $this->finisherContext->getFormRuntime()->getFormDefinition();
         $formPersistenceIdentifier = $this->formDefinition->getPersistenceIdentifier();
 
@@ -115,10 +116,11 @@ class FormToDatabaseFinisher extends AbstractFinisher
             $formPluginUid = (int)substr($this->formDefinition->getIdentifier(), $delimiter + 1);
             $formIdentifier = substr($this->formDefinition->getIdentifier(), 0, $delimiter);
         }
+
         $formResult = GeneralUtility::makeInstance(FormResult::class);
         $formResult->setFormPersistenceIdentifier($formPersistenceIdentifier);
-        $formResult->setSiteIdentifier($GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getIdentifier());
-        $formResult->setPid($GLOBALS['TSFE']->id);
+        $formResult->setSiteIdentifier($request->getAttribute('site')->getIdentifier());
+        $formResult->setPid($request->getAttribute('frontend.page.information')->getId());
         $formResult->setResultFromArray($formValues);
         $formResult->setFormPluginUid($formPluginUid);
         $formResult->setFormIdentifier($formIdentifier);
