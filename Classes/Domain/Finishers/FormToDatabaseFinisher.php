@@ -39,38 +39,8 @@ class FormToDatabaseFinisher extends AbstractFinisher
      */
     protected FormDefinition $formDefinition;
 
-    /**
-     * The FormResultRepository
-     *
-     * @var FormResultRepository
-     */
-    protected FormResultRepository $formResultRepository;
-
-    /**
-     * The ConfigurationManagerInterface
-     *
-     * @var ConfigurationManagerInterface
-     */
-    protected ConfigurationManagerInterface $configurationManager;
-
-    /**
-     * Injects the FormResultRepository
-     *
-     * @param FormResultRepository $formResultRepository
-     */
-    public function injectFormResultRepository(FormResultRepository $formResultRepository): void
+    public function __construct(protected FormResultRepository $formResultRepository, protected ConfigurationManagerInterface $configurationManager)
     {
-        $this->formResultRepository = $formResultRepository;
-    }
-
-    /**
-     * Injects the ConfigurationManagerInterface
-     *
-     * @param ConfigurationManagerInterface $configurationManager
-     */
-    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager): void
-    {
-        $this->configurationManager = $configurationManager;
     }
 
     /**
@@ -78,8 +48,8 @@ class FormToDatabaseFinisher extends AbstractFinisher
      *
      * Recursive method to get all form field values including nested ones
      *
-     * @param array<string, mixed> $fields
-     * @param array<array-key, mixed> $nestedIdentifier Array of levels nested - populated during recursion
+     * @param  array<string, mixed>  $fields
+     * @param  array<array-key, mixed>  $nestedIdentifier  Array of levels nested - populated during recursion
      * @return array<string, mixed>
      */
     private function getFormFieldValues(array $fields, array $nestedIdentifier = []): array
