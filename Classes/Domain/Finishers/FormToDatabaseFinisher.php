@@ -119,8 +119,8 @@ class FormToDatabaseFinisher extends AbstractFinisher
 
         $formResult = GeneralUtility::makeInstance(FormResult::class);
         $formResult->setFormPersistenceIdentifier($formPersistenceIdentifier);
-        $formResult->setSiteIdentifier($request->getAttribute('site')->getIdentifier());
-        $formResult->setPid($request->getAttribute('frontend.page.information')->getId());
+        $formResult->setSiteIdentifier($request->getAttribute('site')?->getIdentifier() ?? '');
+        $formResult->setPid($request->getAttribute('frontend.page.information')?->getId() ?? 0);
         $formResult->setResultFromArray($formValues);
         $formResult->setFormPluginUid($formPluginUid);
         $formResult->setFormIdentifier($formIdentifier);
