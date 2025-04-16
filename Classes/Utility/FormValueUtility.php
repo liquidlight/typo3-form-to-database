@@ -249,4 +249,27 @@ class FormValueUtility implements SingletonInterface
         }
         return self::$extConfUtility;
     }
+
+    /**
+     * Finds matching form values by direct match or when prefixed by a container
+     * @param array $results
+     * @param string $identifier
+     * @return mixed
+     */
+    public static function findValueByIdentifier(array $results, string $identifier): mixed
+    {
+        // Try direct match
+        if (array_key_exists($identifier, $results)) {
+            return $results[$identifier];
+        }
+
+        // Try suffix match
+        foreach ($results as $key => $value) {
+            if (preg_match('/\.' . preg_quote($identifier, '/') . '$/', $key)) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
 }

@@ -267,10 +267,16 @@ class FormResultsController extends FormManagerController
                 }
             }
         }
+
         /** @var FormResult $formResult */
         foreach ($formResults as $formResult) {
-            $fieldsWithData = array_merge($fieldsWithData, array_fill_keys(array_keys($formResult->getResultAsArray()), 1));
+            foreach ($formDefinition->getRenderingOptions()['fieldState'] ?? [] as $fieldIdentifier => $_) {
+                if (FormValueUtility::findValueByIdentifier($formResult->getResultAsArray(), $fieldIdentifier) !== null) {
+                    $fieldsWithData[$fieldIdentifier] = 1;
+                }
+            }
         }
+
         $fieldsWithNoData = array_diff_key(array_fill_keys(array_keys($formDefinition->getRenderingOptions()['fieldState'] ?? []), 1), $fieldsWithData);
 
         /** @var FormResultShowActionEvent $event */
