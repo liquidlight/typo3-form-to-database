@@ -741,13 +741,29 @@ class FormResultsController extends FormManagerController
      */
     protected function filterExcludedFormFieldsInConfiguration(array &$renderables, array $excludeFields = FormToDatabaseFinisher::EXCLUDE_FIELDS): void
     {
-        foreach ($renderables as $i => $renderable) {
-            if (in_array($renderable['type'], $excludeFields, true) === true) {
-                unset($renderables[$i]);
-            } elseif (isset($renderable['renderables']) && !empty($renderable['renderables'])) {
-                $this->filterExcludedFormFieldsInConfiguration($renderables[$i]['renderables'], $excludeFields);
+        $filtered = [];
+
+        foreach ($renderables as $renderable) {
+            if (in_array($renderable['type'], $excludeFields, true)) {
+                // Filter and merge in any valid child fields
+                if (!empty($renderable['renderables']) && is_array($renderable['renderables'])) {
+                    $this->filterExcludedFormFieldsInConfiguration($renderable['renderables'], $excludeFields);
+                    foreach ($renderable['renderables'] as $child) {
+                        $filtered[] = $child;
+                    }
+                }
+                continue;
             }
+
+            // Process any nested renderables
+            if (!empty($renderable['renderables']) && is_array($renderable['renderables'])) {
+                $this->filterExcludedFormFieldsInConfiguration($renderable['renderables'], $excludeFields);
+            }
+
+            $filtered[] = $renderable;
         }
+
+        $renderables = $filtered;
     }
 
     /**
