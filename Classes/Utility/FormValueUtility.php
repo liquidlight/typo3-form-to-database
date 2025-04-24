@@ -295,7 +295,7 @@ class FormValueUtility implements SingletonInterface
     }
 
     /**
-     * Formats multiple value matches (such as repeatables) as a single string with line breaks
+     * Formats multiple value matches (such as repeatables) as a single string with numbered lines
      * @param FormElementInterface $element
      * @param array $values
      * @param bool $crop
@@ -303,11 +303,22 @@ class FormValueUtility implements SingletonInterface
     */
     public static function prepareMultipleValues(FormElementInterface $element, array $values, bool $crop): string
     {
+        // Convert each value to appropriate string format
         $convertedValues = array_map(function ($value) use ($element, $crop) {
             return self::convertFormValue($element, $value, self::OUTPUT_TYPE_HTML, $crop);
         }, $values);
 
-        return implode('<br>', $convertedValues);
+        // Reorder to original form submission order
+        $orderedValues = array_reverse($convertedValues);
+
+        // Prepend each value with a line number
+        $numberedValues = array_map(
+            fn($line, $index) => ($index + 1) . ') ' . $line,
+            $orderedValues,
+            array_keys($orderedValues)
+        );
+
+        return implode('<br>', $numberedValues);
     }
 
 }
