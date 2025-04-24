@@ -271,7 +271,7 @@ class FormResultsController extends FormManagerController
         /** @var FormResult $formResult */
         foreach ($formResults as $formResult) {
             foreach ($formDefinition->getRenderingOptions()['fieldState'] ?? [] as $fieldIdentifier => $_) {
-                if (FormValueUtility::findValueByIdentifier($formResult->getResultAsArray(), $fieldIdentifier) !== null) {
+                if (!empty(FormValueUtility::findValuesByIdentifier($formResult->getResultAsArray(), $fieldIdentifier))) {
                     $fieldsWithData[$fieldIdentifier] = 1;
                 }
             }

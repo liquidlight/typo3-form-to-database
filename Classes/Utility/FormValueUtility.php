@@ -256,20 +256,58 @@ class FormValueUtility implements SingletonInterface
      * @param string $identifier
      * @return mixed
      */
-    public static function findValueByIdentifier(array $results, string $identifier): mixed
+    public static function findValuesByIdentifier(array $results, string $identifier): array
     {
+        $values = [];
+
         // Try direct match
-        if (array_key_exists($identifier, $results)) {
-            return $results[$identifier];
+        if (array_key_exists($identifier, $results) && $results[$identifier] !== null) {
+            $values[] = $results[$identifier];
         }
 
         // Try suffix match
         foreach ($results as $key => $value) {
-            if (preg_match('/\.' . preg_quote($identifier, '/') . '$/', $key)) {
-                return $value;
+            if ($value !== null && preg_match('/\.' . preg_quote($identifier, '/') . '$/', $key)) {
+                $values[] = $value;
             }
         }
 
-        return null;
+        return $values;
     }
+
+    /**
+     * Finds matching form values and converts them to a string 
+     * @param FormElementInterface $element
+     * @param array $results
+     * @param string $valueIdentifier
+     * @param bool $crop
+     * @return string
+     */
+    public static function prepareFormValues(FormElementInterface $element, array $results, string $valueIdentifier, bool $crop = false): string
+    {
+        $values = self::findValuesByIdentifier($results, $valueIdentifier);
+
+        if (count($values) > 1) {
+            return self::prepareMultipleValues($element, $values, $crop);
+        }
+
+        return self::convertFormValue($element, reset($values) ?? null, self::OUTPUT_TYPE_HTML, $crop);
+    }
+
+    /**
+     * Formats multiple value matches (such as repeatables) as a single string with line breaks
+     * @param FormElementInterface $element
+     * @param array $values
+     * @param bool $crop
+     * @return string
+    */
+    public static function prepareMultipleValues(FormElementInterface $element, array $values, bool $crop): string
+    {
+        $convertedValues = array_map(function ($value) use ($element, $crop) {
+            return self::convertFormValue($element, $value, self::OUTPUT_TYPE_HTML, $crop);
+        }, $values);
+
+        return implode('<br>', $convertedValues);
+    }
+
 }
