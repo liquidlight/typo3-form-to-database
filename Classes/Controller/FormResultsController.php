@@ -184,7 +184,7 @@ class FormResultsController extends FormManagerController
         $fieldsWithData = [];
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
-        $currentPage = $this->request->getArguments()['currentPage'] ?? 1;
+        $currentPage = (int)($this->request->getArguments()['currentPage'] ?? 1);
         $newDataExists = false;
         $languageFile = 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:';
 
