@@ -184,7 +184,7 @@ class FormResultsController extends FormManagerController
         $fieldsWithData = [];
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
-        $currentPage = $this->request->getArguments()['currentPage'] ?? 1;
+        $currentPage = (int)($this->request->getArguments()['currentPage'] ?? 1);
         $newDataExists = false;
         $languageFile = 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:';
 
@@ -585,7 +585,6 @@ class FormResultsController extends FormManagerController
             []
         );
 
-        $this->hydrateRepeatableFields($configuration);
         $this->enrichFieldStateWithListViewStates($configuration);
         if ($useFieldStateDataAsRenderables) {
             //Ensure that fieldState exists
@@ -600,59 +599,6 @@ class FormResultsController extends FormManagerController
         }
 
         return $configuration;
-    }
-
-    /**
-     * hydrateRepeatableFields
-     *
-     * Creates repeated fields for any fields which could be repeated
-     *
-     * @param  array<array-key, mixed> $configuration
-     */
-    protected function hydrateRepeatableFields(array &$configuration): void
-    {
-        foreach ($configuration['renderables'] as $p => $pages) {
-            foreach ($pages['renderables'] ?? [] as $i => $renderable) {
-                if (!isset(
-                    $renderable['renderables'],
-                    $renderable['properties'],
-                    $renderable['properties']['maximumCopies']
-                )) {
-                    continue;
-                }
-
-                $childFields = $this->getFieldElements($renderable['renderables']);
-
-                $renderableFields = [];
-                for ($x = 0; $x < $renderable['properties']['maximumCopies']; $x++) {
-                    foreach ($childFields as $field) {
-                        $nestedIdentifier = sprintf('%s.%s.%s', $renderable['identifier'], $x, $field['identifier']);
-                        $nestedLabel = sprintf('%s (%s)', $field['label'], ($x + 1));
-
-                        $renderableField = $field;
-                        $renderableField['label'] = $nestedLabel;
-                        $renderableField['identifier'] = $nestedIdentifier;
-                        $renderableFields[] = $renderableField;
-
-                        if (!isset($configuration['renderingOptions']['fieldState'][$field['identifier']])) {
-                            continue;
-                        }
-
-                        $fieldStateField = $configuration['renderingOptions']['fieldState'][$field['identifier']];
-                        $fieldStateField['label'] = $nestedLabel;
-                        $fieldStateField['identifier'] = $nestedIdentifier;
-                        $configuration['renderingOptions']['fieldState'][$nestedIdentifier] = $fieldStateField;
-
-                        if ($x === ((int)$renderable['properties']['maximumCopies'] - 1)) {
-                            unset($configuration['renderingOptions']['fieldState'][$field['identifier']]);
-                        }
-                    }
-                }
-
-                $configuration['renderables'][$p]['renderables'][$i]['renderables'] = $renderableFields;
-
-            }
-        }
     }
 
     /**
@@ -738,9 +684,11 @@ class FormResultsController extends FormManagerController
     protected function filterExcludedFormFieldsInConfiguration(array &$renderables, array $excludeFields = FormToDatabaseFinisher::EXCLUDE_FIELDS): void
     {
         foreach ($renderables as $i => $renderable) {
-            if (in_array($renderable['type'], $excludeFields, true) === true) {
+            if ($renderable['type'] === 'GridRow' && !empty($renderable['renderables'])) {
+                $this->filterExcludedFormFieldsInConfiguration($renderables[$i]['renderables'], $excludeFields);
+            } elseif (in_array($renderable['type'], $excludeFields, true) === true) {
                 unset($renderables[$i]);
-            } elseif (isset($renderable['renderables']) && !empty($renderable['renderables'])) {
+            } elseif (!empty($renderable['renderables'])) {
                 $this->filterExcludedFormFieldsInConfiguration($renderables[$i]['renderables'], $excludeFields);
             }
         }

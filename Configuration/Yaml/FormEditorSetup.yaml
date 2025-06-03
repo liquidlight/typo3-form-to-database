@@ -1,33 +1,30 @@
-TYPO3:
-  CMS:
-    Form:
-      prototypes:
-        standard:
-          formElementsDefinition:
-            Form:
-              formEditor:
+prototypes:
+  standard:
+    formElementsDefinition:
+      Form:
+        formEditor:
+          editors:
+            900:
+              selectOptions:
+                1560425499:
+                  value: 'FormToDatabase'
+                  label: 'formEditor.elements.Form.finisher.SaveToDatabase.editor.header.label'
+          propertyCollections:
+            finishers:
+              1560425499:
+                identifier: 'FormToDatabase'
                 editors:
-                  900:
-                    selectOptions:
-                      1560425499:
-                        value: 'FormToDatabase'
-                        label: 'formEditor.elements.Form.finisher.SaveToDatabase.editor.header.label'
-                propertyCollections:
-                  finishers:
-                    1560425499:
-                      identifier: 'FormToDatabase'
-                      editors:
-                        100:
-                          identifier: header
-                          templateName: Inspector-CollectionElementHeaderEditor
-                          label: formEditor.elements.Form.finisher.SaveToDatabase.editor.header.label
-                        9999:
-                          identifier: removeButton
-                          templateName: Inspector-RemoveElementEditor
-          finishersDefinition:
-            FormToDatabase:
-              formEditor:
-                iconIdentifier: form-finisher
-                label: formEditor.elements.Form.finisher.SaveToDatabase.editor.header.label
-                predefinedDefaults:
-                  options: []
+                  100:
+                    identifier: header
+                    templateName: Inspector-CollectionElementHeaderEditor
+                    label: formEditor.elements.Form.finisher.SaveToDatabase.editor.header.label
+                  9999:
+                    identifier: removeButton
+                    templateName: Inspector-RemoveElementEditor
+    finishersDefinition:
+      FormToDatabase:
+        formEditor:
+          iconIdentifier: form-finisher
+          label: formEditor.elements.Form.finisher.SaveToDatabase.editor.header.label
+          predefinedDefaults:
+            options: []

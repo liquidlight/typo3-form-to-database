@@ -24,11 +24,15 @@ renderables:
     identifier: page-1
     label: Step
     renderables:
-      -
-        defaultValue: ''
-        type: Text
-        identifier: name
-        label: 'Full name'
-        properties:
-          fluidAdditionalAttributes:
-            autocomplete: name
+      - type: GridRow
+        identifier: gridrow-1
+        label: 'Grid: Row'
+        renderables:
+          -
+            defaultValue: ''
+            type: Text
+            identifier: name
+            label: 'Full name'
+            properties:
+              fluidAdditionalAttributes:
+                autocomplete: name

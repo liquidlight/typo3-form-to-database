@@ -39,7 +39,6 @@ final class UniqueFieldHandlerTest extends FunctionalTestCase
 
     protected array $coreExtensionsToLoad = [
         'typo3/cms-form',
-        'typo3/cms-fluid-styled-content',
     ];
 
     protected function setUp(): void
@@ -56,10 +55,7 @@ final class UniqueFieldHandlerTest extends FunctionalTestCase
         $site['dependencies'] = [
             'lavitto/form-to-database-test',
             'lavitto/form-to-database-save-to-extension-test',
-            'typo3/form',
             'lavitto/typo3-form-to-database',
-            'typo3/fluid-styled-content',
-            'typo3/fluid-styled-content-css',
         ];
         $this->writeSiteConfiguration(
             'test-base',

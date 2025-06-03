@@ -39,38 +39,8 @@ class FormToDatabaseFinisher extends AbstractFinisher
      */
     protected FormDefinition $formDefinition;
 
-    /**
-     * The FormResultRepository
-     *
-     * @var FormResultRepository
-     */
-    protected FormResultRepository $formResultRepository;
-
-    /**
-     * The ConfigurationManagerInterface
-     *
-     * @var ConfigurationManagerInterface
-     */
-    protected ConfigurationManagerInterface $configurationManager;
-
-    /**
-     * Injects the FormResultRepository
-     *
-     * @param FormResultRepository $formResultRepository
-     */
-    public function injectFormResultRepository(FormResultRepository $formResultRepository): void
+    public function __construct(protected FormResultRepository $formResultRepository, protected ConfigurationManagerInterface $configurationManager)
     {
-        $this->formResultRepository = $formResultRepository;
-    }
-
-    /**
-     * Injects the ConfigurationManagerInterface
-     *
-     * @param ConfigurationManagerInterface $configurationManager
-     */
-    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager): void
-    {
-        $this->configurationManager = $configurationManager;
     }
 
     /**
@@ -78,8 +48,8 @@ class FormToDatabaseFinisher extends AbstractFinisher
      *
      * Recursive method to get all form field values including nested ones
      *
-     * @param array<string, mixed> $fields
-     * @param array<array-key, mixed> $nestedIdentifier Array of levels nested - populated during recursion
+     * @param  array<string, mixed>  $fields
+     * @param  array<array-key, mixed>  $nestedIdentifier  Array of levels nested - populated during recursion
      * @return array<string, mixed>
      */
     private function getFormFieldValues(array $fields, array $nestedIdentifier = []): array
@@ -132,6 +102,7 @@ class FormToDatabaseFinisher extends AbstractFinisher
      */
     protected function executeInternal(): void
     {
+        $request = $this->finisherContext->getRequest();
         $this->formDefinition = $this->finisherContext->getFormRuntime()->getFormDefinition();
         $formPersistenceIdentifier = $this->formDefinition->getPersistenceIdentifier();
 
@@ -145,10 +116,11 @@ class FormToDatabaseFinisher extends AbstractFinisher
             $formPluginUid = (int)substr($this->formDefinition->getIdentifier(), $delimiter + 1);
             $formIdentifier = substr($this->formDefinition->getIdentifier(), 0, $delimiter);
         }
+
         $formResult = GeneralUtility::makeInstance(FormResult::class);
         $formResult->setFormPersistenceIdentifier($formPersistenceIdentifier);
-        $formResult->setSiteIdentifier($GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getIdentifier());
-        $formResult->setPid($GLOBALS['TSFE']->id);
+        $formResult->setSiteIdentifier($request->getAttribute('site')?->getIdentifier() ?? '');
+        $formResult->setPid($request->getAttribute('frontend.page.information')?->getId() ?? 0);
         $formResult->setResultFromArray($formValues);
         $formResult->setFormPluginUid($formPluginUid);
         $formResult->setFormIdentifier($formIdentifier);
