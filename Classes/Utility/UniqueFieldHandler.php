@@ -53,29 +53,32 @@ class UniqueFieldHandler
     {
         $fieldCount = 0;
         $this->setExistingFieldsBeforeSave($formPersistenceIdentifierBeforeSave);
-
-        //Make map of next identifier for each field type
-        $this->makeNextIdentifiersMap($formDefinition['renderingOptions']['fieldState']);
-
+        $formStateDidAlreadyExist = !!($formDefinition['renderingOptions']['fieldState'] ?? false);
         FormDefinitionUtility::addFieldStateIfDoesNotExist($formDefinition, true);
 
-        foreach (FormDefinitionUtility::convertFormDefinitionToObject($formDefinition)->getRenderablesRecursively() as $renderable) {
-            if($renderable instanceof \TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface) {
-                continue;
+        // Only process if formState already existed - else no changes should be considered
+        if($formStateDidAlreadyExist) {
+            //Make map of next identifier for each field type
+            $this->makeNextIdentifiersMap($formDefinition['renderingOptions']['fieldState']);
+
+            foreach (FormDefinitionUtility::convertFormDefinitionToObject($formDefinition)->getRenderablesRecursively() as $renderable) {
+                if($renderable instanceof \TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface) {
+                    continue;
+                }
+                $fieldCount++;
+                if (
+                    !in_array($renderable->getIdentifier(), $this->existingFieldsBeforeSave)
+                    ||
+                    ($formDefinition['renderingOptions']['fieldState'][$renderable->getIdentifier()]['renderingOptions']['deleted'] ?? 0) === 1
+                ) {
+                    //Existing field - update state
+                    $this->updateNewFieldWithNextIdentifier($formDefinition['renderables'], $renderable);
+                }
+                FormDefinitionUtility::addFieldToState($formDefinition['renderingOptions']['fieldState'], $renderable);
+                $this->activeFields[] = $renderable->getIdentifier();
             }
-            $fieldCount++;
-            if (
-                !in_array($renderable->getIdentifier(), $this->existingFieldsBeforeSave)
-                ||
-                ($formDefinition['renderingOptions']['fieldState'][$renderable->getIdentifier()]['renderingOptions']['deleted'] ?? 0) === 1
-            ) {
-                //Existing field - update state
-                $this->updateNewFieldWithNextIdentifier($formDefinition['renderables'], $renderable);
-            }
-            FormDefinitionUtility::addFieldToState($formDefinition['renderingOptions']['fieldState'], $renderable);
-            $this->activeFields[] = $renderable->getIdentifier();
+            $this->updateStateDeletedState($formDefinition);
         }
-        $this->updateStateDeletedState($formDefinition);
         return $formDefinition;
     }
 
