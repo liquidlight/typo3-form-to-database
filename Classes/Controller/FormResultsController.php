@@ -513,7 +513,7 @@ class FormResultsController extends FormManagerController
     protected function hydrateRepeatableFields(array &$configuration): void
     {
         foreach($configuration['renderables'] as $p => $pages) {
-            foreach($pages['renderables'] as $i => $renderable) {
+            foreach($pages['renderables'] ?? [] as $i => $renderable) {
                 if(!isset(
                     $renderable['renderables'],
                     $renderable['properties'],
