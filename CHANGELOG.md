@@ -1,3 +1,7 @@
+# 2.2.3
+
+- [BUGFIX] Backport bugfixes from main to v2 (#130)
+
 # 2.2.2
 
 - [BUG] Reinstate commands file to register commands
