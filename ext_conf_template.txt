@@ -14,3 +14,5 @@ csvDelimiter = ,
 # cat=CSV-Settings; type=boolean; label=Show only filename of upload-fields in csv-file
 csvOnlyFilenameOfUploadFields = 0
 
+# cat=CSV; type=boolean; label=Encode special characters
+csvHtmlSpecialChars = 1

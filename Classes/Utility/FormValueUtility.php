@@ -107,7 +107,14 @@ class FormValueUtility implements SingletonInterface
                 break;
             case 'Textarea':
                 if (is_string($value)) {
-                    $value = htmlspecialchars((string)$value);
+                    if (
+                        $outputType === self::OUTPUT_TYPE_CSV
+                        && !self::getExtConfUtility()->getConfig('csvHtmlSpecialChars')
+                    ) {
+                        $value = htmlspecialchars_decode((string)$value, ENT_QUOTES);
+                    } else {
+                        $value = htmlspecialchars((string)$value);
+                    }
                     if ($outputType === self::OUTPUT_TYPE_HTML) {
                         if ($cropText === true) {
                             $value = self::cropText($value);
@@ -121,7 +128,14 @@ class FormValueUtility implements SingletonInterface
                 break;
             default:
                 if (is_string($value)) {
-                    $value = htmlspecialchars((string)$value);
+                    if (
+                        $outputType === self::OUTPUT_TYPE_CSV
+                        && !self::getExtConfUtility()->getConfig('csvHtmlSpecialChars')
+                    ) {
+                        $value = htmlspecialchars_decode((string)$value, ENT_QUOTES);
+                    } else {
+                        $value = htmlspecialchars((string)$value);
+                    }
                     if ($outputType === self::OUTPUT_TYPE_HTML && $cropText === true) {
                         $value = self::cropText($value);
                     }
