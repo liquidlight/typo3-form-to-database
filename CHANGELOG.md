@@ -1,3 +1,7 @@
+# 3.2.0
+
+- [FEATURE] Use properties from renderables
+
 # 3.1.0
 
 - [FEATURE] Remove single response modal and convert to a view
