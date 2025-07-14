@@ -97,7 +97,14 @@ class FormValueUtility implements SingletonInterface
                 break;
             case 'Textarea':
                 if (is_string($value)) {
-                    $value = htmlspecialchars((string)$value);
+                    if (
+                        $outputType === self::OUTPUT_TYPE_CSV
+                        && !self::getExtConfUtility()->getConfig('csvHtmlSpecialChars')
+                    ) {
+                        $value = htmlspecialchars_decode((string)$value, ENT_QUOTES);
+                    } else {
+                        $value = htmlspecialchars((string)$value);
+                    }
                     if ($outputType === self::OUTPUT_TYPE_HTML) {
                         if ($cropText === true) {
                             $value = self::cropText($value);
@@ -111,7 +118,14 @@ class FormValueUtility implements SingletonInterface
                 break;
             default:
                 if (is_string($value)) {
-                    $value = htmlspecialchars((string)$value);
+                    if (
+                        $outputType === self::OUTPUT_TYPE_CSV
+                        && !self::getExtConfUtility()->getConfig('csvHtmlSpecialChars')
+                    ) {
+                        $value = htmlspecialchars_decode((string)$value, ENT_QUOTES);
+                    } else {
+                        $value = htmlspecialchars((string)$value);
+                    }
                     if ($outputType === self::OUTPUT_TYPE_HTML && $cropText === true) {
                         $value = self::cropText($value);
                     }
@@ -258,4 +272,76 @@ class FormValueUtility implements SingletonInterface
         self::$extConfUtility ??= GeneralUtility::makeInstance(ExtConfUtility::class);
         return self::$extConfUtility;
     }
+
+    /**
+     * Finds matching form values by direct match or when prefixed by a container
+     * @param array $results
+     * @param string $identifier
+     * @return mixed
+     */
+    public static function findValuesByIdentifier(array $results, string $identifier): array
+    {
+        $values = [];
+
+        // Try direct match
+        if (array_key_exists($identifier, $results) && $results[$identifier] !== null) {
+            $values[] = $results[$identifier];
+        }
+
+        // Try suffix match
+        foreach ($results as $key => $value) {
+            if ($value !== null && preg_match('/\.' . preg_quote($identifier, '/') . '$/', $key)) {
+                $values[] = $value;
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * Finds matching form values and converts them to a string 
+     * @param FormElementInterface $element
+     * @param array $results
+     * @param string $valueIdentifier
+     * @param bool $crop
+     * @return string
+     */
+    public static function prepareFormValues(FormElementInterface $element, array $results, string $valueIdentifier, bool $crop = false): string
+    {
+        $values = self::findValuesByIdentifier($results, $valueIdentifier);
+
+        if (count($values) > 1) {
+            return self::prepareMultipleValues($element, $values, $crop);
+        }
+
+        return self::convertFormValue($element, reset($values) ?? null, self::OUTPUT_TYPE_HTML, $crop);
+    }
+
+    /**
+     * Formats multiple value matches (such as repeatables) as a single string with numbered lines
+     * @param FormElementInterface $element
+     * @param array $values
+     * @param bool $crop
+     * @return string
+    */
+    public static function prepareMultipleValues(FormElementInterface $element, array $values, bool $crop): string
+    {
+        // Convert each value to appropriate string format
+        $convertedValues = array_map(function ($value) use ($element, $crop) {
+            return self::convertFormValue($element, $value, self::OUTPUT_TYPE_HTML, $crop);
+        }, $values);
+
+        // Reorder to original form submission order
+        $orderedValues = array_reverse($convertedValues);
+
+        // Prepend each value with a line number
+        $numberedValues = array_map(
+            fn($line, $index) => ($index + 1) . ') ' . $line,
+            $orderedValues,
+            array_keys($orderedValues)
+        );
+
+        return implode('<br>', $numberedValues);
+    }
+
 }

@@ -36,9 +36,10 @@ class ExtConfUtility implements SingletonInterface
      */
     protected const DEFAULT_EXT_CONF = [
         'hideLocationInList' => false,
+        'displayActiveFieldsOnly' => false,
         'csvDelimiter' => ',',
         'csvOnlyFilenameOfUploadFields' => false,
-        'displayActiveFieldsOnly' => false,
+        'csvHtmlSpecialChars' => true,
     ];
 
     /**

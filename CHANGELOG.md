@@ -1,3 +1,16 @@
+# 4.2.0
+
+- [FEATURE]  Remove modal from record view
+- [FEATURE] Add PDF rendering view
+- [FEATURE] Reorder repeatable fields in form results and number lines
+- [TASK] output decoded html char on define extension option
+- [BUGFIX] Initalize array $renderableFields for each $renderable in function hydrateRepeatableFields 
+- [BUGFIX] Ensure a uid & delimiter is defined 
+- [BUGFIX] CSV export - set order from original formDefinition instead of formState
+- [BUGFIX] Form not visible in Backend Module when Finisher is set as variant
+- [BUGFIX] Allow access to Form Results module from all workspaces
+- [BUGFIX] Apply exclusion filter separately to child fields of parent container
+
 # 4.1.0
 
 - [TASK] Allow FormResult model to be extended

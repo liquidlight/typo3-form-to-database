@@ -212,10 +212,16 @@ class FormResultsController extends FormManagerController
                 }
             }
         }
+
         /** @var FormResult $formResult */
         foreach ($formResults as $formResult) {
-            $fieldsWithData = array_merge($fieldsWithData, array_fill_keys(array_keys($formResult->getResultAsArray()), 1));
+            foreach ($formDefinition->getRenderingOptions()['fieldState'] ?? [] as $fieldIdentifier => $_) {
+                if (!empty(FormValueUtility::findValuesByIdentifier($formResult->getResultAsArray(), $fieldIdentifier))) {
+                    $fieldsWithData[$fieldIdentifier] = 1;
+                }
+            }
         }
+
         $fieldsWithNoData = array_diff_key(array_fill_keys(array_keys($formDefinition->getRenderingOptions()['fieldState'] ?? []), 1), $fieldsWithData);
 
         $this->eventDispatcher->dispatch(
@@ -622,6 +628,7 @@ class FormResultsController extends FormManagerController
                 }
 
                 $childFields = $this->getFieldElements($renderable['renderables']);
+                $renderableFields = [];
 
                 $renderableFields = [];
                 for ($x = 0; $x < $renderable['properties']['maximumCopies']; $x++) {
@@ -737,13 +744,29 @@ class FormResultsController extends FormManagerController
      */
     protected function filterExcludedFormFieldsInConfiguration(array &$renderables, array $excludeFields = FormToDatabaseFinisher::EXCLUDE_FIELDS): void
     {
-        foreach ($renderables as $i => $renderable) {
-            if (in_array($renderable['type'], $excludeFields, true) === true) {
-                unset($renderables[$i]);
-            } elseif (isset($renderable['renderables']) && !empty($renderable['renderables'])) {
-                $this->filterExcludedFormFieldsInConfiguration($renderables[$i]['renderables'], $excludeFields);
+        $filtered = [];
+
+        foreach ($renderables as $renderable) {
+            if (in_array($renderable['type'], $excludeFields, true)) {
+                // Filter and merge in any valid child fields
+                if (!empty($renderable['renderables']) && is_array($renderable['renderables'])) {
+                    $this->filterExcludedFormFieldsInConfiguration($renderable['renderables'], $excludeFields);
+                    foreach ($renderable['renderables'] as $child) {
+                        $filtered[] = $child;
+                    }
+                }
+                continue;
             }
+
+            // Process any nested renderables
+            if (!empty($renderable['renderables']) && is_array($renderable['renderables'])) {
+                $this->filterExcludedFormFieldsInConfiguration($renderable['renderables'], $excludeFields);
+            }
+
+            $filtered[] = $renderable;
         }
+
+        $renderables = $filtered;
     }
 
     /**
