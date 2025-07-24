@@ -275,9 +275,9 @@ class FormValueUtility implements SingletonInterface
 
     /**
      * Finds matching form values by direct match or when prefixed by a container
-     * @param array $results
+     * @param array<string, mixed> $results
      * @param string $identifier
-     * @return mixed
+     * @return array<mixed>
      */
     public static function findValuesByIdentifier(array $results, string $identifier): array
     {
@@ -301,7 +301,7 @@ class FormValueUtility implements SingletonInterface
     /**
      * Finds matching form values and converts them to a string 
      * @param FormElementInterface $element
-     * @param array $results
+     * @param array<string, mixed> $results
      * @param string $valueIdentifier
      * @param bool $crop
      * @return string
@@ -320,7 +320,7 @@ class FormValueUtility implements SingletonInterface
     /**
      * Formats multiple value matches (such as repeatables) as a single string with numbered lines
      * @param FormElementInterface $element
-     * @param array $values
+     * @param array<mixed> $values
      * @param bool $crop
      * @return string
     */
