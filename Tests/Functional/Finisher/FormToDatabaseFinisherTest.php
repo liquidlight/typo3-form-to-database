@@ -38,7 +38,8 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
 
     protected array $coreExtensionsToLoad = [
         'typo3/cms-form',
-        'typo3/cms-fluid-styled-content',
+        'typo3/cms-fluid',
+        'typo3/cms-frontend',
     ];
 
     protected function setUp(): void
@@ -55,8 +56,6 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
         $site['dependencies'] = [
             'lavitto/form-to-database-test',
             'lavitto/typo3-form-to-database',
-            'typo3/fluid-styled-content',
-            'typo3/fluid-styled-content-css',
         ];
         $this->writeSiteConfiguration(
             'test-base',
