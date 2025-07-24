@@ -1,0 +1,103 @@
+renderingOptions:
+  submitButtonLabel: Submit
+  fieldState:
+    name:
+      identifier: name
+      label: 'Full name'
+      type: Text
+      renderingOptions:
+        deleted: 0
+    company:
+      identifier: company
+      label: 'Company'
+      type: Text
+      renderingOptions:
+        deleted: 0
+    street:
+      identifier: street
+      label: 'Street'
+      type: Text
+      renderingOptions:
+        deleted: 0
+    zip:
+      identifier: zip
+      label: 'ZIP'
+      type: Text
+      renderingOptions:
+        deleted: 0
+    city:
+      identifier: city
+      label: 'City'
+      type: Text
+      renderingOptions:
+        deleted: 0
+    country:
+      identifier: country
+      label: 'Country'
+      type: Text
+      renderingOptions:
+        deleted: 0
+type: Form
+identifier: testform
+label: Testform
+prototypeName: standard
+finishers:
+  -
+    identifier: FormToDatabase
+renderables:
+  -
+    renderingOptions:
+      previousButtonLabel: 'Previous step'
+      nextButtonLabel: 'Next step'
+    type: Page
+    identifier: page-1
+    label: Step
+    renderables:
+      -
+        defaultValue: ''
+        type: Text
+        identifier: name
+        label: 'Full name'
+        properties:
+          fluidAdditionalAttributes:
+            autocomplete: name
+      -
+        defaultValue: ''
+        type: Text
+        identifier: company
+        label: 'Company'
+        properties:
+          fluidAdditionalAttributes:
+            autocomplete: company
+      -
+        defaultValue: ''
+        type: Text
+        identifier: street
+        label: 'Street'
+        properties:
+          fluidAdditionalAttributes:
+            autocomplete: street-address
+      -
+        defaultValue: ''
+        type: Text
+        identifier: zip
+        label: 'ZIP'
+        properties:
+          fluidAdditionalAttributes:
+            autocomplete: postal-code
+      -
+        defaultValue: ''
+        type: Text
+        identifier: city
+        label: 'City'
+        properties:
+          fluidAdditionalAttributes:
+            autocomplete: address-level2
+      -
+        defaultValue: ''
+        type: Text
+        identifier: country
+        label: 'Country'
+        properties:
+          fluidAdditionalAttributes:
+            autocomplete: country-name
