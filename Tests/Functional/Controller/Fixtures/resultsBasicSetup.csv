@@ -47,9 +47,9 @@ sys_file,,,,,
 
 tx_formtodatabase_domain_model_formresult
 ,uid,pid,form_persistence_identifier,form_identifier,site_identifier,crdate,form_plugin_uid,result
-,1,1,"1:/form_definitions/testform.form.yaml","testform","test-base",1699375063,1,"{""name"":""John Doe""}"
-,2,1,"1:/form_definitions/testform.form.yaml","testform","test-base",1699375093,1,"{""name"":""Tu\u011f\u00e7e \u00c7elik""}"
-,3,1,"1:/form_definitions/testform.form.yaml","testform","test-base",1699376063,1,"{""name"":""\u00d6mer \u00dczgel""}"
+,1,1,"1:/form_definitions/testform.form.yaml","testform","test-base",1699375063,1,"{""name"":""John Doe"",""company"":""Company A"",""street"":""Main Street 1"",""zip"":""12345"",""city"":""New York"",""country"":""USA""}"
+,2,1,"1:/form_definitions/testform.form.yaml","testform","test-base",1699375093,1,"{""name"":""Tuğçe Çelik"",""company"":""Şirket B"",""street"":""Ana Cadde 2"",""zip"":""34000"",""city"":""Istanbul"",""country"":""Türkiye""}"
+,3,1,"1:/form_definitions/testform.form.yaml","testform","test-base",1699376063,1,"{""name"":""Ömer Üzgel"",""company"":""Firma C"",""street"":""Hauptstraße 3"",""zip"":""D-54321"",""city"":""Köln"",""country"":""Deutschland""}"
 
 be_users,,,,,,,,,,
 ,uid,pid,tstamp,username,password,admin,disable,starttime,endtime,email
