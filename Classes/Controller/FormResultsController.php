@@ -803,7 +803,7 @@ class FormResultsController extends FormManagerController
         $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier, true);
         $formRenderables = $this->getFormRenderables($formDefinition);
 
-        $displayActiveFieldsOnly = $this->extConfUtility->getConfig('displayActiveFieldsOnly') ?? false;
+        $displayActiveFieldsOnly = (bool)($this->extConfUtility->getConfig('displayActiveFieldsOnly') ?? false);
 
         if ($filtered === true || $displayActiveFieldsOnly === true) {
             /** @var AbstractFormElement $renderable */
