@@ -602,20 +602,30 @@ class FormResultsController extends FormManagerController
 
         $this->hydrateRepeatableFields($configuration);
         $this->enrichFieldStateWithListViewStates($configuration);
-        if ($useFieldStateDataAsRenderables) {
-            //Ensure that fieldState exists
-            /** @var FormDefinitionUtility $formDefinitionUtility */
-            $formDefinitionUtility = GeneralUtility::makeInstance(FormDefinitionUtility::class);
-            $formDefinitionUtility->addFieldStateIfDoesNotExist($configuration, true);
+		if ($useFieldStateDataAsRenderables) {
+			//Ensure that fieldState exists
+			/** @var FormDefinitionUtility $formDefinitionUtility */
+			$formDefinitionUtility = GeneralUtility::makeInstance(FormDefinitionUtility::class);
+			$formDefinitionUtility->addFieldStateIfDoesNotExist($configuration, true);
 
-            //Use fieldState as renderables instead of renderables
-            unset($configuration['renderables'][0]['renderables']);
-            $configuration['renderables'][0]['renderables'] = array_values($configuration['renderingOptions']['fieldState']);
-            $configuration['renderables'] = array_intersect_key($configuration['renderables'], [0 => 1]);
-        }
+			//Use fieldState as renderables instead of renderables
+			$renderables = $configuration['renderables'][0]['renderables'];
 
+			unset($configuration['renderables'][0]['renderables']);
+			$configuration['renderables'][0]['renderables'] = array_values($configuration['renderingOptions']['fieldState']);
+			$configuration['renderables'] = array_intersect_key($configuration['renderables'], [0 => 1]);
 
-        return $configuration;
+			//Use properties from renderables
+			foreach ($configuration['renderables'][0]['renderables'] as $key => $fieldState) {
+				foreach ($renderables as $renderable) {
+					if ($fieldState['identifier'] == $renderable['identifier'] && array_key_exists('properties', $renderable)) {
+						$configuration['renderables'][0]['renderables'][$key]['properties'] = $renderable['properties'];
+					}
+				}
+			}
+		}
+
+		return $configuration;
     }
 
     /**
