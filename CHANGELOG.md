@@ -1,11 +1,15 @@
+# 4.2.1
+
+- [FIX]: Ignore user_upload folder if not used
+
 # 4.2.0
 
 - [FEATURE]  Remove modal from record view
 - [FEATURE] Add PDF rendering view
 - [FEATURE] Reorder repeatable fields in form results and number lines
 - [TASK] output decoded html char on define extension option
-- [BUGFIX] Initalize array $renderableFields for each $renderable in function hydrateRepeatableFields 
-- [BUGFIX] Ensure a uid & delimiter is defined 
+- [BUGFIX] Initalize array $renderableFields for each $renderable in function hydrateRepeatableFields
+- [BUGFIX] Ensure a uid & delimiter is defined
 - [BUGFIX] CSV export - set order from original formDefinition instead of formState
 - [BUGFIX] Form not visible in Backend Module when Finisher is set as variant
 - [BUGFIX] Allow access to Form Results module from all workspaces
