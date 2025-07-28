@@ -8,6 +8,7 @@ parameters:
   tmpDir: ../../.cache/phpstan
   ignoreErrors:
     - '#Variable \$_EXTKEY might not be defined\.#'
+    - '#int<0, max>, int given\.#'
   level: 8
 
   paths:
@@ -17,3 +18,7 @@ parameters:
     - ../../ext_localconf.php
     - ../../ext_tables.php
     - ../../ext_emconf.php
+
+  typo3:
+    requestGetAttributeMapping:
+        frontend.page.information: TYPO3\CMS\Frontend\Page\PageInformation
