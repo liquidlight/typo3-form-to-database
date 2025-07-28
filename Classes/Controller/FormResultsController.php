@@ -286,6 +286,7 @@ class FormResultsController extends FormManagerController
     public function downloadResultPdfAction(int $uid): ResponseInterface
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+
         if (!class_exists(Mpdf::class)) {
             return $this->htmlResponse('');
         }
@@ -294,19 +295,17 @@ class FormResultsController extends FormManagerController
         $variables = $this->getSingleResultProperties($uid, $excludeFields);
         $this->moduleTemplate->assignMultiple($variables);
 
-        if ((int)($this->settings['pdf']['disable'] ?? 1) === 1) {
+        if ((int)($this->settings['pdf']['disable'] ?? 0) === 1) {
             $this->moduleTemplate->getDocHeaderComponent()->disable();
-
             return $this->moduleTemplate->renderResponse('FormResults/DownloadResultPdf');
         }
 
         $pdfUtility = GeneralUtility::makeInstance(PdfUtility::class, $this->settings['pdf'] ?? []);
-
         ['fileResource' => $fileResource, 'fileLength' => $fileLength] = $pdfUtility->generatePdf(
-            $this->view->render()
+			$this->moduleTemplate->render('FormResults/DownloadResultPdf')
         );
 
-        $fileName = $variables['formDefinition']->getIdentifier() . '-' . $variables['formResult']->getCrDate()->format('U');
+        $fileName = $variables['formDefinition']->getIdentifier() . '-' . $variables['formResult']->getCrDate()->format('U') . '.pdf';
 
         $destination = ($this->settings['pdf']['disposition'] ?? 'attachment') === 'attachment' ? 'attachment' : 'inline';
 
