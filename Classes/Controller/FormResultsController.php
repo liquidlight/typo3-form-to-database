@@ -486,28 +486,10 @@ class FormResultsController extends FormManagerController
 
         $this->hydrateRepeatableFields($configuration);
         $this->enrichFieldStateWithListViewStates($configuration);
-		if ($useFieldStateDataAsRenderables) {
-			//Ensure that fieldState exists
-			/** @var FormDefinitionUtility $formDefinitionUtility */
-			$formDefinitionUtility = GeneralUtility::makeInstance(FormDefinitionUtility::class);
-			$formDefinitionUtility->addFieldStateIfDoesNotExist($configuration, true);
 
-			//Use fieldState as renderables instead of renderables
-			$renderables = $configuration['renderables'][0]['renderables'];
-
-			unset($configuration['renderables'][0]['renderables']);
-			$configuration['renderables'][0]['renderables'] = array_values($configuration['renderingOptions']['fieldState']);
-			$configuration['renderables'] = array_intersect_key($configuration['renderables'], [0 => 1]);
-
-			//Use properties from renderables
-			foreach ($configuration['renderables'][0]['renderables'] as $key => $fieldState) {
-				foreach ($renderables as $renderable) {
-					if ($fieldState['identifier'] == $renderable['identifier'] && array_key_exists('properties', $renderable)) {
-						$configuration['renderables'][0]['renderables'][$key]['properties'] = $renderable['properties'];
-					}
-				}
-			}
-		}
+        if ($useFieldStateDataAsRenderables) {
+            $this->hydrateRenderablesFromFieldState($configuration);
+        }
 
 		return $configuration;
     }
@@ -584,6 +566,44 @@ class FormResultsController extends FormManagerController
             }
         }
         return $fields;
+    }
+
+    /**
+     * Replaces the form's renderables with data from the fieldState,
+     * while preserving original properties.
+     *
+     * @param array $configuration The form configuration, passed by reference.
+     */
+    protected function hydrateRenderablesFromFieldState(array &$configuration): void
+    {
+        //Ensure that fieldState exists
+        /** @var FormDefinitionUtility $formDefinitionUtility */
+        $formDefinitionUtility = GeneralUtility::makeInstance(FormDefinitionUtility::class);
+        $formDefinitionUtility->addFieldStateIfDoesNotExist($configuration, true);
+
+        // Keep a reference to the original renderables to copy properties from.
+        $originalRenderables = $configuration['renderables'][0]['renderables'] ?? [];
+
+        // Use fieldState as the new source for renderables.
+        $configuration['renderables'][0]['renderables'] = array_values($configuration['renderingOptions']['fieldState']);
+        $configuration['renderables'] = array_intersect_key($configuration['renderables'], [0 => 1]);
+
+        // Create a map of original renderables indexed by identifier for faster lookup.
+        $originalRenderablesById = [];
+        foreach ($originalRenderables as $renderable) {
+            if (isset($renderable['identifier'])) {
+                $originalRenderablesById[$renderable['identifier']] = $renderable;
+            }
+        }
+
+        //Use properties from the original renderables.
+        foreach ($configuration['renderables'][0]['renderables'] as &$fieldState) {
+            if (isset($fieldState['identifier'], $originalRenderablesById[$fieldState['identifier']]['properties'])) {
+                $fieldState['properties'] = $originalRenderablesById[$fieldState['identifier']]['properties'];
+            }
+        }
+
+        unset($fieldState);
     }
 
     /**
