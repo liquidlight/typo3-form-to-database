@@ -1,3 +1,9 @@
+# 5.0.0
+
+- [FEATURE] Add support for TYPO3 13 - TypoScript now included in SiteSets
+- [FEATURE] Drop support for TYPO3 12
+- [FEATURE] Add tests & linting
+
 # 4.2.2
 
 - [FIX] Use upload location when in container
