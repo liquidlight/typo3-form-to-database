@@ -679,7 +679,7 @@ class FormResultsController extends FormManagerController
      * Replaces the form's renderables with data from the fieldState,
      * while preserving original properties.
      *
-     * @param array $configuration The form configuration, passed by reference.
+     * @param array<array-key, mixed> $configuration The form configuration, passed by reference.
      */
     protected function hydrateRenderablesFromFieldState(array &$configuration): void
     {

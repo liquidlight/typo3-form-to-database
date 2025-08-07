@@ -135,9 +135,27 @@ module.tx_formtodatabase_web_formtodatabaseformresults.settings.pdf.letterheads.
 
 ## Contribute
 
-We welcome issues and merge/pull requests. Please don't let convetions or tests put you off - we can always fix them once a request is submitted.
+We welcome issues and merge/pull requests. Please don't let conventions or failing tests put you off - we can always fix them once a request is submitted.
 
-**Please use GitLab only for bug-reporting or feature-requests. For support use the TYPO3 community channels**
+Please follow the [TYPO3 Commit conventions](https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Appendix/CommitMessage.html) if you can when committing.
+
+**Please use GitLab only for bug-reporting or feature-requests. For support use the [TYPO3 community channels](https://typo3.slack.com/archives/C02HWBCUF0F)**
+
+**To run tests & linting**
+
+The extension uses a modified version of runTests.sh from [the TYPO3 core](https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Testing/Index.html).
+
+You need [Podman](https://podman.io/) installed and running to run the tests.
+
+- Install dependencies with TYPO3 13 and php 8.2:
+  - `Build/Scripts/runTests.sh -t 13 -p 8.2 -s composer install` (-t is currently obsolete, as only v13 is supported and set as default)
+- Run linter:
+  - `Build/Scripts/runTests.sh -p 8.2 -s lintPhp`
+  - `Build/Scripts/runTests.sh -t 13 -p 8.2 -s lintTypoScript`
+- Execute functional tests:
+  - `Build/Scripts/runTests.sh -p 8.2 -s functional`
+
+See help menu for all options: `Build/Scripts/runTests.sh --help`
 
 Commits should follow [TYPO3 Commit Guidelines](https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Appendix/CommitMessage.html#commitmessage).
 
