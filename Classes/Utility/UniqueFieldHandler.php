@@ -20,7 +20,7 @@ use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
 class UniqueFieldHandler
 {
 
-    protected array $existingFieldsBeforeSave = [];
+    protected array $existingFieldStateBeforeSave = [];
     protected array $activeFields = [];
 
     /**
@@ -52,14 +52,14 @@ class UniqueFieldHandler
     public function updateNewFields($formPersistenceIdentifierBeforeSave, $formDefinition)
     {
         $fieldCount = 0;
-        $this->setExistingFieldsBeforeSave($formPersistenceIdentifierBeforeSave);
+        $this->setExistingFieldStateBeforeSave($formPersistenceIdentifierBeforeSave);
         $formStateDidAlreadyExist = !!($formDefinition['renderingOptions']['fieldState'] ?? false);
         FormDefinitionUtility::addFieldStateIfDoesNotExist($formDefinition, true);
 
         // Only process if formState already existed - else no changes should be considered
         if($formStateDidAlreadyExist) {
             //Make map of next identifier for each field type
-            $this->makeNextIdentifiersMap($formDefinition['renderingOptions']['fieldState']);
+            $this->makeNextIdentifiersMap($this->existingFieldStateBeforeSave);
 
             foreach (FormDefinitionUtility::convertFormDefinitionToObject($formDefinition)->getRenderablesRecursively() as $renderable) {
                 if($renderable instanceof \TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface) {
@@ -67,9 +67,9 @@ class UniqueFieldHandler
                 }
                 $fieldCount++;
                 if (
-                    !in_array($renderable->getIdentifier(), $this->existingFieldsBeforeSave)
+                    !($this->existingFieldStateBeforeSave[$renderable->getIdentifier()] ?? false)
                     ||
-                    ($formDefinition['renderingOptions']['fieldState'][$renderable->getIdentifier()]['renderingOptions']['deleted'] ?? 0) === 1
+                    ($this->existingFieldStateBeforeSave[$renderable->getIdentifier()]['renderingOptions']['deleted'] ?? 0) === 1
                 ) {
                     //Existing field - update state
                     $this->updateNewFieldWithNextIdentifier($formDefinition['renderables'], $renderable);
@@ -87,11 +87,15 @@ class UniqueFieldHandler
      */
     protected function makeNextIdentifiersMap($fieldState): void
     {
+
         foreach ($fieldState as $identifier => &$field) {
+            // Do not consider new fields
+            if(!isset($this->existingFieldStateBeforeSave[$identifier])) continue;
+
             $identifierParts = explode('-', $field['identifier']);
             $identifierText = $identifierParts[0];
             $identifierNumber = $identifierParts[1] ?? '0';
-
+            if($identifierText !== strtolower($field['type'])) continue;
             if (!isset($this->fieldTypesNextIdentifier[$field['type']])) {
                 $this->fieldTypesNextIdentifier[$field['type']] = [
                     'text' => $identifierText,
@@ -151,13 +155,9 @@ class UniqueFieldHandler
      * @param string $formPersistenceIdentifier
      * @return void
      */
-    protected function setExistingFieldsBeforeSave(string $formPersistenceIdentifier) {
+    protected function setExistingFieldStateBeforeSave(string $formPersistenceIdentifier): void
+    {
         $formDefinitionBeforeSave = $this->formPersistenceManager->load($formPersistenceIdentifier);
-        $renderables = FormDefinitionUtility::convertFormDefinitionToObject($formDefinitionBeforeSave)->getRenderablesRecursively();
-        foreach ($renderables as $renderable) {
-            if(!$renderable instanceof \TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface) {
-                $this->existingFieldsBeforeSave[] = $renderable->getIdentifier();
-            }
-        }
+        $this->existingFieldStateBeforeSave = $formDefinitionBeforeSave['renderingOptions']['fieldState'] ?? [];
     }
 }
