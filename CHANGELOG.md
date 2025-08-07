@@ -1,6 +1,10 @@
+# 4.2.2
+
+- [FIX] Use upload location when in container
+
 # 4.2.1
 
-- [FIX]: Ignore user_upload folder if not used
+- [FIX] Ignore user_upload folder if not used
 
 # 4.2.0
 
