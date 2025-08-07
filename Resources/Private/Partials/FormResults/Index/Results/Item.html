@@ -1,5 +1,6 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
 	  xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+	  lang="en"
 	  data-namespace-typo3-fluid="true">
 
 <tr>
@@ -11,10 +12,12 @@
 	<td class="col-title col-responsive nowrap">
 		<f:if condition="{form.numberOfResults}">
 			<f:then>
-				<f:link.action action="show"
-							   arguments="{formPersistenceIdentifier: form.persistenceIdentifier}"
-							   title="{f:translate(key: 'LLL:EXT:form/Resources/Private/Language/Database.xlf:formManager.edit_form')}"
-							   data="{toggle: 'tooltip', placement: 'right'}">
+				<f:link.action
+						action="show"
+						arguments="{formPersistenceIdentifier: form.persistenceIdentifier}"
+						title="{f:translate(key: 'LLL:EXT:form/Resources/Private/Language/Database.xlf:formManager.edit_form')}"
+						data="{toggle: 'tooltip', placement: 'right'}"
+				>
 					{form.name}
 				</f:link.action>
 			</f:then>

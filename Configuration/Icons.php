@@ -7,9 +7,11 @@ use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 return [
     // Icon identifier
     'tx-formtodatabase' => [
-        // Icon provider class
         'provider' => SvgIconProvider::class,
-        // The source SVG for the SvgIconProvider
         'source' => 'EXT:form_to_database/Resources/Public/Icons/Extension.svg',
+    ],
+    'actions-print' => [
+        'provider' => SvgIconProvider::class,
+        'source' => 'EXT:form_to_database/Resources/Public/Icons/action-print.svg',
     ],
 ];

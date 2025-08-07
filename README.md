@@ -1,6 +1,5 @@
 # TYPO3 Extension `Form to Database`
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg?style=for-the-badge)](https://paypal.me/pmlavitto)
 [![Latest Stable Version](https://img.shields.io/packagist/v/lavitto/typo3-form-to-database?style=for-the-badge)](https://packagist.org/packages/lavitto/typo3-form-to-database)
 [![TYPO3](https://img.shields.io/badge/TYPO3-form_to_database-%23f49700?style=for-the-badge)](https://extensions.typo3.org/extension/form_to_database/)
 [![License](https://img.shields.io/packagist/l/lavitto/typo3-form-to-database?style=for-the-badge)](https://packagist.org/packages/lavitto/typo3-form-to-database)
@@ -27,8 +26,8 @@
 - No database-changes per form required
 - Shows all results per form in a separate backend module
 - Provides a CSV-download of all results
-- Automatic deletion of results after a specified number of days (GDPR)
 - Preview & PDF download of individual form results
+- Automatic deletion of results after a specified number of days (GDPR)
 
 ### Screenshots
 
@@ -42,26 +41,14 @@
 ![Backend Results](https://cdn.lavitto.ch/typo3/lavitto/typo3-form-to-database/typo3-form-to-database-backend-results_tmb.png)
 - [Full Size Screenshot](https://cdn.lavitto.ch/typo3/lavitto/typo3-form-to-database/typo3-form-to-database-backend-results.png)
 
-## Installation
+## Installation & setup
 
-### Installation using Composer
+1. `composer req lavitto/typo3-form-to-database` (or download from the [TYPO3 Extension Repository](https://extensions.typo3.org/extension/form_to_database))
+2. Add the extension as a dependency in your site as a site set
+3. Edit the form you wish to store results for
+4. Add the finisher ("Save the mail to the Database") to your form - it is recommended you place this finisher first
 
-The recommended way to install the extension is by using [Composer](https://getcomposer.org/). In your Composer based
-TYPO3 project root run `composer req lavitto/typo3-form-to-database`.
-
-### Installation from TYPO3 Extension Repository (TER)
-
-Download and install the extension `form_to_database` with the extension manager module.
-
-## Setup & Usage
-
-### Finisher
-
-To start storing form results:
-
-1. Install the extension
-2. Edit the form you wish to store results for
-3. Add the finisher ("Save the mail to the Database") to your form - it is recommended you place this finisher first
+## Usage
 
 ### Command / Scheduler
 
@@ -75,7 +62,7 @@ Arguments:
   maxAge                Maximum age of form results in days [default: 90]
 ```
 
-### Customise
+### Options
 
 There are several options available for customisation. To change these, go to **Settings** -> **Configure Extensions** -> **form_to_database**
 
@@ -87,7 +74,12 @@ There are several options available for customisation. To change these, go to **
   - `csvOnlyFilenameOfUploadFields` - Should the CSV list the whole path or just the file name?
   - `csvHtmlSpecialChars` - If true will encode special chars (`'` => `&quot;`, `<` => `&lt;`) (Default: true)
 
-#### Single View PDF
+### Additional Feature configuration
+
+#### PDF download of a single result
+
+<details>
+    <summary>Details</summary>
 
 Each form response can be downloaded as a PDF which can be customised in TypoScript if [mPDF](https://mpdf.github.io/) is installed.
 
@@ -139,16 +131,34 @@ module.tx_formtodatabase_web_formtodatabaseformresults.settings.pdf.letterheads.
 )
 ```
 
+</details>
+
 ## Contribute
 
-Please create an issue at https://gitlab.com/lavitto/typo3-form-to-database/issues.
+We welcome issues and merge/pull requests. Please don't let conventions or failing tests put you off - we can always fix them once a request is submitted.
 
-**Please use GitLab only for bug-reporting or feature-requests. For support use the TYPO3 community channels or contact us by email.**
+Please follow the [TYPO3 Commit conventions](https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Appendix/CommitMessage.html) if you can when committing.
+
+**Please use GitLab only for bug-reporting or feature-requests. For support use the [TYPO3 community channels](https://typo3.slack.com/archives/C02HWBCUF0F)**
+
+**To run tests & linting**
+
+The extension uses a modified version of runTests.sh from [the TYPO3 core](https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Testing/Index.html).
+
+You need [Podman](https://podman.io/) installed and running to run the tests.
+
+- Install dependencies with TYPO3 13 and php 8.2:
+  - `Build/Scripts/runTests.sh -t 13 -p 8.2 -s composer install` (-t is currently obsolete, as only v13 is supported and set as default)
+- Run linter:
+  - `Build/Scripts/runTests.sh -p 8.2 -s lintPhp`
+  - `Build/Scripts/runTests.sh -t 13 -p 8.2 -s lintTypoScript`
+- Execute functional tests:
+  - `Build/Scripts/runTests.sh -p 8.2 -s functional`
+
+See help menu for all options: `Build/Scripts/runTests.sh --help`
 
 Commits should follow [TYPO3 Commit Guidelines](https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Appendix/CommitMessage.html#commitmessage).
 
 ## Support
 
-If you need private or personal support, try the TYPO3 Slack channel - [#ext-form-to-database](https://app.slack.com/client/T024TUMLZ/C02HWBCUF0F) or contact us by email on [info@lavitto.ch](mailto:info@lavitto.ch).
-
-**Be aware that this support might not be free!**
+If you need private or personal support, try the TYPO3 Slack channel - [#ext-form-to-database](https://app.slack.com/client/T024TUMLZ/C02HWBCUF0F) or reach out to [Mike](https://typo3.slack.com/team/UBYLJAQCR) directly

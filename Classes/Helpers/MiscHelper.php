@@ -1,10 +1,12 @@
-<?php /** @noinspection ALL */
+<?php
+
+declare(strict_types=1);
 
 namespace Lavitto\FormToDatabase\Helpers;
 
-use PDO;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\QueryHelper;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
@@ -13,30 +15,25 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class MiscHelper
 {
-
     /**
      * Get webmounts of BE User
      *
-     * @return array
+     * @return int[]
      */
-    static public function getWebMounts()
+    public static function getWebMounts(): array
     {
-        $webMounts = [];
-        if ($GLOBALS['BE_USER']->groupData['webmounts']) {
-            $webMounts = GeneralUtility::trimExplode(',', $GLOBALS['BE_USER']->groupData['webmounts'], 1);
-        }
-        return $webMounts;
+        return self::getBackendUser()->getWebmounts();
     }
 
     /**
      * Get SiteIdentifiers from Root Pids
-     *
+     * @param int[] $webMounts
      * @return string[]
      */
-    static public function getSiteIdentifiersFromRootPids($webMounts): array
+    public static function getSiteIdentifiersFromRootPids(array $webMounts = []): array
     {
         $siteIdentifiers = [];
-        if ($webMounts) {
+        if ($webMounts !== []) {
             //find site identifiers from mountpoints
             /** @var SiteFinder $siteMatcher */
             $siteMatcher = GeneralUtility::makeInstance(SiteFinder::class);
@@ -52,53 +49,57 @@ class MiscHelper
     }
 
     /**
-     * @param $webMounts
-     * @return array
+     * @param int[] $webMounts
+     * @return int[]
      */
-    static public function getPluginUids($webMounts): array
+    public static function getPluginUids(array $webMounts): array
     {
         $pids = self::getTreePids($webMounts);
-        /** @var QueryBuilder $queryBuilder */
+
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tt_content');
         $queryBuilder->getRestrictions()->removeAll();
         $result = $queryBuilder
             ->select('uid')
-            ->from('tt_content')->where($queryBuilder->expr()->in('pid', $pids ?: [0]), $queryBuilder->expr()->eq('CType',
-            $queryBuilder->createNamedParameter('form_formframework', PDO::PARAM_STR)))->executeQuery()->fetchAll();
-        return array_column($result, 'uid');
+            ->from('tt_content')
+            ->where(
+                $queryBuilder->expr()->in('pid', $pids ?: [0]),
+                $queryBuilder->expr()->eq(
+                    'CType',
+                    $queryBuilder->createNamedParameter('form_formframework', Connection::PARAM_STR)
+                )
+            )->executeQuery();
+
+        $pluginUids = [];
+
+        while ($row = $result->fetchAssociative()) {
+            $pluginUids[] = $row['uid'];
+        }
+
+        return $pluginUids;
     }
 
     /**
      * Get all pids which user can access
      *
-     * @param array $webMounts
-     * @return array
+     * @param int[] $webMounts
+     * @return int[]
      */
-    static public function getTreePids($webMounts = 0): array
+    public static function getTreePids(array $webMounts = []): array
     {
         $childPidsArray = [];
-        if ($webMounts) {
-            $depth = 99;
-            $childPidsArray = [];
-            foreach ($webMounts as $webMount) {
-                $childPids = self::getTreeList($webMount, $depth, 0, 1); //Will be a string like 1,2,3
-                foreach (GeneralUtility::intExplode(',', $childPids, true) as $childPid) {
-                    $childPidsArray[] = $childPid;
-                }
-            }
+        $depth = 99;
+        foreach ($webMounts as $webMount) {
+            $childPids = self::getTreeList($webMount, $depth); //Will be a string like 1,2,3
+            $childPidsArray = array_merge(
+                $childPidsArray,
+                GeneralUtility::intExplode(',', $childPids, true)
+            );
         }
         return array_unique($childPidsArray);
     }
 
     /**
      * Recursively fetch all descendants of a given page
-     *
-     * @param int $id uid of the page
-     * @param int $depth
-     * @param int $begin
-     * @param string $permClause
-     *
-     * @return string comma separated list of descendant pages
      *
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
@@ -119,7 +120,7 @@ class MiscHelper
             $queryBuilder->select('uid')
                 ->from('pages')
                 ->where(
-                    $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($id, PDO::PARAM_INT)),
+                    $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)),
                     $queryBuilder->expr()->eq('sys_language_uid', 0)
                 )
                 ->orderBy('uid');
@@ -143,4 +144,8 @@ class MiscHelper
         return $theList;
     }
 
+    private static function getBackendUser(): BackendUserAuthentication
+    {
+        return $GLOBALS['BE_USER'];
+    }
 }

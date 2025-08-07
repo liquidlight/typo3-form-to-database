@@ -1,0 +1,3 @@
+tx_formtodatabase_domain_model_formresult
+,uid,pid,form_persistence_identifier,form_identifier,site_identifier,result
+,1,1,"1:/form_definitions/testform.form.yaml","testform","test-base","{""name"":""\u00d6mer \u00dczgel""}"

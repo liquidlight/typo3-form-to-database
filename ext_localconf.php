@@ -6,15 +6,11 @@
  * LICENSE file that was distributed with this source code.
  */
 
+use Lavitto\FormToDatabase\Hooks\FormHooks;
+
 defined('TYPO3') or die();
 
-call_user_func(function (): void {
-    $iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\IconRegistry::class);
-    $iconRegistry->registerIcon(
-        'actions-print',
-        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
-        ['source' => 'EXT:form_to_database/Resources/Public/Icons/action-print.svg']
-    );
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormSave'][] = \Lavitto\FormToDatabase\Hooks\FormHooks::class;
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormDelete'][] = \Lavitto\FormToDatabase\Hooks\FormHooks::class;
-});
+(static function (): void {
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormSave'][] = FormHooks::class;
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormDelete'][] = FormHooks::class;
+})();

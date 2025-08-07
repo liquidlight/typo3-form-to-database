@@ -17,15 +17,15 @@ $EM_CONF[$_EXTKEY] = [
     'category' => 'frontend',
     'constraints' => [
         'depends' => [
-            'typo3' => '12.4.0-12.4.99',
-            'form' => '12.4.0-12.4.99'
+            'typo3' => '13.4.0-13.4.99',
+            'form' => '13.4.0-13.4.99',
         ],
         'conflicts' => [],
-        'suggests' => []
+        'suggests' => [],
     ],
     'autoload' => [
         'psr-4' => [
-            'Lavitto\\FormToDatabase\\' => 'Classes'
+            'Lavitto\\FormToDatabase\\' => 'Classes',
         ],
     ],
     'state' => 'stable',

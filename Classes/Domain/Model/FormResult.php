@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the "form_to_database" Extension for TYPO3 CMS.
  *
@@ -8,22 +11,18 @@
 
 namespace Lavitto\FormToDatabase\Domain\Model;
 
-use DateTime;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 
 /**
  * Class FormResult
- *
- * @package Lavitto\FormToDatabase\Domain\Model
  */
 class FormResult extends AbstractEntity
 {
-
     /**
      * The formPersistenceIdentifier
      *
-     * @see FormDefinition->persistenceIdentifier
+     * @see FormDefinition::persistenceIdentifier
      */
     protected string $formPersistenceIdentifier = '';
 
@@ -43,10 +42,8 @@ class FormResult extends AbstractEntity
 
     /**
      * Uid of the form plugin content element
-     *
-     * @var integer
      */
-    protected $formPluginUid = 0;
+    protected int $formPluginUid = 0;
 
     /**
      * The form result as json
@@ -65,8 +62,6 @@ class FormResult extends AbstractEntity
 
     /**
      * Gets the formPersistenceIdentifier
-     *
-     * @return string
      */
     public function getFormPersistenceIdentifier(): string
     {
@@ -152,7 +147,8 @@ class FormResult extends AbstractEntity
     /**
      * Gets the result as an array
      *
-     * @return array
+     * @return array<array-key, mixed>
+     * @throws \JsonException
      */
     public function getResultAsArray(): array
     {
@@ -172,7 +168,8 @@ class FormResult extends AbstractEntity
     /**
      * Sets the result from an array
      *
-     * @param array $resultArray
+     * @param array<array-key, mixed> $resultArray
+     * @throws \JsonException
      */
     public function setResultFromArray(array $resultArray): void
     {
@@ -182,9 +179,9 @@ class FormResult extends AbstractEntity
     /**
      * Gets the crdate
      *
-     * @return DateTime
+     * @return \DateTime
      */
-    public function getCrdate(): DateTime
+    public function getCrdate(): \DateTime
     {
         return $this->crdate;
     }
@@ -192,9 +189,9 @@ class FormResult extends AbstractEntity
     /**
      * Sets the crdate
      *
-     * @param DateTime $crdate
+     * @param \DateTime $crdate
      */
-    public function setCrdate(DateTime $crdate): void
+    public function setCrdate(\DateTime $crdate): void
     {
         $this->crdate = $crdate;
     }
@@ -202,9 +199,9 @@ class FormResult extends AbstractEntity
     /**
      * Gets the tstamp
      *
-     * @return DateTime
+     * @return \DateTime
      */
-    public function getTstamp(): DateTime
+    public function getTstamp(): \DateTime
     {
         return $this->tstamp;
     }
@@ -212,9 +209,9 @@ class FormResult extends AbstractEntity
     /**
      * Sets the tstamp
      *
-     * @param DateTime $tstamp
+     * @param \DateTime $tstamp
      */
-    public function setTstamp(DateTime $tstamp): void
+    public function setTstamp(\DateTime $tstamp): void
     {
         $this->tstamp = $tstamp;
     }

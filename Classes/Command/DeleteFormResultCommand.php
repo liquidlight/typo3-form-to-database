@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the "form_to_database" Extension for TYPO3 CMS.
  *
@@ -10,43 +13,43 @@ namespace Lavitto\FormToDatabase\Command;
 
 use Lavitto\FormToDatabase\Domain\Model\FormResult;
 use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\Exception;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
  * Class DeleteFormResultCommand
- *
- * @package Lavitto\FormToDatabase\Command
  */
-class DeleteFormResultCommand extends Command
+#[AsCommand(name: 'form_to_database:deleteFormResults', description: 'Deletes form results.')]
+final class DeleteFormResultCommand extends Command
 {
-    /**
-     * @var FormResultRepository
-     */
-    protected $formResultRepository;
+    protected FormResultRepository $formResultRepository;
 
-    /**
-     * @var PersistenceManager
-     */
-    protected $persistenceManager;
+    protected PersistenceManager $persistenceManager;
 
     /**
      * Initialize the command
      *
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @throws Exception
      */
-    public function initialize(InputInterface $input, OutputInterface $output): void
+    protected function initialize(InputInterface $input, OutputInterface $output): void
     {
+        // needed for Extbase configuration
+        // if not set, Configuration will not get loaded
+        // and the repository can't create a query
+        // @todo this is hacky! The command should be refactored not using Extbase!
+        $GLOBALS['TYPO3_REQUEST'] ??= (new ServerRequest('/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE);
         $this->formResultRepository = GeneralUtility::makeInstance(FormResultRepository::class);
         $this->persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
     }
@@ -54,7 +57,7 @@ class DeleteFormResultCommand extends Command
     /**
      * Configure the command by defining the name, options and arguments
      */
-    public function configure(): void
+    protected function configure(): void
     {
         $this->setDescription('Deletes form results')
             ->setHelp('Deletes results older than maxAge (in days).')

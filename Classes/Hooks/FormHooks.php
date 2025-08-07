@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the "form_to_database" Extension for TYPO3 CMS.
  *
@@ -9,82 +11,48 @@
 
 namespace Lavitto\FormToDatabase\Hooks;
 
-use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
-use TYPO3\CMS\Form\Mvc\Persistence\Exception\PersistenceManagerException;
 use Lavitto\FormToDatabase\Domain\Model\FormResult;
 use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
-use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
 use Lavitto\FormToDatabase\Utility\UniqueFieldHandler;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
+use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Extbase\Persistence\Generic\QueryResult;
+use TYPO3\CMS\Form\Mvc\Persistence\Exception\PersistenceManagerException;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
 
 /**
  * Class FormHooks
  *
  * todo: split hooks into separate files and load only necessary dependencies
- * @package Lavitto\FormToDatabase\Hooks
  */
-class FormHooks
+final class FormHooks
 {
-    /**
-     * @var FormDefinitionUtility
-     */
-    public $formDefinitionUtility;
+    public function __construct(
+        private readonly ResourceFactory $resourceFactory,
+        private readonly UniqueFieldHandler $uniqueFieldHandler,
+        private readonly FormPersistenceManager $formPersistenceManager,
+        private readonly FormResultRepository $formResultRepository
+    ) {}
 
     /**
-     * @var ResourceFactory
-     */
-    protected ResourceFactory $resourceFactory;
-
-    /*
-     * @var UniqueFieldHandler
-     */
-    protected UniqueFieldHandler $uniqueFieldHandler;
-
-    /**
-     * @var FormPersistenceManager
-     */
-    protected FormPersistenceManager $formPersistenceManager;
-
-    /**
-     * The FormResultRepository
-     * @var FormResultRepository
-     */
-    public FormResultRepository $formResultRepository;
-
-    /**
-     * @param FormDefinitionUtility $formDefinitionUtility
-     * @param ResourceFactory $resourceFactory
-     * @param UniqueFieldHandler $uniqueFieldHandler
-     * @param FormPersistenceManager $formPersistenceManager
-     * @param FormResultRepository $formResultRepository
-     */
-    public function __construct(FormDefinitionUtility $formDefinitionUtility, ResourceFactory $resourceFactory, UniqueFieldHandler $uniqueFieldHandler, FormPersistenceManager $formPersistenceManager, FormResultRepository $formResultRepository)
-    {
-        $this->formDefinitionUtility = $formDefinitionUtility;
-        $this->resourceFactory = $resourceFactory;
-        $this->uniqueFieldHandler = $uniqueFieldHandler;
-        $this->formPersistenceManager = $formPersistenceManager;
-        $this->formResultRepository = $formResultRepository;
-    }
-
-
-    /**
-     * @param $formPersistenceIdentifier
-     * @return void
      * @throws IllegalObjectTypeException
      * @throws UnknownObjectException
      * @throws InvalidQueryException
      * @throws PersistenceManagerException
-     * @noinspection PhpParamsInspection
      */
-    public function beforeFormDelete($formPersistenceIdentifier): void
+    public function beforeFormDelete(string $formPersistenceIdentifier): void
     {
-        $yaml = $this->formPersistenceManager->load($formPersistenceIdentifier);
+        // empty form settings correct here, as an empty array will allow all
+        // entry points. This is, what is better at this point
+        $formSettings = [];
+        $yaml = $this->formPersistenceManager->load(
+            $formPersistenceIdentifier,
+            $formSettings,
+            []
+        );
 
         /** @var File $file */
         $file = $this->resourceFactory->getFileObjectFromCombinedIdentifier($formPersistenceIdentifier);
@@ -97,13 +65,12 @@ class FormHooks
         // Set new unique filename and update form definition with new identifier
         $newFilename = $newIdentifier . '.form.yaml.deleted';
         $yaml['identifier'] = $newIdentifier;
-        $this->formPersistenceManager->save($formPersistenceIdentifier, $yaml);
+        $this->formPersistenceManager->save($formPersistenceIdentifier, $yaml, $formSettings);
 
         if ($file !== null) {
             $newCombinedIdentifier = $file->copyTo($file->getParentFolder(), $newFilename)->getCombinedIdentifier();
-            /** @var QueryResult $results */
+            /** @var QueryResult<FormResult> $results */
             $results = $this->formResultRepository->findByFormPersistenceIdentifier($formPersistenceIdentifier);
-            /** @var FormResult $result */
             foreach ($results as $result) {
                 $result->setFormPersistenceIdentifier($newCombinedIdentifier);
                 $result->setFormIdentifier($newIdentifier);
@@ -112,17 +79,15 @@ class FormHooks
         }
         //Restore form definition with old identifier, so that the file to be deleted can be found by original identifier
         $yaml['identifier'] = $oldIdentifier;
-        $this->formPersistenceManager->save($formPersistenceIdentifier, $yaml);
+        $this->formPersistenceManager->save($formPersistenceIdentifier, $yaml, $formSettings);
     }
 
     /**
      * Keep track of field identifiers of deleted and new fields, so that identifiers are not reused
      *
-     * @param $formPersistenceIdentifier
-     * @param $formDefinition
-     * @return mixed
+     * @param array<array-key, mixed> $formDefinition
      */
-    public function beforeFormSave($formPersistenceIdentifier, $formDefinition)
+    public function beforeFormSave(string $formPersistenceIdentifier, array $formDefinition): mixed
     {
         return $this->uniqueFieldHandler->updateNewFields($formPersistenceIdentifier, $formDefinition);
     }
