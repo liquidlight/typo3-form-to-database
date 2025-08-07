@@ -1,0 +1,72 @@
+.testing-matrix:
+  image: mgoltzsche/podman:5.2
+  before_script:
+    - apk add bash
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composer install
+  parallel:
+    matrix:
+      - TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
+
+.functional-testing:
+  image: mgoltzsche/podman:5.2
+  before_script:
+    - apk add bash
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composer install
+  parallel:
+    matrix:
+      - DB_TYPE: [ "sqlite" ]
+        TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
+      - DB_TYPE: [ "mysql" ]
+        TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
+      - DB_TYPE: [ "mariadb" ]
+        TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
+      - DB_TYPE: [ "postgres" ]
+        TYPO3: "13"
+        PHP: [ "8.2", "8.3", "8.4" ]
+
+.basic-testing-matrix:
+  image: mgoltzsche/podman:5.2
+  before_script:
+    - apk add bash
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s composer install
+  parallel:
+    matrix:
+      - TYPO3: "13"
+        PHP: "8.2"
+
+stages:
+  - code-quality
+  - testing
+
+code-quality:
+  stage: code-quality
+  extends:
+    - .basic-testing-matrix
+  script:
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s lintTypoScript
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s lintPhp
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s cgl
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkTestMethodsPrefix
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkBom
+    # Disabled, as Documentation is not shipped by extension itself
+#    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkRst
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s checkExceptionCodes
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s phpstan
+
+Unit Testing:
+  stage: testing
+  extends:
+    - .testing-matrix
+  script:
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s unit
+
+Functional Testing:
+  stage: testing
+  extends:
+    - .functional-testing
+  script:
+    - Build/Scripts/runTests.sh -t $TYPO3 -p $PHP -s functional -d $DB_TYPE

@@ -1,0 +1,15 @@
+plugin.tx_form {
+    settings {
+        yamlConfigurations {
+            1731962766693 = EXT:test_extension/Configuration/Yaml/SaveToExtension.yaml
+        }
+    }
+}
+
+module.tx_form {
+    settings {
+        yamlConfigurations {
+            1731962766693 = EXT:test_extension/Configuration/Yaml/SaveToExtension.yaml
+        }
+    }
+}

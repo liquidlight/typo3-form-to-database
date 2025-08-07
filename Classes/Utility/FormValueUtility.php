@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the "form_to_database" Extension for TYPO3 CMS.
  *
@@ -8,9 +11,8 @@
 
 namespace Lavitto\FormToDatabase\Utility;
 
-use DateTime;
 use DateTimeZone;
-use Exception;
+use Lavitto\FormToDatabase\Exception\FileNotFoundException;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\SingletonInterface;
@@ -21,12 +23,9 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /**
  * Class FormValueUtility
- *
- * @package Lavitto\FormToDatabase\Utility
  */
 class FormValueUtility implements SingletonInterface
 {
-
     /**
      * Output type definition "html"
      */
@@ -57,30 +56,21 @@ class FormValueUtility implements SingletonInterface
      */
     protected const COMBINED_FILE_IDENTIFIER_REGEX = '^([1-9]{1}[0-9]*)(\:)(.*)$';
 
-    /**
-     * @var ExtConfUtility
-     */
-    protected static $extConfUtility;
+    protected static ?ExtConfUtility $extConfUtility = null;
 
     /**
      * Converts a form value from database value to a human readable output
-     *
-     * @param FormElementInterface $element
-     * @param $value
-     * @param string $outputType
-     * @param bool $cropText
-     * @return string
      */
     public static function convertFormValue(
         FormElementInterface $element,
-        $value,
+        mixed $value,
         string $outputType = self::OUTPUT_TYPE_HTML,
         bool $cropText = false
     ): string {
         switch ($element->getType()) {
             case 'Date':
             case 'DatePicker':
-                if (is_array($value) && !empty($value)) {
+                if (is_array($value) && array_key_exists('date', $value) && array_key_exists('timezone', $value)) {
                     $value = self::getDateValue($element, $value);
                 }
                 break;
@@ -158,6 +148,7 @@ class FormValueUtility implements SingletonInterface
      *
      * @param string $combinedFileIdentifier
      * @return string
+     * @throws FileNotFoundException
      */
     protected static function getFileLink(string $combinedFileIdentifier): string
     {
@@ -166,15 +157,28 @@ class FormValueUtility implements SingletonInterface
         $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
         try {
             $fileObject = $resourceFactory->getFileObjectFromCombinedIdentifier($combinedFileIdentifier);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $fileObject = null;
         }
         if ($fileObject instanceof FileInterface) {
-            if ($fileObject->getStorage()->isPublic() === true) {
-                $publicUrl = PathUtility::getAbsoluteWebPath($fileObject->getPublicUrl());
+            if ($fileObject->getStorage()->isPublic() && !$fileObject->isDeleted()) {
+                $internalPublicUrl = $fileObject->getPublicUrl();
+                if ($internalPublicUrl === null) {
+                    throw new FileNotFoundException(
+                        sprintf('The requested file "%s" was not found. It is either deleted or missing.', $fileObject->getIdentifier()),
+                        1730896217433
+                    );
+                }
+                $publicUrl = PathUtility::getAbsoluteWebPath($internalPublicUrl);
                 $fileLink = GeneralUtility::locationHeaderUrl($publicUrl);
             } else {
                 $fileLink = $fileObject->getPublicUrl();
+                if ($fileLink === null) {
+                    throw new FileNotFoundException(
+                        sprintf('The requested file "%s" was not found. It is either deleted or missing.', $fileObject->getIdentifier()),
+                        1730896340759
+                    );
+                }
             }
         }
         return $fileLink;
@@ -184,19 +188,22 @@ class FormValueUtility implements SingletonInterface
      * Converts a date(time) value array to a human readable string
      *
      * @param FormElementInterface $element
-     * @param array $dateValue
+     * @param array{
+     *     date: string,
+     *     timezone: string
+     * } $dateValue
      * @return string
      */
     protected static function getDateValue(FormElementInterface $element, array $dateValue): string
     {
         $dateTime = null;
         try {
-            $dateTime = new DateTime($dateValue['date'], self::getValidTimezone($dateValue['timezone']));
-        } catch (Exception $e) {
+            $dateTime = new \DateTime($dateValue['date'], self::getValidTimezone($dateValue['timezone']));
+        } catch (\Exception $e) {
         }
         $properties = $element->getProperties();
         $format = $properties['dateFormat'] ?? $properties['displayFormat'] ?? self::getDateFormat();
-        return $dateTime instanceof DateTime ? $dateTime->format($format) : '';
+        return $dateTime instanceof \DateTime ? $dateTime->format($format) : '';
     }
 
     /**
@@ -210,8 +217,10 @@ class FormValueUtility implements SingletonInterface
     {
         /** @var ContentObjectRenderer $contentObject */
         $contentObject = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        return $contentObject->crop($text,
-            self::HTML_CROP_MAX_CHARS . '|' . self::HTML_CROP_APPEND . '|' . self::HTML_CROP_RESPECT_WORD_BOUNDARIES);
+        return $contentObject->crop(
+            $text,
+            self::HTML_CROP_MAX_CHARS . '|' . self::HTML_CROP_APPEND . '|' . self::HTML_CROP_RESPECT_WORD_BOUNDARIES
+        );
     }
 
     /**
@@ -237,20 +246,22 @@ class FormValueUtility implements SingletonInterface
     /**
      * Returns a valid DateTimeZone with fallback function TYPO3_CONF_VARS > default_timezone > UTC
      *
-     * @param string $timeZone
-     * @return DateTimeZone
+     * @return \DateTimeZone
+     * @throws \DateInvalidTimeZoneException
      */
-    public static function getValidTimezone(string $timeZone): DateTimeZone
+    public static function getValidTimezone(string $timeZone): \DateTimeZone
     {
         $timeZoneIdentifiers = timezone_identifiers_list();
-        if (in_array($timeZone, $timeZoneIdentifiers, true) === true) {
+        if (in_array($timeZone, $timeZoneIdentifiers, true)) {
             $validTimeZone = $timeZone;
-        } elseif (in_array(date_default_timezone_get(), $timeZoneIdentifiers, true) === true) {
+        } elseif (in_array(date_default_timezone_get(), $timeZoneIdentifiers, true)) {
             $validTimeZone = date_default_timezone_get();
         } else {
-            $validTimeZone = DateTimeZone::UTC;
+            // changed from \DateTimeZone::UTC to hard-coded string 'UTC',
+            // as constructor expects string, but constant is integer
+            $validTimeZone = 'UTC';
         }
-        return new DateTimeZone($validTimeZone);
+        return new \DateTimeZone($validTimeZone);
     }
 
     /**
@@ -258,17 +269,15 @@ class FormValueUtility implements SingletonInterface
      */
     protected static function getExtConfUtility(): ExtConfUtility
     {
-        if (self::$extConfUtility === null) {
-            self::$extConfUtility = GeneralUtility::makeInstance(ExtConfUtility::class);
-        }
+        self::$extConfUtility ??= GeneralUtility::makeInstance(ExtConfUtility::class);
         return self::$extConfUtility;
     }
 
     /**
      * Finds matching form values by direct match or when prefixed by a container
-     * @param array $results
+     * @param array<string, mixed> $results
      * @param string $identifier
-     * @return mixed
+     * @return array<mixed>
      */
     public static function findValuesByIdentifier(array $results, string $identifier): array
     {
@@ -292,7 +301,7 @@ class FormValueUtility implements SingletonInterface
     /**
      * Finds matching form values and converts them to a string 
      * @param FormElementInterface $element
-     * @param array $results
+     * @param array<string, mixed> $results
      * @param string $valueIdentifier
      * @param bool $crop
      * @return string
@@ -311,7 +320,7 @@ class FormValueUtility implements SingletonInterface
     /**
      * Formats multiple value matches (such as repeatables) as a single string with numbered lines
      * @param FormElementInterface $element
-     * @param array $values
+     * @param array<mixed> $values
      * @param bool $crop
      * @return string
     */

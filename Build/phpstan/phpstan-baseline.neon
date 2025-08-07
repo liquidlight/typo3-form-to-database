@@ -1,0 +1,16 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Parameter \\#1 \\$formSettings of method Lavitto\\\\FormToDatabase\\\\Controller\\\\FormResultsController\\:\\:getAvailableFormDefinitions\\(\\) expects array\\{persistenceManager\\: array\\{allowedFileMounts\\: array\\<string\\>\\}\\}, array given\\.$#"
+			count: 2
+			path: ../../Classes/Controller/FormResultsController.php
+
+		-
+			message: "#^Parameter \\#1 \\$targetFolder of method TYPO3\\\\CMS\\\\Core\\\\Resource\\\\AbstractFile\\:\\:moveTo\\(\\) expects TYPO3\\\\CMS\\\\Core\\\\Resource\\\\Folder, TYPO3\\\\CMS\\\\Core\\\\Resource\\\\FolderInterface given\\.$#"
+			count: 1
+			path: ../../Classes/Controller/FormResultsController.php
+
+		-
+			message: "#^Parameter \\#1 \\$targetFolder of method TYPO3\\\\CMS\\\\Core\\\\Resource\\\\AbstractFile\\:\\:copyTo\\(\\) expects TYPO3\\\\CMS\\\\Core\\\\Resource\\\\Folder, TYPO3\\\\CMS\\\\Core\\\\Resource\\\\FolderInterface given\\.$#"
+			count: 1
+			path: ../../Classes/Hooks/FormHooks.php

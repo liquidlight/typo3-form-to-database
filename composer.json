@@ -28,18 +28,22 @@
   ],
   "config": {
     "vendor-dir": ".Build/vendor",
-    "bin-dir": ".Build/bin"
+    "bin-dir": ".Build/bin",
+    "sort-packages": true,
+    "allow-plugins": {
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
+    }
   },
   "require": {
-    "php": ">=8.1.0",
-    "typo3/cms-core": "^12.4",
-    "typo3/cms-extbase": "^12.4",
-    "typo3/cms-fluid": "^12.4",
-    "typo3/cms-frontend": "^12.4",
-    "typo3/cms-backend": "^12.4",
-    "typo3/cms-form": "^12.4",
+    "php": "^8.2 || ^8.3 || ^8.4",
     "ext-json": "*",
-    "ext-pdo": "*"
+    "typo3/cms-backend": "^13.4",
+    "typo3/cms-core": "^13.4",
+    "typo3/cms-extbase": "^13.4",
+    "typo3/cms-fluid": "^13.4",
+    "typo3/cms-form": "^13.4",
+    "typo3/cms-frontend": "^13.4"
   },
   "suggest": {
     "mpdf/mpdf": "Allows downloading form results as a PDF"
@@ -49,11 +53,26 @@
       "Lavitto\\FormToDatabase\\": "Classes"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Lavitto\\FormToDatabase\\Test\\": "Tests"
+    }
+  },
   "extra": {
     "typo3/cms": {
       "extension-key": "form_to_database",
-      "cms-package-dir": "{$vendor-dir}/typo3/cms",
       "web-dir": ".Build/Web"
     }
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.64",
+    "helhum/typo3-console": "^8.2",
+    "helmich/typo3-typoscript-lint": "^3.2",
+    "mpdf/mpdf": "^8.2",
+    "nikic/php-parser": "^5.3",
+    "saschaegerer/phpstan-typo3": "^1.10",
+    "typo3/cms-install": "^13.4",
+    "typo3/cms-tstemplate": "^13.4",
+    "typo3/testing-framework": "^9.0"
   }
 }

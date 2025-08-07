@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the "form_to_database" Extension for TYPO3 CMS.
  *
@@ -22,12 +24,9 @@ use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 
 /**
  * Class FormToDatabaseFinisher
- *
- * @package Lavitto\FormToDatabase\Domain\Finishers
  */
 class FormToDatabaseFinisher extends AbstractFinisher
 {
-
     /**
      * Dont save this fields in database (also used in FromResultsController)
      */
@@ -38,21 +37,21 @@ class FormToDatabaseFinisher extends AbstractFinisher
      *
      * @var FormDefinition
      */
-    protected $formDefinition;
+    protected FormDefinition $formDefinition;
 
     /**
      * The FormResultRepository
      *
      * @var FormResultRepository
      */
-    protected $formResultRepository;
+    protected FormResultRepository $formResultRepository;
 
     /**
      * The ConfigurationManagerInterface
      *
      * @var ConfigurationManagerInterface
      */
-    protected $configurationManager;
+    protected ConfigurationManagerInterface $configurationManager;
 
     /**
      * Injects the FormResultRepository
@@ -77,13 +76,13 @@ class FormToDatabaseFinisher extends AbstractFinisher
     /**
      * getFormFieldValues
      *
-     * Recurrsive method to get all form field values including nested ones
+     * Recursive method to get all form field values including nested ones
      *
-     * @param  array $fields
-     * @param  array $nestedIdentifier Array of levels nested - populated during recursion
-     * @return array
+     * @param array<string, mixed> $fields
+     * @param array<array-key, mixed> $nestedIdentifier Array of levels nested - populated during recursion
+     * @return array<string, mixed>
      */
-    private function getFormFieldValues(array $fields, $nestedIdentifier = []): array
+    private function getFormFieldValues(array $fields, array $nestedIdentifier = []): array
     {
         $formValues = [];
 
@@ -97,7 +96,7 @@ class FormToDatabaseFinisher extends AbstractFinisher
                 $newNestedIdentifier[] = $fieldName;
                 $formValues = array_merge($this->getFormFieldValues($fieldValue, $newNestedIdentifier), $formValues);
             } else {
-                if(count($nestedIdentifier)) {
+                if (count($nestedIdentifier)) {
                     $fieldNameIdentifier = array_merge($nestedIdentifier, [$fieldName]);
                     $fieldName = implode('.', $fieldNameIdentifier);
                 }
@@ -129,43 +128,41 @@ class FormToDatabaseFinisher extends AbstractFinisher
      * Writes the form-result into the database, excludes Honeypot
      *
      * @throws IllegalObjectTypeException
+     * @throws \JsonException
      */
     protected function executeInternal(): void
     {
+        $request = $this->finisherContext->getRequest();
         $this->formDefinition = $this->finisherContext->getFormRuntime()->getFormDefinition();
-        if ($this->formDefinition instanceof FormDefinition) {
-            /** @noinspection PhpInternalEntityUsedInspection */
-            $formPersistenceIdentifier = $this->formDefinition->getPersistenceIdentifier();
+        $formPersistenceIdentifier = $this->formDefinition->getPersistenceIdentifier();
 
-            $formValues = $this->getFormFieldValues($this->finisherContext->getFormValues());
+        $formValues = $this->getFormFieldValues($this->finisherContext->getFormValues());
 
-            $formPluginUid = 0;
-            $formIdentifier = $this->formDefinition->getIdentifier();
+        $formPluginUid = 0;
+        $formIdentifier = $this->formDefinition->getIdentifier();
 
-            $delimiter = strrpos($this->formDefinition->getIdentifier(), '-');
-
-            if ($delimiter) {
-                $formPluginUid = (int)substr($this->formDefinition->getIdentifier(), $delimiter + 1);
-                $formIdentifier = substr($this->formDefinition->getIdentifier(), 0, $delimiter);
-            }
-
-            $formResult = GeneralUtility::makeInstance(FormResult::class);
-            $formResult->setFormPersistenceIdentifier($formPersistenceIdentifier);
-            $formResult->setSiteIdentifier($GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getIdentifier());
-            $formResult->setPid($GLOBALS['TSFE']->id);
-            $formResult->setResultFromArray($formValues);
-            $formResult->setFormPluginUid($formPluginUid);
-            $formResult->setFormIdentifier($formIdentifier);
-
-            $this->formResultRepository->add($formResult);
-            $persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
-            $persistenceManager->persistAll();
-
-            $this->finisherContext->getFinisherVariableProvider()->add(
-                $this->shortFinisherIdentifier,
-                'formToDatabase.formResult',
-                $formResult
-            );
+        $delimiter = (int)strrpos($this->formDefinition->getIdentifier(), '-');
+        if ($delimiter) {
+            $formPluginUid = (int)substr($this->formDefinition->getIdentifier(), $delimiter + 1);
+            $formIdentifier = substr($this->formDefinition->getIdentifier(), 0, $delimiter);
         }
+
+        $formResult = GeneralUtility::makeInstance(FormResult::class);
+        $formResult->setFormPersistenceIdentifier($formPersistenceIdentifier);
+        $formResult->setSiteIdentifier($request->getAttribute('site')?->getIdentifier() ?? '');
+        $formResult->setPid($request->getAttribute('frontend.page.information')?->getId() ?? 0);
+        $formResult->setResultFromArray($formValues);
+        $formResult->setFormPluginUid($formPluginUid);
+        $formResult->setFormIdentifier($formIdentifier);
+
+        $this->formResultRepository->add($formResult);
+        $persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
+        $persistenceManager->persistAll();
+
+        $this->finisherContext->getFinisherVariableProvider()->add(
+            $this->shortFinisherIdentifier,
+            'formToDatabase.formResult',
+            $formResult
+        );
     }
 }

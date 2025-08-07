@@ -1,11 +1,13 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the "form_to_database" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
-
 defined('TYPO3') or die();
 
 return [
@@ -22,44 +24,44 @@ return [
         'crdate' => [
             'label' => 'crdate',
             'config' => [
-                'type' => 'passthrough'
-            ]
+                'type' => 'passthrough',
+            ],
         ],
         'tstamp' => [
             'label' => 'tstamp',
             'config' => [
-                'type' => 'passthrough'
-            ]
+                'type' => 'passthrough',
+            ],
         ],
         'form_persistence_identifier' => [
             'label' => 'form_persistence_identifier',
             'config' => [
-                'type' => 'passthrough'
-            ]
+                'type' => 'passthrough',
+            ],
         ],
         'form_identifier' => [
             'label' => 'form_identifier',
             'config' => [
-                'type' => 'passthrough'
-            ]
+                'type' => 'passthrough',
+            ],
         ],
         'site_identifier' => [
             'label' => 'site_identifier',
             'config' => [
-                'type' => 'passthrough'
-            ]
+                'type' => 'passthrough',
+            ],
         ],
         'form_plugin_uid' => [
             'label' => 'site_identifier',
             'config' => [
-                'type' => 'passthrough'
-            ]
+                'type' => 'passthrough',
+            ],
         ],
         'result' => [
             'label' => 'result',
             'config' => [
-                'type' => 'passthrough'
-            ]
-        ]
-    ]
+                'type' => 'passthrough',
+            ],
+        ],
+    ],
 ];

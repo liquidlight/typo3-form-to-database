@@ -1,0 +1,10 @@
+pages
+,uid,pid,doktype,is_siteroot,title
+,1,0,1,1,"RootPage"
+,2,1,254,0,"Results"
+
+tx_formtodatabase_domain_model_formresult
+,uid,pid,tstamp,result,form_plugin_uid
+,1,2,1699375063,"{}",1
+,2,2,1699375066,"{}",1
+,3,2,1699375073,"{}",1

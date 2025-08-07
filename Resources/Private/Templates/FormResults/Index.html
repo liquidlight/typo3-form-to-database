@@ -1,18 +1,30 @@
-<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<html
+		lang="en"
+		xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+		xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+		data-namespace-typo3-fluid="true"
+>
 
-<f:layout name="Default"/>
+<f:layout name="Module"/>
 
-<f:section name="MainContent">
+<f:section name="Content">
 	<h1>
 		<f:translate key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.headline"/>
 	</h1>
 
 	<form class="mb-2" action="{f:uri.action(action:'index')}" method="POST">
-		<div class="mb-2">
-			<label for="search" class="form-label">{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.do_search')}</label>
-			<input type="text" class="form-control" id="search" name="tx_form_to_database[search]" aria-describedby="emailHelp" value="{searchKey}">
+		<div class="form-row">
+			<div class="form-group">
+				<label for="search" class="form-label">{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.do_search')}</label>
+				<div class="input-group">
+				<input type="text" class="form-control" id="search" name="tx_form_to_database[search]" aria-describedby="emailHelp" value="{searchKey}">
+				<button class="btn btn-default" type="submit" name="search">
+					<span class="visually-hidden"><f:translate id="LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.title.search"/></span>
+					<core:icon identifier="actions-search" size="small" />
+				</button>
+				</div>
+			</div>
 		</div>
-		<button type="submit" class="btn btn-primary">{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.search_button')}</button>
 	</form>
 
 	<f:if condition="{forms}">

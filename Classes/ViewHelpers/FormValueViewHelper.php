@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the "form_to_database" Extension for TYPO3 CMS.
  *
@@ -14,12 +17,9 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * Class FormValueViewHelper
- *
- * @package Lavitto\FormToDatabase\ViewHelpers
  */
 class FormValueViewHelper extends AbstractViewHelper
 {
-
     /**
      * Do not escape the output
      *

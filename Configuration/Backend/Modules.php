@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'web_FormToDatabaseFormresults' => [
         'parent' => 'web',
@@ -12,9 +14,9 @@ return [
         'extensionName' => 'FormToDatabase',
         'controllerActions' => [
             \Lavitto\FormToDatabase\Controller\FormResultsController::class => [
-                'index', 'show', 'result', 'downloadResultPdf', 'downloadCsv', 'deleteFormResult', 'updateItemListSelect', 'unDeleteFormDefinition'
+                'index', 'show', 'result', 'downloadResultPdf', 'downloadCsv', 'deleteFormResult', 'updateItemListSelect', 'unDeleteFormDefinition',
             ],
         ],
-        'inheritNavigationComponentFromMainModule' => false
+        'inheritNavigationComponentFromMainModule' => false,
     ],
 ];
