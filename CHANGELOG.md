@@ -1,3 +1,7 @@
+# 3.2.1
+
+- [FIX] Use upload location when in container
+
 # 3.2.0
 
 - [FEATURE] Use properties from renderables
