@@ -1,3 +1,7 @@
+# 5.0.1
+
+- [FIX] Import YAML by default (!87)
+
 # 5.0.0
 
 - [FEATURE] Add support for TYPO3 13 - TypoScript now included in SiteSets
