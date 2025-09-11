@@ -464,21 +464,22 @@ class FormResultsController extends FormManagerController
             $finisherInVariant = false;
             if (isset($form['variants'])) {
                 foreach ($form['variants'] as $variant) {
-                    if (in_array(
-                        'FormToDatabase',
-                        array_column($variant['finishers'], 'identifier'),
-                        true
-                    )) {
+                    if (
+                        !empty($variant['finishers']) &&
+                        in_array('FormToDatabase', array_column($variant['finishers'], 'identifier'), true)
+                    ) {
                         $finisherInVariant = true;
                         break;
                     }
                 }
             }
-            if (!empty($form['finishers']) && in_array(
-                'FormToDatabase',
-                array_column($form['finishers'], 'identifier'),
-                true
-            ) || $finisherInVariant) {
+            if (
+                (
+                    !empty($form['finishers']) &&
+                    in_array('FormToDatabase', array_column($form['finishers'], 'identifier'), true)
+                ) ||
+                $finisherInVariant
+            ) {
                 $formDefinition['numberOfResults'] = $formResults[$formDefinition['persistenceIdentifier']] ?? 0;
                 $availableFormDefinitions[] = $formDefinition;
             }
@@ -949,7 +950,7 @@ class FormResultsController extends FormManagerController
                 $this->request->getArgument('action')
             )
         );
-        
+
         $variables = array_merge(
             $this->getDefaultValuesForAssignment(),
             [
@@ -960,7 +961,7 @@ class FormResultsController extends FormManagerController
                 'hasPdfAbility' => class_exists(Mpdf::class),
             ]
         );
-        
+
 
         if (count($excludeFields) > 0) {
             $variables['formDefinitionAll'] = $this->getFormDefinitionObject($formPersistenceIdentifier, false, $excludeFields);
