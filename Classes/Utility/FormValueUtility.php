@@ -126,7 +126,7 @@ class FormValueUtility implements SingletonInterface
                         $value = self::cropText($value);
                     }
                 } elseif (is_array($value)) {
-                    $value = implode(', ', $value);
+                    $value = implode(', ', array_map('htmlspecialchars', $value));
                 } else {
                     $value = '';
                 }
