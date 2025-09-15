@@ -1,3 +1,7 @@
+# 3.2.2
+
+- [SECURITY] Ensure array values are escaped
+
 # 3.2.1
 
 - [FIX] Use upload location when in container
