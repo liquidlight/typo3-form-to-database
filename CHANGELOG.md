@@ -1,3 +1,7 @@
+# 5.0.2
+
+- [SECURITY] Ensure array values are escaped
+
 # 5.0.1
 
 - [FIX] Import YAML by default (!87)
