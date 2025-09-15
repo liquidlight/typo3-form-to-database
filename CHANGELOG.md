@@ -1,3 +1,11 @@
+# 2.2.4
+
+- [BUGFIX] Issues when creating new fields (!53)
+- [BUGFIX] Errors in results list in backend module when SummaryPage used
+- [FIX] Initalize array $renderableFields for each $renderable in function hydrateRepeatableFields (#126)
+- [FIX] Use upload location when in container (#73)
+- [FIX]: Ignore user_upload folder if not used (#73)
+
 # 2.2.3
 
 - [BUGFIX] Backport bugfixes from main to v2 (#130)
