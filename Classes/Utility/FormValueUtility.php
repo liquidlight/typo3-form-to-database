@@ -140,7 +140,7 @@ class FormValueUtility implements SingletonInterface
                         $value = self::cropText($value);
                     }
                 } elseif (is_array($value)) {
-                    $value = implode(', ', $value);
+                    $value = implode(', ', array_map('htmlspecialchars', $value));
                 } else {
                     $value = '';
                 }
@@ -290,7 +290,7 @@ class FormValueUtility implements SingletonInterface
     }
 
     /**
-     * Finds matching form values and converts them to a string 
+     * Finds matching form values and converts them to a string
      * @param FormElementInterface $element
      * @param array $results
      * @param string $valueIdentifier
