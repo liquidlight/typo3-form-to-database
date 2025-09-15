@@ -1,3 +1,7 @@
+# 2.2.5
+
+- [SECURITY] Ensure array values are escaped
+
 # 2.2.4
 
 - [BUGFIX] Issues when creating new fields (!53)
