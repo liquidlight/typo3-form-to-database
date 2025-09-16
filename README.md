@@ -14,6 +14,7 @@
 
 | Form to Database | TYPO3 Version |
 | ---------------- | ------------- |
+| 5.x              | 13.4          |
 | 4.x              | 12.4          |
 | 3.x              | 11.5          |
 | 2.x              | 9.5 - 10.4    |
@@ -158,6 +159,13 @@ You need [Podman](https://podman.io/) installed and running to run the tests.
 See help menu for all options: `Build/Scripts/runTests.sh --help`
 
 Commits should follow [TYPO3 Commit Guidelines](https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Appendix/CommitMessage.html#commitmessage).
+
+## Releasing
+
+The package is released automatically to [Packagist](https://packagist.org/packages/lavitto/typo3-form-to-database) when tagged, however TER requires a manual upload
+
+1. `git archive -o "form_to_database_[tag].zip" [tag]` where `[tag]` is the version just created 
+2. Upload the zip file created to the TER - use the changelog for the entry
 
 ## Support
 
