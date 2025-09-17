@@ -22,6 +22,7 @@ use Lavitto\FormToDatabase\Exception\FileWriteNotPossibleException;
 use Lavitto\FormToDatabase\Exception\FormResultNotFoundException;
 use Lavitto\FormToDatabase\Exception\MpdfNotLoadedException;
 use Lavitto\FormToDatabase\Exception\ResourceIsNotCreatableException;
+use Lavitto\FormToDatabase\Event\FormResultSingleResultActionEvent;
 use Lavitto\FormToDatabase\Helpers\MiscHelper;
 use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
 use Lavitto\FormToDatabase\Utility\ExtConfUtility;
@@ -940,6 +941,16 @@ class FormResultsController extends FormManagerController
         $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier, false);
         $formRenderables = $this->getFormRenderables($formDefinition);
 
+        $this->eventDispatcher->dispatch(
+            new FormResultSingleResultActionEvent(
+                $formPersistenceIdentifier,
+                $formResult,
+                $formDefinition,
+                $formRenderables,
+                $this->request->getArgument('action')
+            )
+        );
+        
         $variables = array_merge(
             $this->getDefaultValuesForAssignment(),
             [
@@ -950,6 +961,7 @@ class FormResultsController extends FormManagerController
                 'hasPdfAbility' => class_exists(Mpdf::class),
             ]
         );
+        
 
         if (count($excludeFields) > 0) {
             $variables['formDefinitionAll'] = $this->getFormDefinitionObject($formPersistenceIdentifier, false, $excludeFields);
