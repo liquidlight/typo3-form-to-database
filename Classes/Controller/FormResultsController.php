@@ -21,6 +21,7 @@ use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
 use Lavitto\FormToDatabase\Event\FormResultDeleteFormResultActionEvent;
 use Lavitto\FormToDatabase\Event\FormResultDownloadCSVActionEvent;
 use Lavitto\FormToDatabase\Event\FormResultShowActionEvent;
+use Lavitto\FormToDatabase\Event\FormResultSingleResultActionEvent;
 use Lavitto\FormToDatabase\Helpers\MiscHelper;
 use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
 use Lavitto\FormToDatabase\Utility\ExtConfUtility;
@@ -928,6 +929,16 @@ class FormResultsController extends FormManagerController
         $formDefinition = $this->getFormDefinitionObject($formResult->getFormPersistenceIdentifier(), false);
         $formRenderables = $this->getFormRenderables($formDefinition);
 
+        $this->eventDispatcher->dispatch(
+            new FormResultSingleResultActionEvent(
+                $formPersistenceIdentifier,
+                $formResult,
+                $formDefinition,
+                $formRenderables,
+                $this->request->getArgument('action')
+            )
+        );
+        
         $variables = [
             'formResult' => $formResult,
             'formDefinition' => $formDefinition,
