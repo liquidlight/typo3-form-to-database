@@ -1,7 +1,7 @@
 {
   "name": "lavitto/typo3-form-to-database",
   "description": "Extends the TYPO3 form with a database finisher, to save every form-result in the database.",
-  "version": "4.2.3",
+  "version": "4.3.0",
   "type": "typo3-cms-extension",
   "keywords": [
     "TYPO3",

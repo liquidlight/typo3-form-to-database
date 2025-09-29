@@ -1,3 +1,9 @@
+# 4.3.0
+
+- [TASK] Add event FormResultSingleResultActionEvent
+- [FIX] Filtered CSV download only visible fields not working
+- [FIX] check `$variant['finishers']` before `array_column()` (#134)
+
 # 4.2.3
 
 - [SECURITY] Ensure array values are escaped
