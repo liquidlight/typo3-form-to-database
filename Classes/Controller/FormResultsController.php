@@ -623,7 +623,6 @@ class FormResultsController extends FormManagerController
                 $childFields = $this->getFieldElements($renderable['renderables']);
                 $renderableFields = [];
 
-                $renderableFields = [];
                 for ($x = 0; $x < $renderable['properties']['maximumCopies']; $x++) {
                     foreach ($childFields as $field) {
                         $nestedIdentifier = sprintf('%s.%s.%s', $renderable['identifier'], $x, $field['identifier']);
