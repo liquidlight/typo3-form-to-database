@@ -1,3 +1,7 @@
+# 3.2.3
+
+- [FIX] Initalize array `$renderableFields` for each `$renderable` in function hydrateRepeatableFields
+
 # 3.2.2
 
 - [SECURITY] Ensure array values are escaped
