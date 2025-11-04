@@ -591,11 +591,7 @@ class FormResultsController extends FormManagerController
 
         // Create a map of original renderables indexed by identifier for faster lookup.
         $originalRenderablesById = [];
-        foreach ($originalRenderables as $renderable) {
-            if (isset($renderable['identifier'])) {
-                $originalRenderablesById[$renderable['identifier']] = $renderable;
-            }
-        }
+        $this->getOriginalRenderablesById($originalRenderables, $originalRenderablesById);
 
         //Use properties from the original renderables.
         foreach ($configuration['renderables'][0]['renderables'] as &$fieldState) {
@@ -605,6 +601,25 @@ class FormResultsController extends FormManagerController
         }
 
         unset($fieldState);
+    }
+
+    /**
+     * Create a map of original renderables indexed by identifier for faster lookup.
+     *
+     * @param array $originalRenderables The original renderables.
+     * @param array $originalRenderablesById The original renderables indexed by identifier, passed by reference.
+     */
+    protected function getOriginalRenderablesById(array $originalRenderables, array &$originalRenderablesById): void
+    {
+        foreach ($originalRenderables as $renderable) {
+            if (isset($renderable['identifier'])) {
+                $originalRenderablesById[$renderable['identifier']] = $renderable;
+            }
+
+            if (isset($renderable['renderables'])) {
+                $this->getOriginalRenderablesById($renderable['renderables'], $originalRenderablesById);
+            }
+        }
     }
 
     /**
