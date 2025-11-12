@@ -38,12 +38,12 @@
   "require": {
     "php": "^8.2 || ^8.3 || ^8.4",
     "ext-json": "*",
-    "typo3/cms-backend": "^13.4",
-    "typo3/cms-core": "^13.4",
-    "typo3/cms-extbase": "^13.4",
-    "typo3/cms-fluid": "^13.4",
-    "typo3/cms-form": "^13.4",
-    "typo3/cms-frontend": "^13.4"
+    "typo3/cms-backend": "^13.4.20",
+    "typo3/cms-core": "^13.4.20",
+    "typo3/cms-extbase": "^13.4.20",
+    "typo3/cms-fluid": "^13.4.20",
+    "typo3/cms-form": "^13.4.20",
+    "typo3/cms-frontend": "^13.4.20"
   },
   "suggest": {
     "mpdf/mpdf": "Allows downloading form results as a PDF"

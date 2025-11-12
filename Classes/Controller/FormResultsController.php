@@ -63,6 +63,7 @@ use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
+use TYPO3\CMS\Form\Enum\SortDirection;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManagerInterface;
 use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
 
@@ -132,7 +133,7 @@ class FormResultsController extends FormManagerController
      * @throws Exception
      * @internal
      */
-    public function indexAction(int $page = 1, string $searchTerm = ''): ResponseInterface
+    public function indexAction(int $page = 1, string $searchTerm = '', string $orderField = '', ?SortDirection $orderDirection = null): ResponseInterface
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
@@ -447,7 +448,7 @@ class FormResultsController extends FormManagerController
      *     identifier: string
      * }>
      */
-    protected function getAvailableFormDefinitions(array $formSettings, string $searchTerm = ''): array
+    protected function getAvailableFormDefinitions(array $formSettings, string $searchTerm = '', string $orderField = '', ?SortDirection $orderDirection = null): array
     {
         $formResults = $this->formResultDatabaseService->getAllFormResultsForPersistenceIdentifier();
         $availableFormDefinitions = [];
