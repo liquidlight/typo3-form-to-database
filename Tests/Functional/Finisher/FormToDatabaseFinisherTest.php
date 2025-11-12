@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lavitto\FormToDatabase\Test\Functional\Finisher;
 
-use Generator;
 use Lavitto\FormToDatabase\Test\Functional\SiteBasedTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -65,7 +64,7 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
     }
 
     /**
-     * @return Generator<string, array{
+     * @return \Generator<string, array{
      *     name: non-empty-string,
      *     expectedResultFile: non-empty-string
      * }>

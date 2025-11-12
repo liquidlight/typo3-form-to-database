@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lavitto\FormToDatabase\Test\Functional\Controller;
 
-use Generator;
 use Lavitto\FormToDatabase\Controller\FormResultsController;
 use Lavitto\FormToDatabase\Test\Functional\SiteBasedTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -69,7 +68,7 @@ final class FormResultsControllerTest extends FunctionalTestCase
     }
 
     /**
-     * @return Generator<string, array{
+     * @return \Generator<string, array{
      *     form: string,
      *     expectedBody: string,
      *     expectedContentType: string,
@@ -92,7 +91,7 @@ final class FormResultsControllerTest extends FunctionalTestCase
     }
 
     /**
-     * @return Generator<string, array{
+     * @return \Generator<string, array{
      *     form: string,
      *     expectedBody: string,
      *     expectedContentType: string,
