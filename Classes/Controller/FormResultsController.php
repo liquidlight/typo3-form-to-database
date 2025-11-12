@@ -18,11 +18,11 @@ use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
 use Lavitto\FormToDatabase\Event\FormResultDeleteFormResultActionEvent;
 use Lavitto\FormToDatabase\Event\FormResultDownloadCSVActionEvent;
 use Lavitto\FormToDatabase\Event\FormResultShowActionEvent;
+use Lavitto\FormToDatabase\Event\FormResultSingleResultActionEvent;
 use Lavitto\FormToDatabase\Exception\FileWriteNotPossibleException;
 use Lavitto\FormToDatabase\Exception\FormResultNotFoundException;
 use Lavitto\FormToDatabase\Exception\MpdfNotLoadedException;
 use Lavitto\FormToDatabase\Exception\ResourceIsNotCreatableException;
-use Lavitto\FormToDatabase\Event\FormResultSingleResultActionEvent;
 use Lavitto\FormToDatabase\Helpers\MiscHelper;
 use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
 use Lavitto\FormToDatabase\Utility\ExtConfUtility;
@@ -304,7 +304,7 @@ class FormResultsController extends FormManagerController
 
         $pdfUtility = GeneralUtility::makeInstance(PdfUtility::class, $this->settings['pdf'] ?? []);
         ['fileResource' => $fileResource, 'fileLength' => $fileLength] = $pdfUtility->generatePdf(
-			$this->moduleTemplate->render('FormResults/DownloadResultPdf')
+            $this->moduleTemplate->render('FormResults/DownloadResultPdf')
         );
 
         $fileName = $variables['formDefinition']->getIdentifier() . '-' . $variables['formResult']->getCrDate()->format('U') . '.pdf';
@@ -714,8 +714,8 @@ class FormResultsController extends FormManagerController
     /**
      * Create a map of original renderables indexed by identifier for faster lookup.
      *
-     * @param array $originalRenderables The original renderables.
-     * @param array $originalRenderablesById The original renderables indexed by identifier, passed by reference.
+     * @param array<string, mixed> $originalRenderables The original renderables.
+     * @param array<string, mixed> $originalRenderablesById The original renderables indexed by identifier, passed by reference.
      */
     protected function getOriginalRenderablesById(array $originalRenderables, array &$originalRenderablesById): void
     {
@@ -977,7 +977,6 @@ class FormResultsController extends FormManagerController
                 'hasPdfAbility' => class_exists(Mpdf::class),
             ]
         );
-
 
         if (count($excludeFields) > 0) {
             $variables['formDefinitionAll'] = $this->getFormDefinitionObject($formPersistenceIdentifier, false, $excludeFields);
