@@ -1,3 +1,11 @@
+# 5.1.0
+
+- [TASK] Raise minimum TYPO3 version requirement to 13.4.20
+- [TASK] Add event FormResultSingleResultActionEvent
+- [BUGFIX] check $variant['finishers'] before array_column(), refs (#134)
+- [BUGFIX] Make functions in FormResultsController.php compatible with TYPO3 13.4.20
+- [FIX] Remove duplicate array definition
+
 # 5.0.2
 
 - [SECURITY] Ensure array values are escaped
