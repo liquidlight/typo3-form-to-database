@@ -1,6 +1,6 @@
 <?php /** @noinspection ALL */
 
-namespace Lavitto\FormToDatabase\Helpers;
+namespace LiquidLight\FormToDatabase\Helpers;
 
 use PDO;
 use TYPO3\CMS\Core\Database\ConnectionPool;

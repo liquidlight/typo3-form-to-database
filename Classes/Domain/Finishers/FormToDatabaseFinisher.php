@@ -7,10 +7,10 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Domain\Finishers;
+namespace LiquidLight\FormToDatabase\Domain\Finishers;
 
-use Lavitto\FormToDatabase\Domain\Model\FormResult;
-use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
+use LiquidLight\FormToDatabase\Domain\Model\FormResult;
+use LiquidLight\FormToDatabase\Domain\Repository\FormResultRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Domain\Model\FileReference;
@@ -23,7 +23,7 @@ use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 /**
  * Class FormToDatabaseFinisher
  *
- * @package Lavitto\FormToDatabase\Domain\Finishers
+ * @package LiquidLight\FormToDatabase\Domain\Finishers
  */
 class FormToDatabaseFinisher extends AbstractFinisher
 {

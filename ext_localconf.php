@@ -15,6 +15,6 @@ call_user_func(function () {
         \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
         ['source' => 'EXT:form_to_database/Resources/Public/Icons/action-print.svg']
     );
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormSave'][] = \Lavitto\FormToDatabase\Hooks\FormHooks::class;
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormDelete'][] = \Lavitto\FormToDatabase\Hooks\FormHooks::class;
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormSave'][] = \LiquidLight\FormToDatabase\Hooks\FormHooks::class;
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormDelete'][] = \LiquidLight\FormToDatabase\Hooks\FormHooks::class;
 });
