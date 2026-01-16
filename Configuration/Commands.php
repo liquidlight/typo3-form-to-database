@@ -10,6 +10,6 @@
  */
 return [
 	'form_to_database:deleteFormResults' => [
-		'class' => Lavitto\FormToDatabase\Command\DeleteFormResultCommand::class
+		'class' => LiquidLight\FormToDatabase\Command\DeleteFormResultCommand::class
 	],
 ];

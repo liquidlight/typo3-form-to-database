@@ -6,10 +6,10 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Command;
+namespace LiquidLight\FormToDatabase\Command;
 
-use Lavitto\FormToDatabase\Domain\Model\FormResult;
-use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
+use LiquidLight\FormToDatabase\Domain\Model\FormResult;
+use LiquidLight\FormToDatabase\Domain\Repository\FormResultRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,7 +25,7 @@ use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 /**
  * Class DeleteFormResultCommand
  *
- * @package Lavitto\FormToDatabase\Command
+ * @package LiquidLight\FormToDatabase\Command
  */
 class DeleteFormResultCommand extends Command
 {

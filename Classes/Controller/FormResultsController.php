@@ -9,19 +9,19 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Controller;
+namespace LiquidLight\FormToDatabase\Controller;
 
 use DateTime;
 use Doctrine\DBAL\FetchMode;
 use Exception;
-use Lavitto\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher;
-use Lavitto\FormToDatabase\Domain\Model\FormResult;
-use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
-use Lavitto\FormToDatabase\Helpers\MiscHelper;
-use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
-use Lavitto\FormToDatabase\Utility\ExtConfUtility;
-use Lavitto\FormToDatabase\Utility\FormDefinitionUtility;
-use Lavitto\FormToDatabase\Utility\FormValueUtility;
+use LiquidLight\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher;
+use LiquidLight\FormToDatabase\Domain\Model\FormResult;
+use LiquidLight\FormToDatabase\Domain\Repository\FormResultRepository;
+use LiquidLight\FormToDatabase\Helpers\MiscHelper;
+use LiquidLight\FormToDatabase\Service\FormResultDatabaseService;
+use LiquidLight\FormToDatabase\Utility\ExtConfUtility;
+use LiquidLight\FormToDatabase\Utility\FormDefinitionUtility;
+use LiquidLight\FormToDatabase\Utility\FormValueUtility;
 use PDO;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
@@ -54,7 +54,7 @@ use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
 /**
  * Class FormResultsController
  *
- * @package Lavitto\FormToDatabase\Controller
+ * @package LiquidLight\FormToDatabase\Controller
  */
 class FormResultsController extends FormManagerController
 {

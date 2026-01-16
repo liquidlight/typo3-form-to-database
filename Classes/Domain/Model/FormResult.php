@@ -6,7 +6,7 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Domain\Model;
+namespace LiquidLight\FormToDatabase\Domain\Model;
 
 use DateTime;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
@@ -15,7 +15,7 @@ use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 /**
  * Class FormResult
  *
- * @package Lavitto\FormToDatabase\Domain\Model
+ * @package LiquidLight\FormToDatabase\Domain\Model
  */
 class FormResult extends AbstractEntity
 {
