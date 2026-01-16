@@ -1,3 +1,7 @@
+# 2.2.6
+
+- [FIX] Compatibility with EXT:repeatable_form_elements (#73)
+
 # 2.2.5
 
 - [SECURITY] Ensure array values are escaped
