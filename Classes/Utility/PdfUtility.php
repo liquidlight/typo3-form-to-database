@@ -1,6 +1,6 @@
 <?php
 
-namespace Lavitto\FormToDatabase\Utility;
+namespace LiquidLight\FormToDatabase\Utility;
 
 use Mpdf\Mpdf;
 use Mpdf\HTMLParserMode;

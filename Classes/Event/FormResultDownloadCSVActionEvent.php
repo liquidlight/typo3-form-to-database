@@ -1,6 +1,6 @@
 <?php
 
-namespace Lavitto\FormToDatabase\Event;
+namespace LiquidLight\FormToDatabase\Event;
 
 use TYPO3\CMS\Extbase\Persistence\Generic\QueryResult;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;

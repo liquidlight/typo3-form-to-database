@@ -6,7 +6,7 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Utility;
+namespace LiquidLight\FormToDatabase\Utility;
 
 use DateTime;
 use DateTimeZone;
@@ -22,7 +22,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 /**
  * Class FormValueUtility
  *
- * @package Lavitto\FormToDatabase\Utility
+ * @package LiquidLight\FormToDatabase\Utility
  */
 class FormValueUtility implements SingletonInterface
 {
