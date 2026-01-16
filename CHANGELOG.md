@@ -1,3 +1,7 @@
+# 3.2.4
+
+- [FIX] Compatibility with EXT:repeatable_form_elements (#73)
+
 # 3.2.3
 
 - [FIX] Initalize array `$renderableFields` for each `$renderable` in function hydrateRepeatableFields
