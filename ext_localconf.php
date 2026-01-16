@@ -7,7 +7,7 @@
  */
 
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use Lavitto\FormToDatabase\Hooks\FormHooks;
+use LiquidLight\FormToDatabase\Hooks\FormHooks;
 
 defined('TYPO3') or die();
 

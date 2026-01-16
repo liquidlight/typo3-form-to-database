@@ -9,7 +9,7 @@ declare(strict_types=1);
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Utility;
+namespace LiquidLight\FormToDatabase\Utility;
 
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Form\Domain\Configuration\Exception\PrototypeNotFoundException;

@@ -9,12 +9,12 @@ declare(strict_types=1);
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Domain\Repository;
+namespace LiquidLight\FormToDatabase\Domain\Repository;
 
 use Doctrine\DBAL\Exception;
-use Lavitto\FormToDatabase\Domain\Model\FormResult;
-use Lavitto\FormToDatabase\Helpers\MiscHelper;
-use Lavitto\FormToDatabase\Utility\FormValueUtility;
+use LiquidLight\FormToDatabase\Domain\Model\FormResult;
+use LiquidLight\FormToDatabase\Helpers\MiscHelper;
+use LiquidLight\FormToDatabase\Utility\FormValueUtility;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;

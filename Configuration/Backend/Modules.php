@@ -13,8 +13,8 @@ return [
         'labels' => 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_mod.xlf',
         'extensionName' => 'FormToDatabase',
         'controllerActions' => [
-            \Lavitto\FormToDatabase\Controller\FormResultsController::class => [
-                'index', 'show', 'result', 'downloadResultPdf', 'downloadCsv', 'deleteFormResult', 'updateItemListSelect', 'unDeleteFormDefinition',
+            \LiquidLight\FormToDatabase\Controller\FormResultsController::class => [
+                'index', 'show', 'result', 'downloadResultPdf', 'downloadCsv', 'deleteFormResult', 'updateItemListSelect', 'unDeleteFormDefinition'
             ],
         ],
         'inheritNavigationComponentFromMainModule' => false,

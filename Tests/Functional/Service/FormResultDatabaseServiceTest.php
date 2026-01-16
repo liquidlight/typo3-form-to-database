@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lavitto\FormToDatabase\Test\Functional\Service;
+namespace LiquidLight\FormToDatabase\Test\Functional\Service;
 
-use Lavitto\FormToDatabase\Service\FormResultDatabaseService;
+use LiquidLight\FormToDatabase\Service\FormResultDatabaseService;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
@@ -15,7 +15,7 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 final class FormResultDatabaseServiceTest extends FunctionalTestCase
 {
     protected array $testExtensionsToLoad = [
-        'lavitto/typo3-form-to-database',
+        'typo3-form-to-database',
     ];
 
     protected array $coreExtensionsToLoad = [

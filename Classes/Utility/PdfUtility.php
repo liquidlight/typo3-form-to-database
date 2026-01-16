@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Lavitto\FormToDatabase\Utility;
+namespace LiquidLight\FormToDatabase\Utility;
 
-use Lavitto\FormToDatabase\Exception\FileWriteNotPossibleException;
-use Lavitto\FormToDatabase\Exception\MpdfNotLoadedException;
-use Lavitto\FormToDatabase\Exception\ResourceIsNotCreatableException;
+use LiquidLight\FormToDatabase\Exception\FileWriteNotPossibleException;
+use LiquidLight\FormToDatabase\Exception\MpdfNotLoadedException;
+use LiquidLight\FormToDatabase\Exception\ResourceIsNotCreatableException;
 use Mpdf\HTMLParserMode;
 use Mpdf\Mpdf;
 use Mpdf\MpdfException;

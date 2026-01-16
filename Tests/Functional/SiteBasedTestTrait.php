@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lavitto\FormToDatabase\Test\Functional;
+namespace LiquidLight\FormToDatabase\Test\Functional;
 
 /**
  * Trait used for test classes that want to set up (= write) site configuration files.

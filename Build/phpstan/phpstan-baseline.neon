@@ -1,7 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#1 \\$formSettings of method Lavitto\\\\FormToDatabase\\\\Controller\\\\FormResultsController\\:\\:getAvailableFormDefinitions\\(\\) expects array\\{persistenceManager\\: array\\{allowedFileMounts\\: array\\<string\\>\\}\\}, array given\\.$#"
+			message: "#^Parameter \\#1 \\$formSettings of method LiquidLight\\\\FormToDatabase\\\\Controller\\\\FormResultsController\\:\\:getAvailableFormDefinitions\\(\\) expects array\\{persistenceManager\\: array\\{allowedFileMounts\\: array\\<string\\>\\}\\}, array given\\.$#"
 			count: 2
 			path: ../../Classes/Controller/FormResultsController.php
 

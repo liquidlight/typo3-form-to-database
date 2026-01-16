@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lavitto\FormToDatabase\Test\Functional\Controller;
+namespace LiquidLight\FormToDatabase\Test\Functional\Controller;
 
-use Lavitto\FormToDatabase\Controller\FormResultsController;
-use Lavitto\FormToDatabase\Test\Functional\SiteBasedTestTrait;
+use LiquidLight\FormToDatabase\Controller\FormResultsController;
+use LiquidLight\FormToDatabase\Test\Functional\SiteBasedTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Backend\Routing\Route;
@@ -31,7 +31,7 @@ final class FormResultsControllerTest extends FunctionalTestCase
     ];
 
     protected array $testExtensionsToLoad = [
-        'lavitto/typo3-form-to-database',
+        'typo3-form-to-database',
     ];
 
     protected array $pathsToProvideInTestInstance = [
@@ -54,8 +54,8 @@ final class FormResultsControllerTest extends FunctionalTestCase
         );
 
         $site['dependencies'] = [
-            'lavitto/form-to-database-test',
-            'lavitto/typo3-form-to-database',
+            'form-to-database-test',
+            'typo3-form-to-database',
         ];
         $this->writeSiteConfiguration(
             'test-base',

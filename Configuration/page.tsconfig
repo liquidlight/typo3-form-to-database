@@ -1,3 +1,3 @@
 templates.typo3/cms-backend {
-    1730926626686 = lavitto/typo3-form-to-database:Resources/Private
+    1730926626686 = typo3-form-to-database:Resources/Private
 }

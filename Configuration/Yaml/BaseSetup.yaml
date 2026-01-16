@@ -5,4 +5,4 @@ TYPO3:
         standard:
           finishersDefinition:
             FormToDatabase:
-              implementationClassName: 'Lavitto\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher'
+              implementationClassName: 'LiquidLight\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher'

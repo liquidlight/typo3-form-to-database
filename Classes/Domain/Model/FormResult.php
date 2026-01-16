@@ -9,7 +9,7 @@ declare(strict_types=1);
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Domain\Model;
+namespace LiquidLight\FormToDatabase\Domain\Model;
 
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;

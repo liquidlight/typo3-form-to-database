@@ -1,5 +1,5 @@
 {
-  "name": "lavitto/typo3-form-to-database",
+  "name": "liquidlight/typo3-form-to-database",
   "description": "Extends the TYPO3 form with a database finisher, to save every form-result in the database.",
   "version": "5.1.0",
   "type": "typo3-cms-extension",
@@ -11,8 +11,17 @@
     "typo3 form",
     "form to database"
   ],
-  "homepage": "https://www.lavitto.ch/typo3-ext-form-to-database",
+  "homepage": "https://github.com/liquidlight/typo3-form-to-database/",
+  "support": {
+    "issues": "https://github.com/liquidlight/typo3-form-to-database/issues",
+    "source": "https://github.com/liquidlight/typo3-form-to-database"
+  },
   "authors": [
+    {
+      "name": "Liquid Light",
+      "email": "info@liquidlight.co.uk",
+      "homepage": "https://www.liquidlight.co.uk/"
+    },
     {
       "name": "Philipp Mueller",
       "email": "philipp.mueller@lavitto.ch",
@@ -50,12 +59,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Lavitto\\FormToDatabase\\": "Classes"
+      "LiquidLight\\FormToDatabase\\": "Classes"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Lavitto\\FormToDatabase\\Test\\": "Tests"
+      "LiquidLight\\FormToDatabase\\Test\\": "Tests"
     }
   },
   "extra": {
@@ -74,5 +83,8 @@
     "typo3/cms-install": "^13.4",
     "typo3/cms-tstemplate": "^13.4",
     "typo3/testing-framework": "^9.0"
+  },
+  "replace": {
+    "lavitto/typo3-form-to-database": "self.version"
   }
 }
