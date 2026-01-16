@@ -1,3 +1,7 @@
+# 4.3.1
+
+- [FIX] Compatibility with EXT:repeatable_form_elements (#73)
+
 # 4.3.0
 
 - [TASK] Add event FormResultSingleResultActionEvent
