@@ -12,7 +12,7 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 final class DeleteFormResultCommandTest extends FunctionalTestCase
 {
     protected array $testExtensionsToLoad = [
-        'typo3-form-to-database',
+        'liquidlight/typo3-form-to-database',
     ];
 
     protected array $coreExtensionsToLoad = [

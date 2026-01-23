@@ -27,7 +27,7 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
     ];
 
     protected array $testExtensionsToLoad = [
-        'typo3-form-to-database',
+        'liquidlight/typo3-form-to-database',
         __DIR__ . '/../Fixtures/test_extension',
     ];
 
