@@ -442,7 +442,7 @@ echo "Architecture" ${ARCH} "requires" ${IMAGE_SELENIUM} "to run acceptance test
 shift $((OPTIND - 1))
 
 SUFFIX=$(echo $RANDOM)
-NETWORK="lavitto-form-to-database-${SUFFIX}"
+NETWORK="liquidlight-form-to-database-${SUFFIX}"
 ${CONTAINER_BIN} network create ${NETWORK} >/dev/null
 
 if [ "${CONTAINER_BIN}" == "docker" ]; then

@@ -1,0 +1,73 @@
+name: GitHub Actions CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install Composer dependencies
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s composer install
+      - name: Lint TypeScript
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s lintTypoScript
+      - name: Lint PHP
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s lintPhp
+      - name: Code style check
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s cgl
+      - name: Check test methods prefix
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s checkTestMethodsPrefix
+      - name: Check BOM
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s checkBom
+      - name: Check exception codes
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s checkExceptionCodes
+      - name: PHPStan
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s phpstan
+    strategy:
+      matrix:
+        TYPO3: ['13']
+        PHP: ['8.2']
+
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-24.04
+    needs: code-quality
+    strategy:
+      matrix:
+        TYPO3: ['13']
+        PHP: ['8.2', '8.3', '8.4']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install Composer dependencies
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s composer install
+      - name: Run unit tests
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s unit
+
+  functional-tests:
+    name: Functional tests
+    runs-on: ubuntu-22.04
+    needs: code-quality
+    strategy:
+      fail-fast: false
+      matrix:
+        TYPO3: ['13']
+        PHP: ['8.2', '8.3', '8.4']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install dependencies
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -s composer install
+      - name: Functional Tests with mariadb
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -d mariadb -s functional
+      - name: Functional Tests with mysql
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -d mysql -s functional
+      - name: Functional Tests with postgres
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -d postgres -s functional
+      - name: Functional Tests with sqlite
+        run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -d sqlite -s functional

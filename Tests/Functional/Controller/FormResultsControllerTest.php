@@ -31,7 +31,7 @@ final class FormResultsControllerTest extends FunctionalTestCase
     ];
 
     protected array $testExtensionsToLoad = [
-        'typo3-form-to-database',
+        'liquidlight/typo3-form-to-database',
     ];
 
     protected array $pathsToProvideInTestInstance = [
