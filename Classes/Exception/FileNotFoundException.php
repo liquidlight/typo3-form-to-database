@@ -2,6 +2,6 @@
 
 declare(strict_types=1);
 
-namespace Lavitto\FormToDatabase\Exception;
+namespace LiquidLight\FormToDatabase\Exception;
 
 final class FileNotFoundException extends \Exception {}

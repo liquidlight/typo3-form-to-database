@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lavitto\FormToDatabase\Test\Functional\Finisher;
+namespace LiquidLight\FormToDatabase\Test\Functional\Finisher;
 
-use Lavitto\FormToDatabase\Test\Functional\SiteBasedTestTrait;
+use LiquidLight\FormToDatabase\Test\Functional\SiteBasedTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Http\StreamFactory;
@@ -27,7 +27,7 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
     ];
 
     protected array $testExtensionsToLoad = [
-        'lavitto/typo3-form-to-database',
+        'typo3-form-to-database',
         __DIR__ . '/../Fixtures/test_extension',
     ];
 
@@ -53,8 +53,8 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
         );
 
         $site['dependencies'] = [
-            'lavitto/form-to-database-test',
-            'lavitto/typo3-form-to-database',
+            'form-to-database-test',
+            'typo3-form-to-database',
         ];
         $this->writeSiteConfiguration(
             'test-base',

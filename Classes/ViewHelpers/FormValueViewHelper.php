@@ -9,9 +9,9 @@ declare(strict_types=1);
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\ViewHelpers;
+namespace LiquidLight\FormToDatabase\ViewHelpers;
 
-use Lavitto\FormToDatabase\Utility\FormValueUtility;
+use LiquidLight\FormToDatabase\Utility\FormValueUtility;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 

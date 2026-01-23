@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lavitto\FormToDatabase\Helpers;
+namespace LiquidLight\FormToDatabase\Helpers;
 
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;

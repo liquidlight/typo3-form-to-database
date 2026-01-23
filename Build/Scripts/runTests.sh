@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# lavitto/typo3-form-to-database test runner based on docker/podman.
+# typo3-form-to-database test runner based on docker/podman.
 #
 if [ "${CI}" != "true" ]; then
     trap 'echo "runTests.sh SIGINT signal emitted";cleanUp;exit 2' SIGINT

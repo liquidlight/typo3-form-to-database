@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lavitto\FormToDatabase\Test\Functional\Command;
+namespace LiquidLight\FormToDatabase\Test\Functional\Command;
 
-use Lavitto\FormToDatabase\Command\DeleteFormResultCommand;
+use LiquidLight\FormToDatabase\Command\DeleteFormResultCommand;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Tester\CommandTester;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
@@ -12,7 +12,7 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 final class DeleteFormResultCommandTest extends FunctionalTestCase
 {
     protected array $testExtensionsToLoad = [
-        'lavitto/typo3-form-to-database',
+        'typo3-form-to-database',
     ];
 
     protected array $coreExtensionsToLoad = [
