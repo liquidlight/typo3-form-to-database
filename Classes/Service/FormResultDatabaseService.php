@@ -7,7 +7,7 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Service;
+namespace LiquidLight\FormToDatabase\Service;
 
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -15,7 +15,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 /**
  * Class FormResultDatabaseService
  *
- * @package Lavitto\FormToDatabase\Service
+ * @package LiquidLight\FormToDatabase\Service
  */
 class FormResultDatabaseService
 {

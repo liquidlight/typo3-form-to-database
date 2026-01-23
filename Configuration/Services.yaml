@@ -4,11 +4,11 @@ services:
     autoconfigure: true
     public: false
 
-  Lavitto\FormToDatabase\:
+  LiquidLight\FormToDatabase\:
     resource: '../Classes/*'
-  Lavitto\FormToDatabase\Hooks\FormHooks:
+  LiquidLight\FormToDatabase\Hooks\FormHooks:
     public: true
-  Lavitto\FormToDatabase\Command\DeleteFormResultCommand:
+  LiquidLight\FormToDatabase\Command\DeleteFormResultCommand:
     tags:
       - name: 'console.command'
         command: 'form_to_database:deleteFormResults'

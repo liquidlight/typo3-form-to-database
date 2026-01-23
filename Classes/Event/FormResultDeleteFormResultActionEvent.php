@@ -1,8 +1,8 @@
 <?php
 
-namespace Lavitto\FormToDatabase\Event;
+namespace LiquidLight\FormToDatabase\Event;
 
-use Lavitto\FormToDatabase\Domain\Model\FormResult;
+use LiquidLight\FormToDatabase\Domain\Model\FormResult;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 
 final class FormResultDeleteFormResultActionEvent

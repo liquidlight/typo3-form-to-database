@@ -7,7 +7,7 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Utility;
+namespace LiquidLight\FormToDatabase\Utility;
 
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -25,7 +25,7 @@ use TYPO3\CMS\Form\Exception;
 /**
  * Class FormDefinitionUtility
  *
- * @package Lavitto\FormToDatabase\Utility
+ * @package LiquidLight\FormToDatabase\Utility
  */
 class FormDefinitionUtility
 {
