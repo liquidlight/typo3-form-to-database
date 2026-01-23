@@ -6,7 +6,7 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Utility;
+namespace LiquidLight\FormToDatabase\Utility;
 
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -15,7 +15,7 @@ use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 /**
  * Class FormValueUtility
  *
- * @package Lavitto\FormToDatabase\Utility
+ * @package LiquidLight\FormToDatabase\Utility
  */
 class ExtConfUtility implements SingletonInterface
 {

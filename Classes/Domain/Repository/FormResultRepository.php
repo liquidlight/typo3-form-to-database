@@ -6,12 +6,12 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Domain\Repository;
+namespace LiquidLight\FormToDatabase\Domain\Repository;
 
 use DateInterval;
 use DateTime;
 use Exception;
-use Lavitto\FormToDatabase\Utility\FormValueUtility;
+use LiquidLight\FormToDatabase\Utility\FormValueUtility;
 use PDO;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
@@ -28,7 +28,7 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
 /**
  * Class FormResultRepository
  *
- * @package Lavitto\FormToDatabase\Domain\Repository
+ * @package LiquidLight\FormToDatabase\Domain\Repository
  */
 class FormResultRepository extends Repository
 {

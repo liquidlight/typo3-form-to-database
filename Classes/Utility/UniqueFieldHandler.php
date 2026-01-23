@@ -7,7 +7,7 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Utility;
+namespace LiquidLight\FormToDatabase\Utility;
 
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
@@ -15,7 +15,7 @@ use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
 /**
  * Class FormDefinitionUtility
  *
- * @package Lavitto\FormToDatabase\Utility
+ * @package LiquidLight\FormToDatabase\Utility
  */
 class UniqueFieldHandler
 {
