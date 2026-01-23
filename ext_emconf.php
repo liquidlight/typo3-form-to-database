@@ -25,13 +25,12 @@ $EM_CONF[$_EXTKEY] = [
     ],
     'autoload' => [
         'psr-4' => [
-            'Lavitto\\FormToDatabase\\' => 'Classes'
+            'LiquidLight\\FormToDatabase\\' => 'Classes'
         ],
     ],
     'state' => 'beta',
     'createDirs' => '',
-    'author' => 'Philipp Mueller',
-    'author_email' => 'philipp.mueller@lavitto.ch',
-    'author_company' => 'lavitto ag',
+    'author' => 'Liquid Light',
+    'author_email' => 'info@liquidlight.co.uk',
     'version' => '2.2.6'
 ];

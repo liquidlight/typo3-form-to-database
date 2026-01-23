@@ -10,7 +10,7 @@ defined('TYPO3_MODE') or die();
 
 if (TYPO3_MODE === 'BE') {
     \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
-        'Lavitto.FormToDatabase',
+        'LiquidLight.FormToDatabase',
         'web',
         'formresults',
         'after:FormFormbuilder',

@@ -8,11 +8,11 @@
  * LICENSE file that was distributed with this source code.
  */
 
-namespace Lavitto\FormToDatabase\Hooks;
+namespace LiquidLight\FormToDatabase\Hooks;
 
-use Lavitto\FormToDatabase\Domain\Model\FormResult;
-use Lavitto\FormToDatabase\Domain\Repository\FormResultRepository;
-use Lavitto\FormToDatabase\Utility\UniqueFieldHandler;
+use LiquidLight\FormToDatabase\Domain\Model\FormResult;
+use LiquidLight\FormToDatabase\Domain\Repository\FormResultRepository;
+use LiquidLight\FormToDatabase\Utility\UniqueFieldHandler;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Resource\StorageRepository;
@@ -28,7 +28,7 @@ use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManagerInterface;
 /**
  * Class FormHooks
  *
- * @package Lavitto\FormToDatabase\Hooks
+ * @package LiquidLight\FormToDatabase\Hooks
  */
 class FormHooks
 {
