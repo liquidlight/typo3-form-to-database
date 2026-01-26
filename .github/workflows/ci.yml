@@ -1,10 +1,11 @@
-name: GitHub Actions CI
+name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+    tags: [ "**" ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   code-quality:
@@ -71,3 +72,14 @@ jobs:
         run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -d postgres -s functional
       - name: Functional Tests with sqlite
         run: Build/Scripts/runTests.sh -t ${{ matrix.TYPO3 }} -p ${{ matrix.PHP }} -d sqlite -s functional
+
+  release:
+    name: TER Upload
+    runs-on: ubuntu-latest
+    needs: [unit-tests, functional-tests]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: tomasnorre/typo3-upload-ter@v2
+        with:
+          api-token: ${{ secrets.TYPO3_API_TOKEN }}
