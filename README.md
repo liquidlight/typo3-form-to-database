@@ -183,7 +183,7 @@ Commits should follow [TYPO3 Commit Guidelines](https://docs.typo3.org/m/typo3/g
 
 ## Support
 
-If you need private or personal support, try the TYPO3 Slack channel - [#ext-form-to-database](https://app.slack.com/client/T024TUMLZ/C02HWBCUF0F) or contact us by email on [info@liquidlight.co.uk](mailto:info@liquidlight.co.uk).
+If you need private or personal support, try the TYPO3 Slack channel - `#ext-form-to-database` or contact us by email on [info@liquidlight.co.uk](mailto:info@liquidlight.co.uk).
 
 **Be aware that this support might not be free!**
 
