@@ -53,8 +53,8 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
         );
 
         $site['dependencies'] = [
-            'form-to-database-test',
-            'typo3-form-to-database',
+            'liquidlight/form-to-database-test',
+            'liquidlight/typo3-form-to-database',
         ];
         $this->writeSiteConfiguration(
             'test-base',

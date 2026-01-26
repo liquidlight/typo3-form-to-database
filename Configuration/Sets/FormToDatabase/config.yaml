@@ -1,4 +1,4 @@
-name: typo3-form-to-database
+name: liquidlight/typo3-form-to-database
 label: Form To Database Finisher
 dependencies:
   - typo3/form
