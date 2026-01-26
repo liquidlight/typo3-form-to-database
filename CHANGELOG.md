@@ -1,3 +1,7 @@
+# 5.2.1
+
+- [FIX] Add missing vendor names
+
 # 5.2.0
 
 - [!!!][FEATURE] - Rename composer package & namespace to Liquid Light,
