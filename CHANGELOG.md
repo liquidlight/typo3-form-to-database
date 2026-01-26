@@ -1,3 +1,9 @@
+# 2.3.0
+
+- [!!!][FEATURE] - Rename composer package & namespace to Liquid Light - your code will need updating if you have extended the code
+	- Replace `Lavitto` with `LiquidLight`
+	- Replace `lavitto` with `liquidlight`
+
 # 2.2.6
 
 - [FIX] Compatibility with EXT:repeatable_form_elements (#73)

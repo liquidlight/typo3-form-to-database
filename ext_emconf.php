@@ -32,5 +32,5 @@ $EM_CONF[$_EXTKEY] = [
     'createDirs' => '',
     'author' => 'Liquid Light',
     'author_email' => 'info@liquidlight.co.uk',
-    'version' => '2.2.6'
+    'version' => '2.3.0'
 ];
