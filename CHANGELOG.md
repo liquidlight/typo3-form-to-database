@@ -1,3 +1,10 @@
+# 5.2.0
+
+- [!!!][FEATURE] - Rename composer package & namespace to Liquid Light,
+  your code will need updating if you have extended the code (#10)
+	- Replace `Lavitto` with `LiquidLight`
+	- Replace `lavitto` with `liquidlight`
+
 # 5.1.0
 
 - [TASK] Raise minimum TYPO3 version requirement to 13.4.20

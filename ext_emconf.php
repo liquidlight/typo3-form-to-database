@@ -32,5 +32,5 @@ $EM_CONF[$_EXTKEY] = [
     'author' => 'Liquid Light',
     'author_email' => 'info@liquidlight.co.uk',
     'author_company' => 'Liquid Light',
-    'version' => '5.1.0'
+    'version' => '5.2.0'
 ];
