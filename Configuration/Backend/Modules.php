@@ -14,7 +14,7 @@ return [
         'extensionName' => 'FormToDatabase',
         'controllerActions' => [
             \LiquidLight\FormToDatabase\Controller\FormResultsController::class => [
-                'index', 'show', 'result', 'downloadResultPdf', 'downloadCsv', 'deleteFormResult', 'updateItemListSelect', 'unDeleteFormDefinition'
+                'index', 'show', 'result', 'downloadResultPdf', 'downloadCsv', 'deleteFormResult', 'updateItemListSelect', 'unDeleteFormDefinition', 'deleteAllFormResult'
             ],
         ],
         'inheritNavigationComponentFromMainModule' => false,

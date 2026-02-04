@@ -55,6 +55,10 @@
                 <source>CSV-Download (only visible)</source>
                 <target>CSV-Download (nur aktivierte)</target>
             </trans-unit>
+            <trans-unit id="show.buttons.delete_all" xml:space="preserve">
+                <source>Delete all</source>
+                <target>Alles löschen</target>
+            </trans-unit>
             <trans-unit id="show.buttons.column_settings" xml:space="preserve">
                 <source>Columns</source>
                 <target>Spalten</target>

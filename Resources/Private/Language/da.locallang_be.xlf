@@ -63,6 +63,10 @@
                 <source>CSV-Download (only visible)</source>
                 <target>Download formulardata som CSV (kun synlige)</target>
             </trans-unit>
+            <trans-unit id="show.buttons.delete_all" xml:space="preserve">
+                <source>Delete all</source>
+                <target>Slette alle</target>
+            </trans-unit>
             <trans-unit id="show.buttons.column_settings" xml:space="preserve">
                 <source>Columns</source>
                 <target>Kolonner</target>
