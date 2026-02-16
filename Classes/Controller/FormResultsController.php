@@ -391,6 +391,7 @@ class FormResultsController extends FormManagerController
 
         $formResults = $this->formResultRepository->findBy(['form_persistence_identifier'=>$formPersistenceIdentifier]);
 
+        /** @var FormResult $formResult */
         foreach ($formResults as $formResult) {
             $this->formResultRepository->remove($formResult);
             $this->eventDispatcher->dispatch(
