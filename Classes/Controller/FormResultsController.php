@@ -380,6 +380,37 @@ class FormResultsController extends FormManagerController
     }
 
     /**
+     * Deletes all form results and forwards to the show action
+     *
+     * @throws IllegalObjectTypeException
+     * @throws RenderingException
+     */
+    public function deleteAllFormResultAction(string $formPersistenceIdentifier): ResponseInterface
+    {
+        $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier);
+
+        $formResults = $this->formResultRepository->findBy(['form_persistence_identifier'=>$formPersistenceIdentifier]);
+
+        /** @var FormResult $formResult */
+        foreach ($formResults as $formResult) {
+            $this->formResultRepository->remove($formResult);
+            $this->eventDispatcher->dispatch(
+                new FormResultDeleteFormResultActionEvent(
+                    $formPersistenceIdentifier,
+                    $formResult,
+                    $formDefinition,
+                    $this->getFormRenderables($formDefinition)
+                )
+            );
+        }
+
+        return new RedirectResponse($this->uriBuilder->uriFor(
+            'show',
+            ['formPersistenceIdentifier' => $formPersistenceIdentifier]
+        ));
+    }
+
+    /**
      * @throws IllegalObjectTypeException
      * @throws UnknownObjectException
      */
@@ -1051,6 +1082,16 @@ class FormResultsController extends FormManagerController
                     ->setShowLabelText(true)
                     ->setIcon($this->iconFactory->getIcon('actions-download', IconSize::SMALL));
                 $buttonBar->addButton($downloadCsvFormButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
+
+                // Delete all-button
+                $urlParameters['filtered'] = true;
+                $deleteAllFormButton = $buttonBar->makeLinkButton()
+                    ->setHref($this->uriBuilder->uriFor('deleteAllFormResult', $urlParameters))
+                    ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.delete_all'))
+                    ->setShowLabelText(true)
+                    ->setClasses('t3js-modal-trigger')
+                    ->setIcon($this->iconFactory->getIcon('actions-delete', IconSize::SMALL));
+                $buttonBar->addButton($deleteAllFormButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
             }
         }
 

@@ -54,6 +54,9 @@
             <trans-unit id="show.buttons.download_csv_filtered" xml:space="preserve">
                 <source>CSV-Download (only visible)</source>
             </trans-unit>
+            <trans-unit id="show.buttons.delete_all" xml:space="preserve">
+                <source>Delete all</source>
+            </trans-unit>
             <trans-unit id="show.buttons.column_settings" xml:space="preserve">
                 <source>Columns</source>
             </trans-unit>
