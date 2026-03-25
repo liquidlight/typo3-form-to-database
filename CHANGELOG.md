@@ -1,3 +1,7 @@
+# 3.3.1
+
+- [FIX] Update namespaces missed in 3.3.0
+
 # 3.3.0
 
 - [!!!][FEATURE] - Rename composer package & namespace to Liquid Light - your code will need updating if you have extended the code
