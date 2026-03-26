@@ -83,36 +83,46 @@ class FormResultRepository extends Repository
     protected function createQueryByFormPersistenceIdentifier(string $formPersistenceIdentifier): QueryInterface
     {
         $query = $this->createQuery();
-        $webMounts = $this->getWebMounts();
-        if (empty($webMounts) === false) {
-            $siteIdentifiers = $this->getSiteIdentifiersFromRootPids($webMounts);
-            $pluginUids = $this->getPluginUids($webMounts);
-            $orConditions = [];
-            // Include result if user has access to the plugin which the result originates
-            if ($pluginUids) {
-                $orConditions[] = $query->in('formPluginUid', $pluginUids);
-            }
-            // Include result if user has root access to site
-            if ($siteIdentifiers) {
-                $orConditions[] = $query->in('siteIdentifier', $siteIdentifiers);
-            }
-            // Includes result if result is old (those created before new identifying fields)
-            $orConditions[] = $query->logicalAnd(
-                $query->equals('siteIdentifier', ''),
-                $query->equals('pid', 0)
-            );
-            // Include result always if user is admin
-            if ($GLOBALS['BE_USER']->isAdmin()) {
-                $orConditions[] = $query->greaterThan('uid', 0);
-            }
 
-            $query->matching(
-                $query->logicalAnd(
-                    $query->equals('formPersistenceIdentifier', $formPersistenceIdentifier),
-                    $query->logicalOr(...$orConditions)
-                )
-            );
+        // Admins see everything — skip all mount/site lookups
+        if ($GLOBALS['BE_USER']->isAdmin()) {
+            $query->matching($query->equals('formPersistenceIdentifier', $formPersistenceIdentifier));
+            return $query;
         }
+
+        $webMounts = $this->getWebMounts();
+
+        // No mounts = no access
+        if (empty($webMounts)) {
+            $query->matching($query->equals('uid', 0));
+            return $query;
+        }
+
+        $siteIdentifiers = $this->getSiteIdentifiersFromRootPids($webMounts);
+        $pluginUids = $this->getPluginUids($webMounts);
+        $orConditions = [];
+
+        // Include result if user has access to the plugin which the result originates
+        if ($pluginUids) {
+            $orConditions[] = $query->in('formPluginUid', $pluginUids);
+        }
+        // Include result if user has root access to site
+        if ($siteIdentifiers) {
+            $orConditions[] = $query->in('siteIdentifier', $siteIdentifiers);
+        }
+        // Includes result if result is old (those created before new identifying fields)
+        $orConditions[] = $query->logicalAnd(
+            $query->equals('siteIdentifier', ''),
+            $query->equals('pid', 0)
+        );
+
+        $query->matching(
+            $query->logicalAnd(
+                $query->equals('formPersistenceIdentifier', $formPersistenceIdentifier),
+                $query->logicalOr(...$orConditions)
+            )
+        );
+
         return $query;
     }
 
