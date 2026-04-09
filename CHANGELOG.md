@@ -1,3 +1,8 @@
+# 5.3.0
+
+- [FEATURE] Add delete all button (#17)
+- [FIX] Prevent users without web-mounts seeing all forms (#23)
+
 # 5.2.1
 
 - [FIX] Add missing vendor names
