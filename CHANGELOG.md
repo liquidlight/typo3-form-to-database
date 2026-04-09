@@ -1,3 +1,7 @@
+# 4.4.1
+
+- [FIX] Prevent users without web-mounts seeing all forms (#23)
+
 # 4.4.0
 
 - [!!!][FEATURE] - Rename composer package & namespace to Liquid Light,
