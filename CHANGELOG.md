@@ -1,3 +1,7 @@
+# 4.4.2
+
+- [FIX] Resolve incorrect 4.4.1 tag
+
 # 4.4.1
 
 - [FIX] Prevent users without web-mounts seeing all forms (#23)
