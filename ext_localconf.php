@@ -16,13 +16,13 @@ defined('TYPO3') or die();
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormDelete'][] = FormHooks::class;
 
     ExtensionManagementUtility::addTypoScriptSetup('
-        module.tx_form {
-            settings {
-                yamlConfigurations {
-                    1560425499 = EXT:form_to_database/Configuration/Yaml/BaseSetup.yaml
-                    1560425500 = EXT:form_to_database/Configuration/Yaml/FormEditorSetup.yaml
-                }
-            }
+        plugin.tx_form.settings.yamlConfigurations {
+          1560425499 = EXT:form_to_database/Configuration/Yaml/BaseSetup.yaml
+        }
+
+        module.tx_form.settings. yamlConfigurations {
+          1560425499 = EXT:form_to_database/Configuration/Yaml/BaseSetup.yaml
+          1560425500 = EXT:form_to_database/Configuration/Yaml/FormEditorSetup.yaml
         }
     ');
 })();
