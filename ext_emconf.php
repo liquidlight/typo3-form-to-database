@@ -29,8 +29,8 @@ $EM_CONF[$_EXTKEY] = [
         ],
     ],
     'state' => 'stable',
-    'author' => 'Liquid Light',
-    'author_email' => 'info@liquidlight.co.uk',
-    'author_company' => 'Liquid Light',
+	'author' => 'Liquid Light',
+	'author_email' => 'info@liquidlight.co.uk',
+	'author_company' => 'Liquid Light Ltd',
     'version' => '5.3.0'
 ];
