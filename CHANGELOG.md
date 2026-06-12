@@ -1,3 +1,7 @@
+# 5.3.1
+
+- [FIX] Include BaseSetup yaml in the frontend (#2)
+
 # 5.3.0
 
 - [FEATURE] Add delete all button (#17)
