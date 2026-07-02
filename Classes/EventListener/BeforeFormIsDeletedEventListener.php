@@ -13,10 +13,10 @@ namespace LiquidLight\FormToDatabase\EventListener;
 
 use LiquidLight\FormToDatabase\Domain\Model\FormResult;
 use LiquidLight\FormToDatabase\Domain\Repository\FormResultRepository;
+use LiquidLight\FormToDatabase\Utility\FormPersistenceIdentifierUtility;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
@@ -44,7 +44,7 @@ final class BeforeFormIsDeletedEventListener
     {
         $formPersistenceIdentifier = $event->formPersistenceIdentifier;
 
-        if (MathUtility::canBeInterpretedAsInteger($formPersistenceIdentifier)) {
+        if (FormPersistenceIdentifierUtility::isDatabaseStored($formPersistenceIdentifier)) {
             // Database-stored forms (TYPO3\CMS\Form\Storage\DatabaseStorageAdapter) are soft-deleted
             // by DataHandler and keep their uid as persistence identifier, so linked FormResult rows
             // stay valid without any rewriting here. The rename-dance below is file-storage-only —

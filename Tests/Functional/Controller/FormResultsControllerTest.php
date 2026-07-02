@@ -8,6 +8,7 @@ use LiquidLight\FormToDatabase\Controller\FormResultsController;
 use LiquidLight\FormToDatabase\Test\Functional\SiteBasedTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Routing\Route;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Http\NormalizedParams;
@@ -71,31 +72,7 @@ final class FormResultsControllerTest extends FunctionalTestCase
     #[Test]
     public function indexActionListsAvailableFormDefinitions(): void
     {
-        $extbaseRequestParameters = (new ExtbaseRequestParameters(FormResultsController::class))
-            ->setPluginName('web_FormToDatabaseFormresults');
-        $route = (new Route('web_FormToDatabaseFormresults', []));
-        $serverRequest = (new ServerRequest('https://localhost/typo3/'))
-            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
-            ->withAttribute('extbase', $extbaseRequestParameters)
-            ->withAttribute('route', $route)
-            ->withQueryParams([
-                'tx_formtodatabase_formresults' => [
-                    'action' => 'index',
-                    'controller' => 'FormResults',
-                ],
-            ]);
-        $serverRequest = $serverRequest->withAttribute(
-            'normalizedParams',
-            NormalizedParams::createFromRequest($serverRequest)
-        );
-        $GLOBALS['TYPO3_REQUEST'] = $serverRequest;
-
-        $extbaseRequest = (new Request($serverRequest))
-            ->withControllerActionName('index');
-
-        /** @var FormResultsController $controller */
-        $controller = GeneralUtility::makeInstance(FormResultsController::class);
-        $response = $controller->processRequest($extbaseRequest);
+        $response = $this->processIndexAction();
 
         self::assertEquals(200, $response->getStatusCode());
         $response->getBody()->rewind();
@@ -108,6 +85,16 @@ final class FormResultsControllerTest extends FunctionalTestCase
     {
         $this->importCSVDataSet(__DIR__ . '/Fixtures/resultsWithDatabaseStoredForm.csv');
 
+        $response = $this->processIndexAction();
+
+        self::assertEquals(200, $response->getStatusCode());
+        $response->getBody()->rewind();
+        $body = $response->getBody()->getContents();
+        self::assertStringContainsString('DB Stored Form', $body);
+    }
+
+    private function processIndexAction(): ResponseInterface
+    {
         $extbaseRequestParameters = (new ExtbaseRequestParameters(FormResultsController::class))
             ->setPluginName('web_FormToDatabaseFormresults');
         $route = (new Route('web_FormToDatabaseFormresults', []));
@@ -132,12 +119,7 @@ final class FormResultsControllerTest extends FunctionalTestCase
 
         /** @var FormResultsController $controller */
         $controller = GeneralUtility::makeInstance(FormResultsController::class);
-        $response = $controller->processRequest($extbaseRequest);
-
-        self::assertEquals(200, $response->getStatusCode());
-        $response->getBody()->rewind();
-        $body = $response->getBody()->getContents();
-        self::assertStringContainsString('DB Stored Form', $body);
+        return $controller->processRequest($extbaseRequest);
     }
 
     #[Test]

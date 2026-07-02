@@ -27,6 +27,7 @@ use LiquidLight\FormToDatabase\Helpers\MiscHelper;
 use LiquidLight\FormToDatabase\Service\FormResultDatabaseService;
 use LiquidLight\FormToDatabase\Utility\ExtConfUtility;
 use LiquidLight\FormToDatabase\Utility\FormDefinitionUtility;
+use LiquidLight\FormToDatabase\Utility\FormPersistenceIdentifierUtility;
 use LiquidLight\FormToDatabase\Utility\FormValueUtility;
 use LiquidLight\FormToDatabase\Utility\PdfUtility;
 use Mpdf\Mpdf;
@@ -53,7 +54,6 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Filter\FileExtensionFilter;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
@@ -434,7 +434,7 @@ class FormResultsController extends FormManagerController
      */
     public function unDeleteFormDefinitionAction(string $formDefinitionPath, string $formIdentifier): RedirectResponse
     {
-        if (MathUtility::canBeInterpretedAsInteger($formDefinitionPath)) {
+        if (FormPersistenceIdentifierUtility::isDatabaseStored($formDefinitionPath)) {
             $this->restoreDatabaseStoredFormDefinition((int)$formDefinitionPath);
 
             return new RedirectResponse($this->uriBuilder->uriFor('index'));
@@ -687,7 +687,7 @@ class FormResultsController extends FormManagerController
 
         $databaseStoredOrphans = array_filter(
             $orphanedResults,
-            static fn(array $row): bool => MathUtility::canBeInterpretedAsInteger($row['form_persistence_identifier'])
+            static fn(array $row): bool => FormPersistenceIdentifierUtility::isDatabaseStored($row['form_persistence_identifier'])
         );
 
         if ($databaseStoredOrphans === []) {
