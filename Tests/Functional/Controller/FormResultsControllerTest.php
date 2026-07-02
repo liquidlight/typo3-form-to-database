@@ -161,6 +161,106 @@ final class FormResultsControllerTest extends FunctionalTestCase
         self::assertSame(0, (int)$deleted);
     }
 
+    #[Test]
+    public function unDeleteFormDefinitionActionRestoresAFileBasedForm(): void
+    {
+        $this->importCSVDataSet(__DIR__ . '/Fixtures/resultsWithDeletedFileForm.csv');
+
+        $formDefinitionPath = '1:/form_definitions/restoretest-deleted123456.form.yaml.deleted';
+        $formIdentifier = 'restoretest';
+
+        $extbaseRequestParameters = (new ExtbaseRequestParameters(FormResultsController::class))
+            ->setPluginName('web_FormToDatabaseFormresults')
+            ->setArgument('formDefinitionPath', $formDefinitionPath)
+            ->setArgument('formIdentifier', $formIdentifier);
+        $serverRequest = (new ServerRequest('https://localhost/typo3/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
+            ->withAttribute('extbase', $extbaseRequestParameters)
+            ->withAttribute('route', new Route('web_FormToDatabaseFormresults', []))
+            ->withMethod('POST');
+        $GLOBALS['TYPO3_REQUEST'] = $serverRequest;
+
+        $extbaseRequest = (new Request($serverRequest))
+            ->withControllerActionName('unDeleteFormDefinition')
+            ->withArgument('formDefinitionPath', $formDefinitionPath)
+            ->withArgument('formIdentifier', $formIdentifier);
+
+        /** @var FormResultsController $controller */
+        $controller = GeneralUtility::makeInstance(FormResultsController::class);
+        $response = $controller->processRequest($extbaseRequest);
+
+        self::assertEquals(302, $response->getStatusCode());
+
+        // The file must have been renamed back to "{formIdentifier}.form.yaml" (no more ".deleted" suffix).
+        $queryBuilder = $this->getConnectionPool()->getQueryBuilderForTable('sys_file');
+        $restoredFileExists = (int)$queryBuilder
+            ->count('uid')
+            ->from('sys_file')
+            ->where($queryBuilder->expr()->eq('identifier', $queryBuilder->createNamedParameter('/form_definitions/restoretest.form.yaml')))
+            ->executeQuery()
+            ->fetchOne();
+        self::assertSame(1, $restoredFileExists, 'The restored file must exist under its new, non-".deleted" identifier');
+
+        // Linked FormResult rows must be re-pointed to the new combined identifier.
+        $formResultQueryBuilder = $this->getConnectionPool()->getQueryBuilderForTable('tx_formtodatabase_domain_model_formresult');
+        $formPersistenceIdentifier = $formResultQueryBuilder
+            ->select('form_persistence_identifier')
+            ->from('tx_formtodatabase_domain_model_formresult')
+            ->where($formResultQueryBuilder->expr()->eq('uid', $formResultQueryBuilder->createNamedParameter(10, \TYPO3\CMS\Core\Database\Connection::PARAM_INT)))
+            ->executeQuery()
+            ->fetchOne();
+        self::assertSame('1:/form_definitions/restoretest.form.yaml', $formPersistenceIdentifier);
+    }
+
+    #[Test]
+    public function deleteAllFormResultActionRemovesAllResultsForTheForm(): void
+    {
+        $formResultsTable = 'tx_formtodatabase_domain_model_formresult';
+        $formPersistenceIdentifier = '1:/form_definitions/testform.form.yaml';
+
+        $countBefore = (int)$this->getConnectionPool()
+            ->getQueryBuilderForTable($formResultsTable)
+            ->count('uid')
+            ->from($formResultsTable)
+            ->executeQuery()
+            ->fetchOne();
+        self::assertGreaterThan(0, $countBefore, 'Fixture must provide at least one result to delete');
+
+        $extbaseRequestParameters = (new ExtbaseRequestParameters(FormResultsController::class))
+            ->setPluginName('web_FormToDatabaseFormresults')
+            ->setArgument('formPersistenceIdentifier', $formPersistenceIdentifier);
+        $serverRequest = (new ServerRequest('https://localhost/typo3/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
+            ->withAttribute('extbase', $extbaseRequestParameters)
+            ->withAttribute('route', new Route('web_FormToDatabaseFormresults', []))
+            ->withQueryParams([
+                'tx_formtodatabase_formresults' => [
+                    'action' => 'deleteAllFormResult',
+                    'controller' => 'FormResults',
+                ],
+            ])
+            ->withMethod('POST');
+        $GLOBALS['TYPO3_REQUEST'] = $serverRequest;
+
+        $extbaseRequest = (new Request($serverRequest))
+            ->withControllerActionName('deleteAllFormResult')
+            ->withArgument('formPersistenceIdentifier', $formPersistenceIdentifier);
+
+        /** @var FormResultsController $controller */
+        $controller = GeneralUtility::makeInstance(FormResultsController::class);
+        $response = $controller->processRequest($extbaseRequest);
+
+        self::assertEquals(302, $response->getStatusCode());
+
+        $countAfter = (int)$this->getConnectionPool()
+            ->getQueryBuilderForTable($formResultsTable)
+            ->count('uid')
+            ->from($formResultsTable)
+            ->executeQuery()
+            ->fetchOne();
+        self::assertSame(0, $countAfter);
+    }
+
     /**
      * @return \Generator<string, array{
      *     form: string,

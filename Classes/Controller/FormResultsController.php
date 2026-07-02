@@ -57,6 +57,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
+use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Form\Controller\FormManagerController;
 use TYPO3\CMS\Form\Domain\Configuration\Exception\PrototypeNotFoundException;
 use TYPO3\CMS\Form\Domain\DTO\SearchCriteria;
@@ -102,12 +103,27 @@ class FormResultsController extends FormManagerController
 
     protected FileMountStorageAdapter $fileMountStorageAdapter;
 
+    protected PersistenceManagerInterface $persistenceManager;
+
     /**
      * Injects the FormResultRepository
      */
     public function injectFormResultRepository(FormResultRepository $formResultRepository): void
     {
         $this->formResultRepository = $formResultRepository;
+    }
+
+    /**
+     * Injects the PersistenceManagerInterface
+     *
+     * Backend module actions (unlike frontend Extbase plugins dispatched via
+     * TYPO3\CMS\Extbase\Core\Bootstrap::run()) are not followed by an automatic persistAll() —
+     * confirmed by finding no such call anywhere in cms-backend or cms-core. Every action that
+     * mutates and expects the change to survive the request must flush explicitly.
+     */
+    public function injectPersistenceManager(PersistenceManagerInterface $persistenceManager): void
+    {
+        $this->persistenceManager = $persistenceManager;
     }
 
     /**
@@ -391,6 +407,11 @@ class FormResultsController extends FormManagerController
             )
         );
 
+        // Backend module actions get no automatic persistAll() after dispatch (unlike frontend
+        // Extbase plugins) — without this, remove() only marks the object in memory and the
+        // deletion never reaches the database.
+        $this->persistenceManager->persistAll();
+
         return new RedirectResponse($this->uriBuilder->uriFor(
             'show',
             ['formPersistenceIdentifier' => $formPersistenceIdentifier]
@@ -407,7 +428,7 @@ class FormResultsController extends FormManagerController
     {
         $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier);
 
-        $formResults = $this->formResultRepository->findBy(['form_persistence_identifier' => $formPersistenceIdentifier]);
+        $formResults = $this->formResultRepository->findByFormPersistenceIdentifier($formPersistenceIdentifier);
 
         /** @var FormResult $formResult */
         foreach ($formResults as $formResult) {
@@ -421,6 +442,11 @@ class FormResultsController extends FormManagerController
                 )
             );
         }
+
+        // Backend module actions get no automatic persistAll() after dispatch (unlike frontend
+        // Extbase plugins) — without this, remove() only marks the objects in memory and the
+        // deletions never reach the database.
+        $this->persistenceManager->persistAll();
 
         return new RedirectResponse($this->uriBuilder->uriFor(
             'show',
@@ -440,12 +466,6 @@ class FormResultsController extends FormManagerController
             return new RedirectResponse($this->uriBuilder->uriFor('index'));
         }
 
-        /** @var FilePersistenceSlot $formPersistenceSlot */
-        $formPersistenceSlot = GeneralUtility::makeInstance(FilePersistenceSlot::class);
-        $formPersistenceSlot->allowInvocation(
-            FilePersistenceSlot::COMMAND_FILE_MOVE,
-            str_replace('.deleted', '', $formDefinitionPath)
-        );
         /** @var ResourceFactory $resourceFactory */
         $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
 
@@ -454,6 +474,17 @@ class FormResultsController extends FormManagerController
 
         if ($file !== null) {
             $filename = "{$formIdentifier}.form.yaml";
+
+            // Must allow the actual move *target* identifier ("{$formIdentifier}.form.yaml" in the
+            // same folder), not a transformation of the source path — FilePersistenceSlot::
+            // onPreFileMove() checks the destination identifier it's about to write.
+            /** @var FilePersistenceSlot $formPersistenceSlot */
+            $formPersistenceSlot = GeneralUtility::makeInstance(FilePersistenceSlot::class);
+            $formPersistenceSlot->allowInvocation(
+                FilePersistenceSlot::COMMAND_FILE_MOVE,
+                $file->getParentFolder()->getCombinedIdentifier() . $filename
+            );
+
             // @todo add to phpstan baseline, as this error is core made
             $newCombinedIdentifier = $file->moveTo($file->getParentFolder(), $filename)->getCombinedIdentifier();
             // TYPO3 v14's Extbase Repository dropped magic findBy<PropertyName>() methods
@@ -464,6 +495,11 @@ class FormResultsController extends FormManagerController
                 $result->setFormPersistenceIdentifier($newCombinedIdentifier);
                 $this->formResultRepository->update($result);
             }
+
+            // Backend module actions get no automatic persistAll() after dispatch (unlike frontend
+            // Extbase plugins) — without this, update() only marks the objects in memory and the
+            // re-pointed identifier never reaches the database.
+            $this->persistenceManager->persistAll();
         }
 
         return new RedirectResponse($this->uriBuilder->uriFor(
