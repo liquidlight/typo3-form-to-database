@@ -18,10 +18,27 @@ composer req liquidlight/typo3-form-to-database
 
 | Form to Database | TYPO3 Version |
 | ---------------- | ------------- |
+| 6.x              | 14.0          |
 | 5.x              | 13.4          |
 | 4.x              | 12.4          |
 | 3.x              | 11.5          |
 | 2.x              | 9.5 - 10.4    |
+
+### Database-stored forms (TYPO3 v14+)
+
+As of 6.0.0, this extension supports forms stored in TYPO3 v14's new database storage
+(`form_definition` table) as well as the traditional file-based (`.form.yaml`) storage — results,
+CSV/PDF export, and deletion/restoration all work for both.
+
+One limitation is inherited directly from TYPO3 core, not specific to this extension:
+database-stored forms currently have no per-editor-group permission isolation equivalent to
+file-mount access control — any backend user with `form_definition` table access can see all
+database-stored forms. If your installation relies on separating which forms different editor
+groups can see, keep using file-based storage until TYPO3 core adds an equivalent permission
+mechanism for database storage.
+
+See [issue #20](https://github.com/liquidlight/typo3-form-to-database/issues/20) for the TYPO3 v14
+upgrade discussion and tracking.
 
 ## Introduction
 
@@ -169,11 +186,11 @@ The extension uses a modified version of runTests.sh from [the TYPO3 core](https
 
 You need [Podman](https://podman.io/) installed and running to run the tests.
 
-- Install dependencies with TYPO3 13 and php 8.2:
-  - `Build/Scripts/runTests.sh -t 13 -p 8.2 -s composer install` (-t is currently obsolete, as only v13 is supported and set as default)
+- Install dependencies with TYPO3 14 and php 8.2:
+  - `Build/Scripts/runTests.sh -t 14 -p 8.2 -s composer install` (-t is currently obsolete, as only v14 is supported and set as default)
 - Run linter:
   - `Build/Scripts/runTests.sh -p 8.2 -s lintPhp`
-  - `Build/Scripts/runTests.sh -t 13 -p 8.2 -s lintTypoScript`
+  - `Build/Scripts/runTests.sh -t 14 -p 8.2 -s lintTypoScript`
 - Execute functional tests:
   - `Build/Scripts/runTests.sh -p 8.2 -s functional`
 
