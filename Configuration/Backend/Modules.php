@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'web_FormToDatabaseFormresults' => [
-        'parent' => 'web',
+        'parent' => 'content',
         'position' => ['after' => 'web_FormFormbuilder'],
         'access' => 'user',
         'workspaces' => '*',
