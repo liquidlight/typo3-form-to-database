@@ -140,6 +140,45 @@ final class FormResultsControllerTest extends FunctionalTestCase
         self::assertStringContainsString('DB Stored Form', $body);
     }
 
+    #[Test]
+    public function unDeleteFormDefinitionActionRestoresADatabaseStoredForm(): void
+    {
+        $this->importCSVDataSet(__DIR__ . '/Fixtures/resultsWithDatabaseStoredForm.csv');
+        $GLOBALS['BE_USER'] = $this->setUpBackendUser(1);
+
+        $extbaseRequestParameters = (new ExtbaseRequestParameters(FormResultsController::class))
+            ->setPluginName('web_FormToDatabaseFormresults')
+            ->setArgument('formDefinitionPath', '5')
+            ->setArgument('formIdentifier', 'dbform');
+        $serverRequest = (new ServerRequest('https://localhost/typo3/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
+            ->withAttribute('extbase', $extbaseRequestParameters)
+            ->withAttribute('route', new Route('web_FormToDatabaseFormresults', []))
+            ->withMethod('POST');
+        $GLOBALS['TYPO3_REQUEST'] = $serverRequest;
+
+        $extbaseRequest = (new Request($serverRequest))
+            ->withControllerActionName('unDeleteFormDefinition')
+            ->withArgument('formDefinitionPath', '5')
+            ->withArgument('formIdentifier', 'dbform');
+
+        /** @var FormResultsController $controller */
+        $controller = GeneralUtility::makeInstance(FormResultsController::class);
+        $response = $controller->processRequest($extbaseRequest);
+
+        self::assertEquals(302, $response->getStatusCode());
+
+        $queryBuilder = $this->getConnectionPool()->getQueryBuilderForTable('form_definition');
+        $queryBuilder->getRestrictions()->removeAll();
+        $deleted = $queryBuilder
+            ->select('deleted')
+            ->from('form_definition')
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter(5, \TYPO3\CMS\Core\Database\Connection::PARAM_INT)))
+            ->executeQuery()
+            ->fetchOne();
+        self::assertSame(0, (int)$deleted);
+    }
+
     /**
      * @return \Generator<string, array{
      *     form: string,

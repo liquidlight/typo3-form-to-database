@@ -434,6 +434,12 @@ class FormResultsController extends FormManagerController
      */
     public function unDeleteFormDefinitionAction(string $formDefinitionPath, string $formIdentifier): RedirectResponse
     {
+        if (MathUtility::canBeInterpretedAsInteger($formDefinitionPath)) {
+            $this->restoreDatabaseStoredFormDefinition((int)$formDefinitionPath);
+
+            return new RedirectResponse($this->uriBuilder->uriFor('index'));
+        }
+
         /** @var FilePersistenceSlot $formPersistenceSlot */
         $formPersistenceSlot = GeneralUtility::makeInstance(FilePersistenceSlot::class);
         $formPersistenceSlot->allowInvocation(
@@ -461,6 +467,29 @@ class FormResultsController extends FormManagerController
         return new RedirectResponse($this->uriBuilder->uriFor(
             'index'
         ));
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    private function restoreDatabaseStoredFormDefinition(int $uid): void
+    {
+        if (!$this->getBackendUser()->check('tables_modify', self::DATABASE_STORAGE_TABLE)) {
+            throw new \RuntimeException(
+                sprintf('Restoring form definition "%d" is not allowed: missing modify access to "%s"', $uid, self::DATABASE_STORAGE_TABLE),
+                1751500000
+            );
+        }
+
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::DATABASE_STORAGE_TABLE);
+        $queryBuilder->getRestrictions()->removeByType(DeletedRestriction::class);
+        $queryBuilder->update(self::DATABASE_STORAGE_TABLE)
+            ->set('deleted', 0)
+            ->where(
+                $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT))
+            )
+            ->executeStatement();
     }
 
     public function updateItemListSelectAction(): RedirectResponse
