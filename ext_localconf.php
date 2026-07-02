@@ -7,14 +7,10 @@
  */
 
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use LiquidLight\FormToDatabase\Hooks\FormHooks;
 
 defined('TYPO3') or die();
 
 (static function (): void {
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormSave'][] = FormHooks::class;
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormDelete'][] = FormHooks::class;
-
     ExtensionManagementUtility::addTypoScriptSetup('
         plugin.tx_form.settings.yamlConfigurations {
           1560425499 = EXT:form_to_database/Configuration/Yaml/BaseSetup.yaml

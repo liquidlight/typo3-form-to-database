@@ -57,13 +57,13 @@ use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Form\Controller\FormManagerController;
 use TYPO3\CMS\Form\Domain\Configuration\Exception\PrototypeNotFoundException;
+use TYPO3\CMS\Form\Domain\DTO\SearchCriteria;
 use TYPO3\CMS\Form\Domain\Exception\RenderingException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
-use TYPO3\CMS\Form\Domain\DTO\SearchCriteria;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManagerInterface;
 use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
 use TYPO3\CMS\Form\Storage\FileMountStorageAdapter;
@@ -403,7 +403,7 @@ class FormResultsController extends FormManagerController
     {
         $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier);
 
-        $formResults = $this->formResultRepository->findBy(['form_persistence_identifier'=>$formPersistenceIdentifier]);
+        $formResults = $this->formResultRepository->findBy(['form_persistence_identifier' => $formPersistenceIdentifier]);
 
         /** @var FormResult $formResult */
         foreach ($formResults as $formResult) {
