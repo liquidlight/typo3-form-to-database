@@ -87,10 +87,49 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
         ];
     }
 
+    /**
+     * Renders the form via a plain GET request and scrapes the current __state/__session/
+     * __trustedProperties/honeypot hidden field values out of the response HTML, instead of
+     * hardcoding pre-computed HMAC tokens. TYPO3 v14 made the HMAC algorithm for __state and
+     * __session explicit (HashAlgo::SHA3_256, see TYPO3\CMS\Form\Domain\Runtime\FormRuntime and
+     * FormSession), which invalidated the previously hardcoded v13 tokens — scraping them from a
+     * live render is resilient to future internal algorithm/format changes too.
+     *
+     * @return array<string, string>
+     */
+    private function getRenderedFormHiddenFields(): array
+    {
+        $result = $this->executeFrontendSubRequest(new InternalRequest('https://localhost/'));
+        self::assertEquals(200, $result->getStatusCode());
+        $html = (string)$result->getBody();
+
+        preg_match_all(
+            '/<input[^>]*name="tx_form_formframework\[testform-1\]\[([^\]]+)\]"[^>]*value="([^"]*)"/',
+            $html,
+            $matches,
+            PREG_SET_ORDER
+        );
+        self::assertNotEmpty($matches, 'Expected to find hidden tx_form_formframework fields in the rendered form output');
+
+        $fields = [];
+        foreach ($matches as $match) {
+            $fields[$match[1]] = html_entity_decode($match[2], ENT_QUOTES | ENT_HTML5);
+        }
+
+        return $fields;
+    }
+
     #[Test]
     #[DataProvider('saveDoneDataProvider')]
     public function namesAreSavedCorrectToDatabase(string $name, string $expectedResultFile): void
     {
+        $formFields = $this->getRenderedFormHiddenFields();
+        $formFields['name'] = $name;
+        // This fixture form has a single page; submitting with currentPage advanced past
+        // the last page index is what triggers finisher execution (matches this form's
+        // page-count semantics, not a value read from the HMAC-signed __trustedProperties).
+        $formFields['__currentPage'] = 1;
+
         $queryParams = [
             'tx_form_formframework' => [
                 'action' => 'perform',
@@ -105,14 +144,7 @@ final class FormToDatabaseFinisherTest extends FunctionalTestCase
 
         $body = [
             'tx_form_formframework' => [
-                'testform-1' => [
-                    '__state' => 'TzozOToiVFlQTzNcQ01TXEZvcm1cRG9tYWluXFJ1bnRpbWVcRm9ybVN0YXRlIjoyOntzOjI1OiIAKgBsYXN0RGlzcGxheWVkUGFnZUluZGV4IjtpOjA7czoxMzoiACoAZm9ybVZhbHVlcyI7YTowOnt9fQ==47a5df7cc91032d809f04ce767df252ca8bdcd67',
-                    '__session' => '8618e8dfe31948295237ebf3d69e5e6ff86a121e|5bd206863401e9ff977ea5b658bb4405b5ddd765',
-                    '__trustedProperties' => '{&quot;testform-1&quot;:{&quot;name&quot;:1,&quot;vR6Q2szYwtVrnZ81GqyN&quot;:1,&quot;__currentPage&quot;:1}}92cb9ee7e8aa1332939a703408f10973f2ab8307',
-                    '__currentPage' => 1,
-                    'vR6Q2szYwtVrnZ81GqyN' => '',
-                    'name' => $name,
-                ],
+                'testform-1' => $formFields,
             ],
         ];
 

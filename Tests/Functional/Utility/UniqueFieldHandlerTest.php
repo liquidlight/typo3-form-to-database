@@ -73,7 +73,8 @@ final class UniqueFieldHandlerTest extends FunctionalTestCase
     {
         $arguments = [
             'tx_form_web_formformbuilder' => [
-                'savePath' => 'EXT:test_extension/Resources/Private/Forms/',
+                'storage' => 'extension',
+                'storageLocation' => 'EXT:test_extension/Resources/Private/Forms/',
                 'formName' => 'SaveTest',
                 'prototypeName' => 'standard',
                 'templatePath' => 'EXT:form/Resources/Private/Backend/Templates/FormEditor/Yaml/NewForms/BlankForm.yaml',
