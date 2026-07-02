@@ -79,7 +79,7 @@
     "helmich/typo3-typoscript-lint": "^3.2",
     "mpdf/mpdf": "^8.2",
     "nikic/php-parser": "^5.3",
-    "saschaegerer/phpstan-typo3": "^1.10",
+    "saschaegerer/phpstan-typo3": "^3.0",
     "typo3/cms-install": "^14.0",
     "typo3/cms-tstemplate": "^14.0",
     "typo3/testing-framework": "^9.0"
