@@ -17,8 +17,8 @@ $EM_CONF[$_EXTKEY] = [
     'category' => 'frontend',
     'constraints' => [
         'depends' => [
-            'typo3' => '13.4.20-13.4.99',
-            'form' => '13.4.20-13.4.99',
+            'typo3' => '14.0.0-14.99.99',
+            'form' => '14.0.0-14.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],
