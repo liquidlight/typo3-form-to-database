@@ -456,7 +456,9 @@ class FormResultsController extends FormManagerController
             $filename = "{$formIdentifier}.form.yaml";
             // @todo add to phpstan baseline, as this error is core made
             $newCombinedIdentifier = $file->moveTo($file->getParentFolder(), $filename)->getCombinedIdentifier();
-            $results = $this->formResultRepository->findByFormIdentifier($formIdentifier);
+            // TYPO3 v14's Extbase Repository dropped magic findBy<PropertyName>() methods
+            // entirely (no __call() fallback); the explicit array-based findBy() is required.
+            $results = $this->formResultRepository->findBy(['formIdentifier' => $formIdentifier]);
             /** @var FormResult $result */
             foreach ($results as $result) {
                 $result->setFormPersistenceIdentifier($newCombinedIdentifier);
