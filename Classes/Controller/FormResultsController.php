@@ -40,6 +40,7 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Http\StreamFactory;
@@ -52,6 +53,7 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Filter\FileExtensionFilter;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
@@ -85,6 +87,8 @@ class FormResultsController extends FormManagerController
     protected const CSV_ENCLOSURE = '"';
 
     public const defaultNumberOfColumnsInListView = 4;
+
+    protected const DATABASE_STORAGE_TABLE = 'form_definition';
 
     protected ExtConfUtility $extConfUtility;
 
@@ -618,6 +622,85 @@ class FormResultsController extends FormManagerController
             );
             $val['persistenceIdentifier'] = $val['form_persistence_identifier'];
         });
+
+        return array_merge($result, $this->getDeletedDatabaseFormDefinitions($availableFormDefinitions));
+    }
+
+    /**
+     * Database-storage counterpart to the file-based scan above. form_definition records are
+     * soft-deleted by DataHandler (deleted=1) rather than renamed like file-based forms, so the
+     * persistence identifier (the record's uid, see TYPO3\CMS\Form\Storage\DatabaseStorageAdapter::supports())
+     * never changes on delete.
+     *
+     * @param array<array-key, array{identifier: string, persistenceIdentifier?: string}> $availableFormDefinitions
+     * @return array<int, array<string, mixed>>
+     * @throws Exception
+     */
+    protected function getDeletedDatabaseFormDefinitions(array $availableFormDefinitions): array
+    {
+        $availablePersistenceIdentifiers = array_column($availableFormDefinitions, 'persistenceIdentifier') ?: [''];
+
+        /** @var QueryBuilder $formResultQueryBuilder */
+        $formResultQueryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_formtodatabase_domain_model_formresult');
+        $orphanedResults = $formResultQueryBuilder
+            ->select('form_persistence_identifier', 'form_identifier')
+            ->addSelectLiteral($formResultQueryBuilder->expr()->count('form_identifier', 'count'))
+            ->from('tx_formtodatabase_domain_model_formresult')
+            ->where(
+                $formResultQueryBuilder->expr()->notIn(
+                    'form_persistence_identifier',
+                    $formResultQueryBuilder->createNamedParameter($availablePersistenceIdentifiers, Connection::PARAM_STR_ARRAY)
+                )
+            )
+            ->groupBy('form_persistence_identifier', 'form_identifier')
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $databaseStoredOrphans = array_filter(
+            $orphanedResults,
+            static fn(array $row): bool => MathUtility::canBeInterpretedAsInteger($row['form_persistence_identifier'])
+        );
+
+        if ($databaseStoredOrphans === []) {
+            return [];
+        }
+
+        $uids = array_map(static fn(array $row): int => (int)$row['form_persistence_identifier'], $databaseStoredOrphans);
+
+        /** @var QueryBuilder $formDefinitionQueryBuilder */
+        $formDefinitionQueryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::DATABASE_STORAGE_TABLE);
+        $formDefinitionQueryBuilder->getRestrictions()->removeByType(DeletedRestriction::class);
+        $deletedFormDefinitionRows = $formDefinitionQueryBuilder
+            ->select('uid', 'label')
+            ->from(self::DATABASE_STORAGE_TABLE)
+            ->where(
+                $formDefinitionQueryBuilder->expr()->eq('deleted', $formDefinitionQueryBuilder->createNamedParameter(1, Connection::PARAM_INT)),
+                $formDefinitionQueryBuilder->expr()->in(
+                    'uid',
+                    $formDefinitionQueryBuilder->createNamedParameter($uids, Connection::PARAM_INT_ARRAY)
+                )
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $deletedFormDefinitionsByUid = [];
+        foreach ($deletedFormDefinitionRows as $row) {
+            $deletedFormDefinitionsByUid[(int)$row['uid']] = $row;
+        }
+
+        $result = [];
+        foreach ($databaseStoredOrphans as $row) {
+            $uid = (int)$row['form_persistence_identifier'];
+            if (!isset($deletedFormDefinitionsByUid[$uid])) {
+                // Orphaned result with no matching soft-deleted form_definition row
+                // (e.g. hard-deleted directly by an admin) — nothing to display.
+                continue;
+            }
+            $row['name'] = $row['identifier'] = $deletedFormDefinitionsByUid[$uid]['label'];
+            $row['persistenceIdentifier'] = $row['form_persistence_identifier'];
+            $result[] = $row;
+        }
+
         return $result;
     }
 

@@ -1,0 +1,7 @@
+form_definition,,,,,
+,uid,pid,deleted,identifier,label,configuration
+,5,0,1,"dbform","DB Stored Form","{""type"":""Form"",""identifier"":""dbform"",""label"":""DB Stored Form"",""prototypeName"":""standard""}"
+
+tx_formtodatabase_domain_model_formresult
+,uid,pid,form_persistence_identifier,form_identifier,site_identifier,crdate,form_plugin_uid,result
+,4,1,"5","dbform","test-base",1699375063,1,"{""name"":""Jane Doe""}"

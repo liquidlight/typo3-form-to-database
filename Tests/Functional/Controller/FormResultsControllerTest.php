@@ -103,6 +103,43 @@ final class FormResultsControllerTest extends FunctionalTestCase
         self::assertStringContainsString('testform', $body);
     }
 
+    #[Test]
+    public function indexActionListsDatabaseStoredFormAsDeleted(): void
+    {
+        $this->importCSVDataSet(__DIR__ . '/Fixtures/resultsWithDatabaseStoredForm.csv');
+
+        $extbaseRequestParameters = (new ExtbaseRequestParameters(FormResultsController::class))
+            ->setPluginName('web_FormToDatabaseFormresults');
+        $route = (new Route('web_FormToDatabaseFormresults', []));
+        $serverRequest = (new ServerRequest('https://localhost/typo3/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
+            ->withAttribute('extbase', $extbaseRequestParameters)
+            ->withAttribute('route', $route)
+            ->withQueryParams([
+                'tx_formtodatabase_formresults' => [
+                    'action' => 'index',
+                    'controller' => 'FormResults',
+                ],
+            ]);
+        $serverRequest = $serverRequest->withAttribute(
+            'normalizedParams',
+            NormalizedParams::createFromRequest($serverRequest)
+        );
+        $GLOBALS['TYPO3_REQUEST'] = $serverRequest;
+
+        $extbaseRequest = (new Request($serverRequest))
+            ->withControllerActionName('index');
+
+        /** @var FormResultsController $controller */
+        $controller = GeneralUtility::makeInstance(FormResultsController::class);
+        $response = $controller->processRequest($extbaseRequest);
+
+        self::assertEquals(200, $response->getStatusCode());
+        $response->getBody()->rewind();
+        $body = $response->getBody()->getContents();
+        self::assertStringContainsString('DB Stored Form', $body);
+    }
+
     /**
      * @return \Generator<string, array{
      *     form: string,
