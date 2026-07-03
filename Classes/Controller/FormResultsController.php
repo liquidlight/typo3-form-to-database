@@ -1268,6 +1268,7 @@ class FormResultsController extends FormManagerController
                     ->setHref($this->uriBuilder->uriFor('downloadCsv', $urlParameters))
                     ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.download_csv'))
                     ->setShowLabelText(true)
+                    ->setAttributes(['download' => $this->getCsvFilename($formPersistenceIdentifier)])
                     ->setIcon($this->iconFactory->getIcon(
                         'actions-download',
                         IconSize::SMALL
@@ -1280,6 +1281,7 @@ class FormResultsController extends FormManagerController
                     ->setHref($this->uriBuilder->uriFor('downloadCsv', $urlParameters))
                     ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.download_csv_filtered'))
                     ->setShowLabelText(true)
+                    ->setAttributes(['download' => $this->getCsvFilename($formPersistenceIdentifier)])
                     ->setIcon($this->iconFactory->getIcon('actions-download', IconSize::SMALL));
                 $buttonBar->addButton($downloadCsvFormButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
 
