@@ -229,8 +229,10 @@ class FormResultsController extends FormManagerController
             'stylesheet',
             'print'
         );
-        // @todo check for correct implementation
+        // Needed for the "Delete all" button's t3js-modal-trigger markup below.
         $this->pageRenderer->loadJavaScriptModule('@typo3/backend/modal.js');
+        // Needed for the "Columns" button, which opens an on-demand-fetched form in a modal.
+        $this->pageRenderer->loadJavaScriptModule('@form_to_database/column-settings.js');
         $this->pageRenderer->addInlineLanguageLabelArray([
             'ftd_deleteTitle' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.title'),
             'ftd_deleteDescription' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.description'),
@@ -296,6 +298,40 @@ class FormResultsController extends FormManagerController
         $this->BEUser->writeUC();
 
         return $this->moduleTemplate->renderResponse('FormResults/Show');
+    }
+
+    /**
+     * Renders the "column settings" form as a bare fragment, loaded on demand into a
+     * modal via the `t3js-modal-trigger` `data-url` convention (see Show/Results.html).
+     */
+    public function itemListSelectAction(string $formPersistenceIdentifier): ResponseInterface
+    {
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $this->moduleTemplate->getDocHeaderComponent()->disable();
+
+        $fieldsWithData = [];
+        $formResults = $this->formResultRepository->findByFormPersistenceIdentifier($formPersistenceIdentifier);
+        $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier, true);
+        $formRenderables = $this->getFormRenderables($formDefinition);
+
+        /** @var FormResult $formResult */
+        foreach ($formResults as $formResult) {
+            foreach ($formDefinition->getRenderingOptions()['fieldState'] ?? [] as $fieldIdentifier => $_) {
+                if (!empty(FormValueUtility::findValuesByIdentifier($formResult->getResultAsArray(), $fieldIdentifier))) {
+                    $fieldsWithData[$fieldIdentifier] = 1;
+                }
+            }
+        }
+        $fieldsWithNoData = array_diff_key(array_fill_keys(array_keys($formDefinition->getRenderingOptions()['fieldState'] ?? []), 1), $fieldsWithData);
+
+        $this->moduleTemplate->assignMultiple([
+            'formPersistenceIdentifier' => $formPersistenceIdentifier,
+            'formRenderables' => $formRenderables,
+            'fieldsWithData' => $fieldsWithData,
+            'fieldsWithNoData' => $fieldsWithNoData,
+        ]);
+
+        return $this->moduleTemplate->renderResponse('FormResults/ItemListSelect');
     }
 
     /**
