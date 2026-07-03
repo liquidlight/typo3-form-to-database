@@ -205,7 +205,10 @@ ddev composer install
 ddev init-typo3
 ```
 
-`ddev init-typo3` sets up a fresh TYPO3 instance and seeds it with a database-stored and a file-stored demo form (each with a couple of form results), so the "Form results" backend module has something to show immediately. It's safe to re-run at any time to reset back to a clean state. It prints the backend URL and admin login on completion.
+`ddev init-typo3` sets up a fresh TYPO3 instance and seeds it with a database-stored and a file-stored demo form (each with a couple of form results), so the "Form results" backend module has something to show immediately. It's safe to re-run at any time to reset back to a clean state. It prints the backend URL and admin login on completion:
+
+- Backend: `https://typo3-form-to-database.ddev.site/typo3/`
+- Login: `admin` / `Password123#`
 
 ## Support
 
