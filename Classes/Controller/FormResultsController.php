@@ -724,6 +724,7 @@ class FormResultsController extends FormManagerController
                 $val['form_persistence_identifier']
             );
             $val['persistenceIdentifier'] = $val['form_persistence_identifier'];
+            $val['storageLocation'] = $val['form_persistence_identifier'];
         });
 
         return array_merge($result, $this->getDeletedDatabaseFormDefinitions($availableFormDefinitions));
@@ -801,6 +802,7 @@ class FormResultsController extends FormManagerController
             }
             $row['name'] = $row['identifier'] = $deletedFormDefinitionsByUid[$uid]['label'];
             $row['persistenceIdentifier'] = $row['form_persistence_identifier'];
+            $row['storageLocation'] = $this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:formManager.storage.database.label') ?: 'Database';
             $result[] = $row;
         }
 

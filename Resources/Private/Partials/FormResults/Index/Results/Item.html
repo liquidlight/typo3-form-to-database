@@ -4,12 +4,12 @@
 	  data-namespace-typo3-fluid="true">
 
 <tr>
-	<td class="col-icon nowrap">
+	<td class="col-icon">
 		<span title="id={form.identifier}" data-toggle="tooltip" data-placement="right">
 			<core:icon identifier="content-form"/>
 		</span>
 	</td>
-	<td class="col-title col-responsive nowrap">
+	<td class="col-title col-responsive">
 		<f:if condition="{form.numberOfResults}">
 			<f:then>
 				<f:link.action
@@ -40,7 +40,7 @@
 			</f:if>
 		</f:if>
 	</td>
-	<td class="col-control nowrap">
+	<td class="col-control">
 		<div class="btn-group" role="group">
 			<f:if condition="{form.numberOfResults}">
 				<f:then>
@@ -61,7 +61,7 @@
 			</f:if>
 		</div>
 	</td>
-	<td class="nowrap">
+	<td>
 		<f:if condition="{form.numberOfResults}">
 			<f:then>
 				<f:link.action action="show"
@@ -76,7 +76,7 @@
 		</f:if>
 	</td>
 	<f:if condition="!{extConf.hideLocationInList}">
-		<td class="nowrap">{form.persistenceIdentifier}</td>
+		<td class="col-path">{form.storageLocation}</td>
 	</f:if>
 </tr>
 
