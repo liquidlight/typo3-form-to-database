@@ -37,9 +37,6 @@ database-stored forms. If your installation relies on separating which forms dif
 groups can see, keep using file-based storage until TYPO3 core adds an equivalent permission
 mechanism for database storage.
 
-See [issue #20](https://github.com/liquidlight/typo3-form-to-database/issues/20) for the TYPO3 v14
-upgrade discussion and tracking.
-
 ## Introduction
 
 ### Features
