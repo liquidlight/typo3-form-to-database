@@ -171,31 +171,35 @@ class FormResultsController extends FormManagerController
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
-        $availableFormDefinitions = [];
-        $searchKey = ((array)$this->request->getParsedBody())['tx_form_to_database']['search'] ?? '';
-        if (empty($searchKey)) {
-            $availableFormDefinitions = $this->getFormToDatabaseFormDefinitions($this->getFormSettings());
-        } else {
-            foreach ($this->getFormToDatabaseFormDefinitions($this->getFormSettings()) as $formDefinition) {
-                $searchField = 'name';
-                if (
-                    is_string($formDefinition[$searchField])
-                    && str_contains(
-                        strtolower($formDefinition[$searchField]),
-                        strtolower($searchKey)
-                    )
-                ) {
-                    $availableFormDefinitions[$formDefinition['identifier']] = $formDefinition;
-                }
-            }
-        }
+        // 'name' and 'storageLocation' are FormMetadata properties, so listForms()'s
+        // own SearchCriteria handles searching/sorting on them natively. 'maxCrDate'
+        // and 'numberOfResults' are computed below (not part of FormMetadata), so
+        // they're sorted here in PHP once known.
+        $nativeSortFields = ['name', 'storageLocation'];
+        $availableFormDefinitions = $this->getFormToDatabaseFormDefinitions(
+            $this->getFormSettings(),
+            $searchTerm,
+            in_array($orderField, $nativeSortFields, true) ? $orderField : '',
+            $orderDirection
+        );
 
         $this->registerDocheaderButtons();
         $this->enrichFormDefinitionsWithHighestCrDate($availableFormDefinitions);
 
+        if (in_array($orderField, ['maxCrDate', 'numberOfResults'], true)) {
+            $direction = $orderDirection === 'desc' ? -1 : 1;
+            $sortField = $orderField;
+            usort(
+                $availableFormDefinitions,
+                static fn(array $a, array $b): int => (($a[$sortField] ?? null) <=> ($b[$sortField] ?? null)) * $direction
+            );
+        }
+
         $assignedValues = $this->getDefaultValuesForAssignment();
         $assignedValues['forms'] = $availableFormDefinitions;
-        $assignedValues['searchKey'] = $searchKey;
+        $assignedValues['searchKey'] = $searchTerm;
+        $assignedValues['orderField'] = $orderField;
+        $assignedValues['orderDirection'] = $orderDirection;
         $assignedValues['deletedForms'] = $this->getDeletedFormDefinitions($availableFormDefinitions);
 
         $this->moduleTemplate->assignMultiple($assignedValues);
@@ -215,7 +219,7 @@ class FormResultsController extends FormManagerController
      * @throws RenderingException
      * @throws \JsonException
      */
-    public function showAction(string $formPersistenceIdentifier): ResponseInterface
+    public function showAction(string $formPersistenceIdentifier, string $orderField = '', ?string $orderDirection = null): ResponseInterface
     {
         $fieldsWithData = [];
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
@@ -271,7 +275,17 @@ class FormResultsController extends FormManagerController
             )
         );
 
-        $paginator = new ArrayPaginator($formResults->toArray(), $currentPage, 20);
+        /** @var FormResult[] $formResultsArray */
+        $formResultsArray = $formResults->toArray();
+        if ($orderField === 'crdate') {
+            $direction = $orderDirection === 'desc' ? -1 : 1;
+            usort(
+                $formResultsArray,
+                static fn(FormResult $a, FormResult $b): int => ($a->getCrdate() <=> $b->getCrdate()) * $direction
+            );
+        }
+
+        $paginator = new ArrayPaginator($formResultsArray, $currentPage, 20);
         $pagination = new SimplePagination($paginator);
 
         $this->registerDocheaderButtons($formPersistenceIdentifier, $formResults->count() > 0);
@@ -282,6 +296,8 @@ class FormResultsController extends FormManagerController
                 'formDefinition' => $formDefinition,
                 'formRenderables' => $formRenderables,
                 'formPersistenceIdentifier' => $formPersistenceIdentifier,
+                'orderField' => $orderField,
+                'orderDirection' => $orderDirection,
                 'newDataExists' => $newDataExists,
                 'lastView' => $lastView,
                 'paginator' => $paginator,

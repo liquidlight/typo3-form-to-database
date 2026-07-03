@@ -22,7 +22,7 @@
 			</f:be.infobox>
 		</f:else>
 	</f:if>
-	<f:render partial="FormResults/SimplePagination" arguments="{paginator:paginator, pagination:pagination, formPersistenceIdentifier: formResults.0.formPersistenceIdentifier}" />
+	<f:render partial="FormResults/SimplePagination" arguments="{paginator:paginator, pagination:pagination, formPersistenceIdentifier: formResults.0.formPersistenceIdentifier, orderField: orderField, orderDirection: orderDirection}" />
 	<f:render partial="FormResults/Show/Footer" arguments="{_all}"/>
 </f:section>
 </html>
