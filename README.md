@@ -198,6 +198,18 @@ See help menu for all options: `Build/Scripts/runTests.sh --help`
 
 Commits should follow [TYPO3 Commit Guidelines](https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Appendix/CommitMessage.html#commitmessage).
 
+**To manually test the backend module in a browser**
+
+The repository ships a [DDEV](https://ddev.com/) setup for spinning up a real, browsable TYPO3 instance:
+
+```bash
+ddev start
+ddev composer install
+ddev init-typo3
+```
+
+`ddev init-typo3` sets up a fresh TYPO3 instance and seeds it with a database-stored and a file-stored demo form (each with a couple of form results), so the "Form results" backend module has something to show immediately. It's safe to re-run at any time to reset back to a clean state. It prints the backend URL and admin login on completion.
+
 ## Support
 
 If you need private or personal support, try the TYPO3 Slack channel - `#ext-form-to-database` or contact us by email on [info@liquidlight.co.uk](mailto:info@liquidlight.co.uk).
