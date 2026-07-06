@@ -187,8 +187,7 @@ class UniqueFieldHandler
      */
     protected function setExistingFieldStateBeforeSave(string $formPersistenceIdentifier): void
     {
-        $formSettings = $this->getFormSettings();
-        $formDefinitionBeforeSave = $this->formPersistenceManager->load($formPersistenceIdentifier, $formSettings, []);
+        $formDefinitionBeforeSave = $this->formPersistenceManager->load($formPersistenceIdentifier);
         $this->existingFieldStateBeforeSave = $formDefinitionBeforeSave['renderingOptions']['fieldState'] ?? [];
     }
 }

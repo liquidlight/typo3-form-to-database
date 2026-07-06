@@ -17,8 +17,8 @@ $EM_CONF[$_EXTKEY] = [
     'category' => 'frontend',
     'constraints' => [
         'depends' => [
-            'typo3' => '13.4.20-13.4.99',
-            'form' => '13.4.20-13.4.99',
+            'typo3' => '14.3.0-14.99.99',
+            'form' => '14.3.0-14.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],
@@ -32,5 +32,5 @@ $EM_CONF[$_EXTKEY] = [
 	'author' => 'Liquid Light',
 	'author_email' => 'info@liquidlight.co.uk',
 	'author_company' => 'Liquid Light Ltd',
-    'version' => '5.3.1'
+    'version' => '6.0.0'
 ];

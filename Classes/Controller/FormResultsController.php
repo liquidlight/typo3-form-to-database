@@ -61,11 +61,12 @@ use TYPO3\CMS\Form\Domain\Exception\RenderingException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
+use TYPO3\CMS\Form\Domain\DTO\SearchCriteria;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
-use TYPO3\CMS\Form\Enum\SortDirection;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManagerInterface;
 use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
+use TYPO3\CMS\Form\Storage\FileMountStorageAdapter;
 
 /**
  * Class FormResultsController
@@ -95,6 +96,8 @@ class FormResultsController extends FormManagerController
 
     protected ModuleTemplate $moduleTemplate;
 
+    protected FileMountStorageAdapter $fileMountStorageAdapter;
+
     /**
      * Injects the FormResultRepository
      */
@@ -109,6 +112,14 @@ class FormResultsController extends FormManagerController
     public function injectFormResultDatabaseService(FormResultDatabaseService $formResultDatabaseService): void
     {
         $this->formResultDatabaseService = $formResultDatabaseService;
+    }
+
+    /**
+     * Injects the FileMountStorageAdapter
+     */
+    public function injectFileMountStorageAdapter(FileMountStorageAdapter $fileMountStorageAdapter): void
+    {
+        $this->fileMountStorageAdapter = $fileMountStorageAdapter;
     }
 
     /**
@@ -133,16 +144,16 @@ class FormResultsController extends FormManagerController
      * @throws Exception
      * @internal
      */
-    public function indexAction(int $page = 1, string $searchTerm = '', string $orderField = '', ?SortDirection $orderDirection = null): ResponseInterface
+    public function indexAction(int $page = 1, string $searchTerm = '', string $orderField = '', ?string $orderDirection = null): ResponseInterface
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
         $availableFormDefinitions = [];
         $searchKey = ((array)$this->request->getParsedBody())['tx_form_to_database']['search'] ?? '';
         if (empty($searchKey)) {
-            $availableFormDefinitions = $this->getAvailableFormDefinitions($this->getFormSettings());
+            $availableFormDefinitions = $this->getAvailableFormDefinitions($this->getFormSettings(), new SearchCriteria());
         } else {
-            foreach ($this->getAvailableFormDefinitions($this->getFormSettings()) as $formDefinition) {
+            foreach ($this->getAvailableFormDefinitions($this->getFormSettings(), new SearchCriteria()) as $formDefinition) {
                 $searchField = 'name';
                 if (
                     is_string($formDefinition[$searchField])
@@ -479,20 +490,19 @@ class FormResultsController extends FormManagerController
      *     identifier: string
      * }>
      */
-    protected function getAvailableFormDefinitions(array $formSettings, string $searchTerm = '', string $orderField = '', ?SortDirection $orderDirection = null): array
+    protected function getAvailableFormDefinitions(array $formSettings, SearchCriteria $searchCriteria = new SearchCriteria(), string $returnUrl = ''): array
     {
         $formResults = $this->formResultDatabaseService->getAllFormResultsForPersistenceIdentifier();
         $availableFormDefinitions = [];
-        foreach ($this->formPersistenceManager->listForms($formSettings) as $formDefinition) {
-            $form = $this->formPersistenceManager->load(
-                $formDefinition['persistenceIdentifier'],
-                $formSettings,
-                /**
-                 * Empty array in BE usages
-                 * @see FormPersistenceManagerInterface::load()
-                 */
-                []
-            );
+        foreach ($this->formPersistenceManager->listForms($formSettings, $searchCriteria) as $formMetadata) {
+            // listForms() returns FormMetadata DTOs since TYPO3 v14 - keep the
+            // array shape used by the templates and the enrichment methods
+            $formDefinition = [
+                'identifier' => $formMetadata->identifier,
+                'name' => $formMetadata->name,
+                'persistenceIdentifier' => $formMetadata->persistenceIdentifier,
+            ];
+            $form = $this->formPersistenceManager->load($formDefinition['persistenceIdentifier']);
             $finisherInVariant = false;
             if (isset($form['variants'])) {
                 foreach ($form['variants'] as $variant) {
@@ -536,7 +546,7 @@ class FormResultsController extends FormManagerController
     protected function getDeletedFormDefinitions(array $availableFormDefinitions): array
     {
         $accessibleDeletedFormDefinitions = [];
-        $storageFolders = $this->formPersistenceManager->getAccessibleFormStorageFolders($this->getFormSettings());
+        $storageFolders = $this->fileMountStorageAdapter->getAccessibleFormStorageFolders();
         /** @var FileExtensionFilter $filter */
         $filter = GeneralUtility::makeInstance(FileExtensionFilter::class);
         $filter->setAllowedFileExtensions(['deleted']);
@@ -618,11 +628,7 @@ class FormResultsController extends FormManagerController
         string $formPersistenceIdentifier,
         bool $useFieldStateDataAsRenderables = false
     ): array {
-        $configuration = $this->formPersistenceManager->load(
-            $formPersistenceIdentifier,
-            $this->getFormSettings(),
-            []
-        );
+        $configuration = $this->formPersistenceManager->load($formPersistenceIdentifier);
 
         $this->hydrateRepeatableFields($configuration);
         $this->enrichFieldStateWithListViewStates($configuration);

@@ -14,17 +14,24 @@ namespace LiquidLight\FormToDatabase\Hooks;
 use LiquidLight\FormToDatabase\Domain\Model\FormResult;
 use LiquidLight\FormToDatabase\Domain\Repository\FormResultRepository;
 use LiquidLight\FormToDatabase\Utility\UniqueFieldHandler;
+use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Extbase\Persistence\Generic\QueryResult;
+use TYPO3\CMS\Form\Event\BeforeFormIsDeletedEvent;
+use TYPO3\CMS\Form\Event\BeforeFormIsSavedEvent;
 use TYPO3\CMS\Form\Mvc\Persistence\Exception\PersistenceManagerException;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
 
 /**
  * Class FormHooks
+ *
+ * Since TYPO3 v14 the former SC_OPTIONS ext/form hooks (beforeFormSave,
+ * beforeFormDelete) are replaced by the PSR-14 events
+ * BeforeFormIsSavedEvent / BeforeFormIsDeletedEvent.
  *
  * todo: split hooks into separate files and load only necessary dependencies
  */
@@ -43,16 +50,15 @@ final class FormHooks
      * @throws InvalidQueryException
      * @throws PersistenceManagerException
      */
-    public function beforeFormDelete(string $formPersistenceIdentifier): void
+    #[AsEventListener('form-to-database/before-form-is-deleted')]
+    public function beforeFormDelete(BeforeFormIsDeletedEvent $event): void
     {
+        $formPersistenceIdentifier = $event->formPersistenceIdentifier;
+
         // empty form settings correct here, as an empty array will allow all
         // entry points. This is, what is better at this point
         $formSettings = [];
-        $yaml = $this->formPersistenceManager->load(
-            $formPersistenceIdentifier,
-            $formSettings,
-            []
-        );
+        $yaml = $this->formPersistenceManager->load($formPersistenceIdentifier);
 
         /** @var File $file */
         $file = $this->resourceFactory->getFileObjectFromCombinedIdentifier($formPersistenceIdentifier);
@@ -84,11 +90,10 @@ final class FormHooks
 
     /**
      * Keep track of field identifiers of deleted and new fields, so that identifiers are not reused
-     *
-     * @param array<array-key, mixed> $formDefinition
      */
-    public function beforeFormSave(string $formPersistenceIdentifier, array $formDefinition): mixed
+    #[AsEventListener('form-to-database/before-form-is-saved')]
+    public function beforeFormSave(BeforeFormIsSavedEvent $event): void
     {
-        return $this->uniqueFieldHandler->updateNewFields($formPersistenceIdentifier, $formDefinition);
+        $event->form = $this->uniqueFieldHandler->updateNewFields($event->formPersistenceIdentifier, $event->form);
     }
 }

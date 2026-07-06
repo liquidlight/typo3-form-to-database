@@ -7,13 +7,13 @@
  */
 
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use LiquidLight\FormToDatabase\Hooks\FormHooks;
 
 defined('TYPO3') or die();
 
 (static function (): void {
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormSave'][] = FormHooks::class;
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeFormDelete'][] = FormHooks::class;
+    // The former SC_OPTIONS ext/form hooks (beforeFormSave, beforeFormDelete) were
+    // removed in TYPO3 v14; FormHooks now listens to the PSR-14 events
+    // BeforeFormIsSavedEvent / BeforeFormIsDeletedEvent (see #[AsEventListener]).
 
     ExtensionManagementUtility::addTypoScriptSetup('
         plugin.tx_form.settings.yamlConfigurations {
