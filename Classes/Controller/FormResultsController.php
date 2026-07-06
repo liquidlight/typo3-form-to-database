@@ -456,20 +456,26 @@ class FormResultsController extends FormManagerController
         ));
     }
 
-    public function updateItemListSelectAction(): RedirectResponse
+    /**
+     * @param string $formPersistenceIdentifier
+     * @param array<string, string> $field Selected columns; empty when all columns are deselected
+     */
+    public function updateItemListSelectAction(string $formPersistenceIdentifier = '', array $field = []): RedirectResponse
     {
-        $formPersistenceIdentifier = $this->request->getArgument('formPersistenceIdentifier');
+        if ($formPersistenceIdentifier === '') {
+            return new RedirectResponse($this->uriBuilder->uriFor('index'));
+        }
         $formDefinition = $this->getFormDefinition($formPersistenceIdentifier);
         /** @var FormDefinitionUtility $formDefinitionUtility */
         $formDefinitionUtility = GeneralUtility::makeInstance(FormDefinitionUtility::class);
         $formDefinitionUtility->addFieldStateIfDoesNotExist($formDefinition);
 
-        $this->BEUser->uc['tx_formtodatabase']['listViewStates'][$formDefinition['identifier']] = $this->request->getArgument('field');
+        $this->BEUser->uc['tx_formtodatabase']['listViewStates'][$formDefinition['identifier']] = $field;
         $this->BEUser->writeUC();
 
         return new RedirectResponse($this->uriBuilder->uriFor(
             'show',
-            ['formPersistenceIdentifier' => $this->request->getArgument('formPersistenceIdentifier')]
+            ['formPersistenceIdentifier' => $formPersistenceIdentifier]
         ));
     }
 
@@ -1119,30 +1125,14 @@ class FormResultsController extends FormManagerController
             $buttonBar->addButton($backFormButton, ButtonBar::BUTTON_POSITION_LEFT);
         }
 
-        // Reload title
-        $reloadTitle = $this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload');
-        $reloadButton = $buttonBar->makeLinkButton()
-            ->setHref(GeneralUtility::getIndpEnv('REQUEST_URI'))
-            ->setTitle($reloadTitle)
-            ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
-        $buttonBar->addButton($reloadButton, ButtonBar::BUTTON_POSITION_RIGHT);
-
-        // Shortcut
-        $mayMakeShortcut = $this->getBackendUser()->mayMakeShortcut();
-        if ($mayMakeShortcut) {
-            $extensionName = $currentRequest->getControllerExtensionName();
-            if (count($getVars) === 0) {
-                $modulePrefix = strtolower('tx_' . $extensionName . '_' . $moduleName);
-                $getVars = ['id', 'route', $modulePrefix];
-            }
-
-            $shortcutButton = $buttonBar
-                ->makeShortcutButton()
-                ->setRouteIdentifier($moduleName)
-                ->setDisplayName($this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:module.shortcut_name'))
-                ->setArguments($getVars);
-            $buttonBar->addButton($shortcutButton, ButtonBar::BUTTON_POSITION_RIGHT);
-        }
+        // Since TYPO3 v14 the reload button is added to all modules automatically.
+        // The shortcut button is provided via the shortcut context (manual
+        // ShortcutButton creation is deprecated since v14).
+        $this->moduleTemplate->getDocHeaderComponent()->setShortcutContext(
+            $moduleName,
+            $this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:module.shortcut_name'),
+            $getVars
+        );
     }
 
     /**
