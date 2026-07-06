@@ -206,8 +206,8 @@ class FormResultsController extends FormManagerController
             'stylesheet',
             'print'
         );
-        // @todo check for correct implementation
         $this->pageRenderer->loadJavaScriptModule('@typo3/backend/modal.js');
+        $this->pageRenderer->loadJavaScriptModule('@liquidlight/form-to-database/column-selector.js');
         $this->pageRenderer->addInlineLanguageLabelArray([
             'ftd_deleteTitle' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.title'),
             'ftd_deleteDescription' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.description'),

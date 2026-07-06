@@ -2,88 +2,69 @@
 	  xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
 	  xmlns:ftdb="http://typo3.org/ns/LiquidLight/FormToDatabase/ViewHelpers"
 	  data-namespace-typo3-fluid="true">
-<f:form action="updateItemListSelect">
-	<div class="t3js-modal modal fade modal-severity-notice modal-style-default modal-size-medium"
-		 id="itemListSelect" tabindex="-1" role="dialog" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="t3js-modal-content modal-content">
-				<div class="modal-header">
-					<button type="submit" class="btn btn-default btn-sm t3js-modal-close" style="float: right;"
-							data-bs-dismiss="modal" aria-label="Close">
-						<core:icon identifier="actions-close"/>
-						<f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:close"/>
-					</button>
-					<f:form.button class="btn btn-default btn-sm t3js-modal-close"
-								   style="float: right;margin-right: 5px;">
-						<core:icon identifier="actions-document-save-close"/>
-						<f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:saveAndClose"/>
-					</f:form.button>
-					<h4 class="t3js-modal-title modal-title">
-						<f:translate
-								key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.header"/>
-					</h4>
-				</div>
-				<div class="t3js-modal-body modal-body">
-					<table class="table table-striped table-hover">
-						<thead>
+<!--
+	Content of the column selection modal. Rendered into a <template> and
+	opened via @liquidlight/form-to-database/column-selector.js using the
+	TYPO3 Modal API (Bootstrap modals were removed in TYPO3 v14).
+-->
+<template id="itemListSelect">
+	<f:form action="updateItemListSelect">
+		<table class="table table-striped table-hover">
+			<thead>
+			<tr>
+				<th>
+					<f:translate
+							key="LLL:EXT:form/Resources/Private/Language/Database.xlf:formEditor.elements.FormElement.editor.label.label"/>
+				</th>
+				<th>
+					<f:translate
+							key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.table.elementtype"/>
+				</th>
+				<th>
+					<f:translate
+							key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.table.identifier"/>
+				</th>
+				<th>
+					<f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:enable"/>
+				</th>
+			</tr>
+			</thead>
+			<tbody>
+			<f:groupedFor groupBy="renderingOptions.deleted" groupKey="deleted" each="{formRenderables}" as="renderables">
+				<f:if condition="{deleted} == 1">
+					<tr>
+						<th colspan="4">
+							<f:translate
+									key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.deleted_fields"/>
+						</th>
+					</tr>
+				</f:if>
+				<f:for each="{renderables}" as="renderable">
+					<f:if condition="{fieldsWithData.{renderable.identifier}}">
 						<tr>
-							<th>
-								<f:translate
-										key="LLL:EXT:form/Resources/Private/Language/Database.xlf:formEditor.elements.FormElement.editor.label.label"/>
-							</th>
-							<th>
-								<f:translate
-										key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.table.elementtype"/>
-							</th>
-							<th>
-								<f:translate
-										key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.table.identifier"/>
-							</th>
-							<th>
-								<f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:enable"/>
-							</th>
+							<th>{renderable.label}</th>
+							<td>{renderable.type}</td>
+							<td>{renderable.identifier}</td>
+							<td>
+								<f:form.checkbox
+										checked="{f:if(condition:'{renderable.renderingOptions.listView}', then:'checked')}"
+										name="field[{renderable.identifier}]" value="1"></f:form.checkbox>
+							</td>
 						</tr>
-						</thead>
-						<tbody>
-						<f:groupedFor groupBy="renderingOptions.deleted" groupKey="deleted" each="{formRenderables}" as="renderables">
-							<f:if condition="{deleted} == 1">
-								<tr>
-									<th colspan="4">
-										<f:translate
-												key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.deleted_fields"/>
-									</th>
-								</tr>
-							</f:if>
-							<f:for each="{renderables}" as="renderable">
-								<f:if condition="{fieldsWithData.{renderable.identifier}}">
-									<tr>
-										<th>{renderable.label}</th>
-										<td>{renderable.type}</td>
-										<td>{renderable.identifier}</td>
-										<td>
-											<f:form.checkbox
-													checked="{f:if(condition:'{renderable.renderingOptions.listView}', then:'checked')}"
-													name="field[{renderable.identifier}]" value="1"></f:form.checkbox>
-										</td>
-									</tr>
-								</f:if>
-							</f:for>
-						</f:groupedFor>
-						</tbody>
-					</table>
-					<f:if condition="{fieldsWithNoData}">
-						<f:translate
-								key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.fields_no_data"/><br/>
-						<f:for each="{fieldsWithNoData}" key="field" as="dataExists" iteration="iterator">
-							{field}<f:if condition="{iterator.isLast}"><f:else>,</f:else></f:if>
-						</f:for>
 					</f:if>
-				</div>
-				<f:form.hidden name="formPersistenceIdentifier" value="{formPersistenceIdentifier}"/>
-				<br/>
-			</div>
-		</div>
-	</div>
-</f:form>
+				</f:for>
+			</f:groupedFor>
+			</tbody>
+		</table>
+		<f:if condition="{fieldsWithNoData}">
+			<f:translate
+					key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.fields_no_data"/><br/>
+			<f:for each="{fieldsWithNoData}" key="field" as="dataExists" iteration="iterator">
+				{field}<f:if condition="{iterator.isLast}"><f:else>,</f:else></f:if>
+			</f:for>
+		</f:if>
+		<f:form.hidden name="formPersistenceIdentifier" value="{formPersistenceIdentifier}"/>
+	</f:form>
+</template>
 
 </html>
