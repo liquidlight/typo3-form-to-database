@@ -1,8 +1,0 @@
-TYPO3:
-  CMS:
-    Form:
-      prototypes:
-        standard:
-          finishersDefinition:
-            FormToDatabase:
-              implementationClassName: 'LiquidLight\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher'
