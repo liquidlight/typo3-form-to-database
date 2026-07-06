@@ -1,3 +1,5 @@
+name: liquidlight/form-to-database-save-to-extension-test
+
 TYPO3:
   CMS:
     Form:

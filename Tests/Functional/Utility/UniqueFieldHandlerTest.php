@@ -55,7 +55,6 @@ final class UniqueFieldHandlerTest extends FunctionalTestCase
 
         $site['dependencies'] = [
             'liquidlight/form-to-database-test',
-            'liquidlight/form-to-database-save-to-extension-test',
             'liquidlight/typo3-form-to-database',
         ];
         $this->writeSiteConfiguration(
