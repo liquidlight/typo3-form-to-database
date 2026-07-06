@@ -70,7 +70,10 @@
   "extra": {
     "typo3/cms": {
       "extension-key": "form_to_database",
-      "web-dir": ".Build/Web"
+      "web-dir": ".Build/Web",
+      "Package": {
+        "providesPackages": {}
+      }
     }
   },
   "require-dev": {
