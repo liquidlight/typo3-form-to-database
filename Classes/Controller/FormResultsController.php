@@ -1332,21 +1332,15 @@ class FormResultsController extends FormManagerController
         }
 
         // Shortcut
-        $mayMakeShortcut = $this->getBackendUser()->mayMakeShortcut();
-        if ($mayMakeShortcut) {
-            $extensionName = $currentRequest->getControllerExtensionName();
-            if (count($getVars) === 0) {
-                $modulePrefix = strtolower('tx_' . $extensionName . '_' . $moduleName);
-                $getVars = ['id', 'route', $modulePrefix];
-            }
-
-            $shortcutButton = $buttonBar
-                ->makeShortcutButton()
-                ->setRouteIdentifier($moduleName)
-                ->setDisplayName($this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:module.shortcut_name'))
-                ->setArguments($getVars);
-            $buttonBar->addButton($shortcutButton, ButtonBar::BUTTON_POSITION_RIGHT);
+        if (count($getVars) === 0) {
+            $modulePrefix = strtolower('tx_' . $currentRequest->getControllerExtensionName() . '_' . $moduleName);
+            $getVars = ['id', 'route', $modulePrefix];
         }
+        $this->moduleTemplate->getDocHeaderComponent()->setShortcutContext(
+            routeIdentifier: $moduleName,
+            displayName: $this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:module.shortcut_name'),
+            arguments: $getVars,
+        );
     }
 
     /**
