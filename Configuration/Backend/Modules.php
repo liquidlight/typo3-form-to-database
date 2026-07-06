@@ -8,7 +8,7 @@ return [
         'position' => ['after' => 'web_FormFormbuilder'],
         'access' => 'user',
         'workspaces' => '*',
-        'icon'   => 'EXT:form_to_database/Resources/Public/Icons/Extension.svg',
+        'icon'   => 'EXT:form_to_database/Resources/Public/Icons/ModuleFormToDatabase.svg',
         'path' => '/module/web/FormToDatabaseFormresults',
         'labels' => 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_mod.xlf',
         'extensionName' => 'FormToDatabase',

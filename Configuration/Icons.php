@@ -10,6 +10,10 @@ return [
         'provider' => SvgIconProvider::class,
         'source' => 'EXT:form_to_database/Resources/Public/Icons/Extension.svg',
     ],
+    'module-formtodatabase' => [
+        'provider' => SvgIconProvider::class,
+        'source' => 'EXT:form_to_database/Resources/Public/Icons/ModuleFormToDatabase.svg',
+    ],
     'actions-print' => [
         'provider' => SvgIconProvider::class,
         'source' => 'EXT:form_to_database/Resources/Public/Icons/action-print.svg',

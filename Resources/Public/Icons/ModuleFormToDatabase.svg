@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+	<path fill="var(--icon-color-accent, #ff8700)" d="M24 48h-8c-2.21 0-4-1.79-4-4V16c0-2.21 1.79-4 4-4h32c2.21 0 4 1.79 4 4v12c0 1.1-.9 2-2 2s-2-.9-2-2V16H16v28h8c1.1 0 2 .9 2 2s-.9 2-2 2Z"/>
+	<g fill="currentColor" opacity=".4">
+		<rect width="24" height="4" x="20" y="22" rx="2" ry="2"/>
+		<rect width="8" height="4" x="20" y="30" rx="2" ry="2"/>
+	</g>
+	<ellipse cx="42" cy="33" rx="10" ry="4" fill="currentColor"/>
+	<path fill="currentColor" opacity=".4" d="M32 37a10 4 0 0 0 20 0v5a10 4 0 0 1-20 0v-5Z"/>
+	<path fill="currentColor" d="M32 42a10 4 0 0 0 20 0v5a10 4 0 0 1-20 0v-5Z"/>
+</svg>
