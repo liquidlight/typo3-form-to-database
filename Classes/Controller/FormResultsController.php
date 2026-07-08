@@ -582,20 +582,27 @@ class FormResultsController extends FormManagerController
             ->executeStatement();
     }
 
-    public function updateItemListSelectAction(): RedirectResponse
+    /**
+     * @param array<string, string> $field Selected columns; empty when all columns are deselected,
+     *                                      since unchecked checkboxes are not submitted at all
+     */
+    public function updateItemListSelectAction(string $formPersistenceIdentifier = '', array $field = []): RedirectResponse
     {
-        $formPersistenceIdentifier = $this->request->getArgument('formPersistenceIdentifier');
+        if ($formPersistenceIdentifier === '') {
+            return new RedirectResponse($this->uriBuilder->uriFor('index'));
+        }
+
         $formDefinition = $this->getFormDefinition($formPersistenceIdentifier);
         /** @var FormDefinitionUtility $formDefinitionUtility */
         $formDefinitionUtility = GeneralUtility::makeInstance(FormDefinitionUtility::class);
         $formDefinitionUtility->addFieldStateIfDoesNotExist($formDefinition);
 
-        $this->BEUser->uc['tx_formtodatabase']['listViewStates'][$formDefinition['identifier']] = $this->request->getArgument('field');
+        $this->BEUser->uc['tx_formtodatabase']['listViewStates'][$formDefinition['identifier']] = $field;
         $this->BEUser->writeUC();
 
         return new RedirectResponse($this->uriBuilder->uriFor(
             'show',
-            ['formPersistenceIdentifier' => $this->request->getArgument('formPersistenceIdentifier')]
+            ['formPersistenceIdentifier' => $formPersistenceIdentifier]
         ));
     }
 

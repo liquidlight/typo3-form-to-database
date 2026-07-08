@@ -213,6 +213,58 @@ final class FormResultsControllerTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function updateItemListSelectActionHandlesAllColumnsDeselected(): void
+    {
+        $formPersistenceIdentifier = '1:/form_definitions/testform.form.yaml';
+
+        $extbaseRequestParameters = (new ExtbaseRequestParameters(FormResultsController::class))
+            ->setPluginName('web_FormToDatabaseFormresults')
+            ->setArgument('formPersistenceIdentifier', $formPersistenceIdentifier);
+        $serverRequest = (new ServerRequest('https://localhost/typo3/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
+            ->withAttribute('extbase', $extbaseRequestParameters)
+            ->withAttribute('route', new Route('web_FormToDatabaseFormresults', []))
+            ->withMethod('POST');
+        $GLOBALS['TYPO3_REQUEST'] = $serverRequest;
+
+        // Deliberately no "field" argument set: unchecked checkboxes are not
+        // submitted at all, so a form with all columns deselected posts none.
+        $extbaseRequest = (new Request($serverRequest))
+            ->withControllerActionName('updateItemListSelect')
+            ->withArgument('formPersistenceIdentifier', $formPersistenceIdentifier);
+
+        /** @var FormResultsController $controller */
+        $controller = GeneralUtility::makeInstance(FormResultsController::class);
+        $response = $controller->processRequest($extbaseRequest);
+
+        self::assertEquals(302, $response->getStatusCode());
+        self::assertSame([], $this->getBackendUser()->uc['tx_formtodatabase']['listViewStates']['testform']);
+    }
+
+    #[Test]
+    public function updateItemListSelectActionRedirectsToIndexWhenFormPersistenceIdentifierIsMissing(): void
+    {
+        $extbaseRequestParameters = (new ExtbaseRequestParameters(FormResultsController::class))
+            ->setPluginName('web_FormToDatabaseFormresults');
+        $serverRequest = (new ServerRequest('https://localhost/typo3/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
+            ->withAttribute('extbase', $extbaseRequestParameters)
+            ->withAttribute('route', new Route('web_FormToDatabaseFormresults', []))
+            ->withMethod('POST');
+        $GLOBALS['TYPO3_REQUEST'] = $serverRequest;
+
+        $extbaseRequest = (new Request($serverRequest))
+            ->withControllerActionName('updateItemListSelect');
+
+        /** @var FormResultsController $controller */
+        $controller = GeneralUtility::makeInstance(FormResultsController::class);
+        $response = $controller->processRequest($extbaseRequest);
+
+        self::assertEquals(302, $response->getStatusCode());
+        self::assertArrayNotHasKey('testform', $this->getBackendUser()->uc['tx_formtodatabase']['listViewStates'] ?? []);
+    }
+
+    #[Test]
     public function deleteAllFormResultActionRemovesAllResultsForTheForm(): void
     {
         $formResultsTable = 'tx_formtodatabase_domain_model_formresult';
