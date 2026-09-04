@@ -1,16 +1,79 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#1 \\$formSettings of method LiquidLight\\\\FormToDatabase\\\\Controller\\\\FormResultsController\\:\\:getAvailableFormDefinitions\\(\\) expects array\\{persistenceManager\\: array\\{allowedFileMounts\\: array\\<string\\>\\}\\}, array given\\.$#"
-			count: 2
-			path: ../../Classes/Controller/FormResultsController.php
-
-		-
-			message: "#^Parameter \\#1 \\$targetFolder of method TYPO3\\\\CMS\\\\Core\\\\Resource\\\\AbstractFile\\:\\:moveTo\\(\\) expects TYPO3\\\\CMS\\\\Core\\\\Resource\\\\Folder, TYPO3\\\\CMS\\\\Core\\\\Resource\\\\FolderInterface given\\.$#"
+			message: '#^Call to an undefined method TYPO3\\CMS\\Core\\Resource\\FileInterface\:\:getCombinedIdentifier\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: ../../Classes/Controller/FormResultsController.php
 
 		-
-			message: "#^Parameter \\#1 \\$targetFolder of method TYPO3\\\\CMS\\\\Core\\\\Resource\\\\AbstractFile\\:\\:copyTo\\(\\) expects TYPO3\\\\CMS\\\\Core\\\\Resource\\\\Folder, TYPO3\\\\CMS\\\\Core\\\\Resource\\\\FolderInterface given\\.$#"
+			message: '#^Parameter \#1 \$formSettings of method LiquidLight\\FormToDatabase\\Controller\\FormResultsController\:\:getFormToDatabaseFormDefinitions\(\) expects array\{persistenceManager\: array\{allowedFileMounts\: array\<string\>\}\}, array given\.$#'
+			identifier: argument.type
 			count: 1
-			path: ../../Classes/Hooks/FormHooks.php
+			path: ../../Classes/Controller/FormResultsController.php
+
+		-
+			message: '#^Parameter &\$originalRenderablesById by\-ref type of method LiquidLight\\FormToDatabase\\Controller\\FormResultsController\:\:getOriginalRenderablesById\(\) expects array\<string, mixed\>, array\<mixed\> given\.$#'
+			identifier: parameterByRef.type
+			count: 1
+			path: ../../Classes/Controller/FormResultsController.php
+
+		-
+			message: '#^Method LiquidLight\\FormToDatabase\\Domain\\Repository\\FormResultRepository\:\:findByFormPersistenceIdentifier\(\) return type with generic interface TYPO3\\CMS\\Extbase\\Persistence\\QueryResultInterface does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Classes/Domain/Repository/FormResultRepository.php
+
+		-
+			message: '#^Method LiquidLight\\FormToDatabase\\Domain\\Repository\\FormResultRepository\:\:findByMaxAge\(\) return type with generic interface TYPO3\\CMS\\Extbase\\Persistence\\QueryResultInterface does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Classes/Domain/Repository/FormResultRepository.php
+
+		-
+			message: '#^Method LiquidLight\\FormToDatabase\\Event\\FormResultDownloadCSVActionEvent\:\:__construct\(\) has parameter \$formResults with generic interface TYPO3\\CMS\\Extbase\\Persistence\\QueryResultInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Classes/Event/FormResultDownloadCSVActionEvent.php
+
+		-
+			message: '#^Method LiquidLight\\FormToDatabase\\Event\\FormResultDownloadCSVActionEvent\:\:getFormResults\(\) return type with generic interface TYPO3\\CMS\\Extbase\\Persistence\\QueryResultInterface does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Classes/Event/FormResultDownloadCSVActionEvent.php
+
+		-
+			message: '#^Method LiquidLight\\FormToDatabase\\Event\\FormResultShowActionEvent\:\:__construct\(\) has parameter \$formResults with generic interface TYPO3\\CMS\\Extbase\\Persistence\\QueryResultInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Classes/Event/FormResultShowActionEvent.php
+
+		-
+			message: '#^Method LiquidLight\\FormToDatabase\\Event\\FormResultShowActionEvent\:\:getFormResults\(\) return type with generic interface TYPO3\\CMS\\Extbase\\Persistence\\QueryResultInterface does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Classes/Event/FormResultShowActionEvent.php
+
+		-
+			message: '#^Property TYPO3\\CMS\\Form\\Event\\AbstractFormEvent\:\:\$form \(array\{type\: string, label\: string, identifier\: string, prototypeName\: string, renderables\?\: array\}\) does not accept array\<mixed\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: ../../Classes/EventListener/BeforeFormIsSavedEventListener.php
+
+		-
+			message: '#^Call to an undefined method TYPO3\\CMS\\Form\\Domain\\Model\\Renderable\\RenderableInterface\:\:setIdentifier\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: ../../Classes/Utility/UniqueFieldHandler.php
+
+		-
+			message: '#^Parameter \#1 \$formDefinition of method LiquidLight\\FormToDatabase\\Utility\\UniqueFieldHandler\:\:updateStateDeletedState\(\) expects array\{renderingOptions\: array\{fieldState\: array\<array\{renderingOptions\?\: array\<mixed\>, identifier\: string\}\>\}\}, array\<mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../../Classes/Utility/UniqueFieldHandler.php
+
+		-
+			message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: staticMethod.alreadyNarrowedType
+			count: 1
+			path: ../../Tests/Unit/DummyTest.php

@@ -6,11 +6,3 @@ services:
 
   LiquidLight\FormToDatabase\:
     resource: '../Classes/*'
-  LiquidLight\FormToDatabase\Hooks\FormHooks:
-    public: true
-  LiquidLight\FormToDatabase\Command\DeleteFormResultCommand:
-    tags:
-      - name: 'console.command'
-        command: 'form_to_database:deleteFormResults'
-        description: 'Deletes form results.'
-        schedulable: true

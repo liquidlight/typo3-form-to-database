@@ -27,6 +27,7 @@ use LiquidLight\FormToDatabase\Helpers\MiscHelper;
 use LiquidLight\FormToDatabase\Service\FormResultDatabaseService;
 use LiquidLight\FormToDatabase\Utility\ExtConfUtility;
 use LiquidLight\FormToDatabase\Utility\FormDefinitionUtility;
+use LiquidLight\FormToDatabase\Utility\FormPersistenceIdentifierUtility;
 use LiquidLight\FormToDatabase\Utility\FormValueUtility;
 use LiquidLight\FormToDatabase\Utility\PdfUtility;
 use Mpdf\Mpdf;
@@ -40,6 +41,7 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Http\StreamFactory;
@@ -55,17 +57,19 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
+use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Form\Controller\FormManagerController;
 use TYPO3\CMS\Form\Domain\Configuration\Exception\PrototypeNotFoundException;
+use TYPO3\CMS\Form\Domain\DTO\SearchCriteria;
 use TYPO3\CMS\Form\Domain\Exception\RenderingException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException;
 use TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
-use TYPO3\CMS\Form\Enum\SortDirection;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManagerInterface;
 use TYPO3\CMS\Form\Slot\FilePersistenceSlot;
+use TYPO3\CMS\Form\Storage\FileMountStorageAdapter;
 
 /**
  * Class FormResultsController
@@ -85,6 +89,8 @@ class FormResultsController extends FormManagerController
 
     public const defaultNumberOfColumnsInListView = 4;
 
+    protected const DATABASE_STORAGE_TABLE = 'form_definition';
+
     protected ExtConfUtility $extConfUtility;
 
     protected FormResultRepository $formResultRepository;
@@ -95,12 +101,40 @@ class FormResultsController extends FormManagerController
 
     protected ModuleTemplate $moduleTemplate;
 
+    protected FileMountStorageAdapter $fileMountStorageAdapter;
+
+    protected PersistenceManagerInterface $persistenceManager;
+
     /**
      * Injects the FormResultRepository
      */
     public function injectFormResultRepository(FormResultRepository $formResultRepository): void
     {
         $this->formResultRepository = $formResultRepository;
+    }
+
+    /**
+     * Injects the PersistenceManagerInterface
+     *
+     * Backend module actions (unlike frontend Extbase plugins dispatched via
+     * TYPO3\CMS\Extbase\Core\Bootstrap::run()) are not followed by an automatic persistAll() —
+     * confirmed by finding no such call anywhere in cms-backend or cms-core. Every action that
+     * mutates and expects the change to survive the request must flush explicitly.
+     */
+    public function injectPersistenceManager(PersistenceManagerInterface $persistenceManager): void
+    {
+        $this->persistenceManager = $persistenceManager;
+    }
+
+    /**
+     * Injects the FileMountStorageAdapter
+     *
+     * getAccessibleFormStorageFolders() moved here from FormPersistenceManagerInterface in TYPO3 v14
+     * (the generic facade no longer exposes file-mount-specific capabilities).
+     */
+    public function injectFileMountStorageAdapter(FileMountStorageAdapter $fileMountStorageAdapter): void
+    {
+        $this->fileMountStorageAdapter = $fileMountStorageAdapter;
     }
 
     /**
@@ -133,35 +167,39 @@ class FormResultsController extends FormManagerController
      * @throws Exception
      * @internal
      */
-    public function indexAction(int $page = 1, string $searchTerm = '', string $orderField = '', ?SortDirection $orderDirection = null): ResponseInterface
+    public function indexAction(int $page = 1, string $searchTerm = '', string $orderField = '', ?string $orderDirection = null): ResponseInterface
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
-        $availableFormDefinitions = [];
-        $searchKey = ((array)$this->request->getParsedBody())['tx_form_to_database']['search'] ?? '';
-        if (empty($searchKey)) {
-            $availableFormDefinitions = $this->getAvailableFormDefinitions($this->getFormSettings());
-        } else {
-            foreach ($this->getAvailableFormDefinitions($this->getFormSettings()) as $formDefinition) {
-                $searchField = 'name';
-                if (
-                    is_string($formDefinition[$searchField])
-                    && str_contains(
-                        strtolower($formDefinition[$searchField]),
-                        strtolower($searchKey)
-                    )
-                ) {
-                    $availableFormDefinitions[$formDefinition['identifier']] = $formDefinition;
-                }
-            }
-        }
+        // 'name' and 'storageLocation' are FormMetadata properties, so listForms()'s
+        // own SearchCriteria handles searching/sorting on them natively. 'maxCrDate'
+        // and 'numberOfResults' are computed below (not part of FormMetadata), so
+        // they're sorted here in PHP once known.
+        $nativeSortFields = ['name', 'storageLocation'];
+        $availableFormDefinitions = $this->getFormToDatabaseFormDefinitions(
+            $this->getFormSettings(),
+            $searchTerm,
+            in_array($orderField, $nativeSortFields, true) ? $orderField : '',
+            $orderDirection
+        );
 
         $this->registerDocheaderButtons();
         $this->enrichFormDefinitionsWithHighestCrDate($availableFormDefinitions);
 
+        if (in_array($orderField, ['maxCrDate', 'numberOfResults'], true)) {
+            $direction = $orderDirection === 'desc' ? -1 : 1;
+            $sortField = $orderField;
+            usort(
+                $availableFormDefinitions,
+                static fn(array $a, array $b): int => (($a[$sortField] ?? null) <=> ($b[$sortField] ?? null)) * $direction
+            );
+        }
+
         $assignedValues = $this->getDefaultValuesForAssignment();
         $assignedValues['forms'] = $availableFormDefinitions;
-        $assignedValues['searchKey'] = $searchKey;
+        $assignedValues['searchKey'] = $searchTerm;
+        $assignedValues['orderField'] = $orderField;
+        $assignedValues['orderDirection'] = $orderDirection;
         $assignedValues['deletedForms'] = $this->getDeletedFormDefinitions($availableFormDefinitions);
 
         $this->moduleTemplate->assignMultiple($assignedValues);
@@ -181,7 +219,7 @@ class FormResultsController extends FormManagerController
      * @throws RenderingException
      * @throws \JsonException
      */
-    public function showAction(string $formPersistenceIdentifier): ResponseInterface
+    public function showAction(string $formPersistenceIdentifier, string $orderField = '', ?string $orderDirection = null): ResponseInterface
     {
         $fieldsWithData = [];
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
@@ -195,8 +233,10 @@ class FormResultsController extends FormManagerController
             'stylesheet',
             'print'
         );
-        // @todo check for correct implementation
+        // Needed for the "Delete all" button's t3js-modal-trigger markup below.
         $this->pageRenderer->loadJavaScriptModule('@typo3/backend/modal.js');
+        // Needed for the "Columns" button, which opens an on-demand-fetched form in a modal.
+        $this->pageRenderer->loadJavaScriptModule('@form_to_database/column-settings.js');
         $this->pageRenderer->addInlineLanguageLabelArray([
             'ftd_deleteTitle' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.title'),
             'ftd_deleteDescription' => $this->getLanguageService()->sL($languageFile . 'show.buttons.delete.description'),
@@ -235,7 +275,17 @@ class FormResultsController extends FormManagerController
             )
         );
 
-        $paginator = new ArrayPaginator($formResults->toArray(), $currentPage, 20);
+        /** @var FormResult[] $formResultsArray */
+        $formResultsArray = $formResults->toArray();
+        if ($orderField === 'crdate') {
+            $direction = $orderDirection === 'desc' ? -1 : 1;
+            usort(
+                $formResultsArray,
+                static fn(FormResult $a, FormResult $b): int => ($a->getCrdate() <=> $b->getCrdate()) * $direction
+            );
+        }
+
+        $paginator = new ArrayPaginator($formResultsArray, $currentPage, 20);
         $pagination = new SimplePagination($paginator);
 
         $this->registerDocheaderButtons($formPersistenceIdentifier, $formResults->count() > 0);
@@ -246,6 +296,8 @@ class FormResultsController extends FormManagerController
                 'formDefinition' => $formDefinition,
                 'formRenderables' => $formRenderables,
                 'formPersistenceIdentifier' => $formPersistenceIdentifier,
+                'orderField' => $orderField,
+                'orderDirection' => $orderDirection,
                 'newDataExists' => $newDataExists,
                 'lastView' => $lastView,
                 'paginator' => $paginator,
@@ -262,6 +314,40 @@ class FormResultsController extends FormManagerController
         $this->BEUser->writeUC();
 
         return $this->moduleTemplate->renderResponse('FormResults/Show');
+    }
+
+    /**
+     * Renders the "column settings" form as a bare fragment, loaded on demand into a
+     * modal via the `t3js-modal-trigger` `data-url` convention (see Show/Results.html).
+     */
+    public function itemListSelectAction(string $formPersistenceIdentifier): ResponseInterface
+    {
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $this->moduleTemplate->getDocHeaderComponent()->disable();
+
+        $fieldsWithData = [];
+        $formResults = $this->formResultRepository->findByFormPersistenceIdentifier($formPersistenceIdentifier);
+        $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier, true);
+        $formRenderables = $this->getFormRenderables($formDefinition);
+
+        /** @var FormResult $formResult */
+        foreach ($formResults as $formResult) {
+            foreach ($formDefinition->getRenderingOptions()['fieldState'] ?? [] as $fieldIdentifier => $_) {
+                if (!empty(FormValueUtility::findValuesByIdentifier($formResult->getResultAsArray(), $fieldIdentifier))) {
+                    $fieldsWithData[$fieldIdentifier] = 1;
+                }
+            }
+        }
+        $fieldsWithNoData = array_diff_key(array_fill_keys(array_keys($formDefinition->getRenderingOptions()['fieldState'] ?? []), 1), $fieldsWithData);
+
+        $this->moduleTemplate->assignMultiple([
+            'formPersistenceIdentifier' => $formPersistenceIdentifier,
+            'formRenderables' => $formRenderables,
+            'fieldsWithData' => $fieldsWithData,
+            'fieldsWithNoData' => $fieldsWithNoData,
+        ]);
+
+        return $this->moduleTemplate->renderResponse('FormResults/ItemListSelect');
     }
 
     /**
@@ -373,6 +459,11 @@ class FormResultsController extends FormManagerController
             )
         );
 
+        // Backend module actions get no automatic persistAll() after dispatch (unlike frontend
+        // Extbase plugins) — without this, remove() only marks the object in memory and the
+        // deletion never reaches the database.
+        $this->persistenceManager->persistAll();
+
         return new RedirectResponse($this->uriBuilder->uriFor(
             'show',
             ['formPersistenceIdentifier' => $formPersistenceIdentifier]
@@ -389,7 +480,7 @@ class FormResultsController extends FormManagerController
     {
         $formDefinition = $this->getFormDefinitionObject($formPersistenceIdentifier);
 
-        $formResults = $this->formResultRepository->findBy(['form_persistence_identifier'=>$formPersistenceIdentifier]);
+        $formResults = $this->formResultRepository->findByFormPersistenceIdentifier($formPersistenceIdentifier);
 
         /** @var FormResult $formResult */
         foreach ($formResults as $formResult) {
@@ -404,6 +495,11 @@ class FormResultsController extends FormManagerController
             );
         }
 
+        // Backend module actions get no automatic persistAll() after dispatch (unlike frontend
+        // Extbase plugins) — without this, remove() only marks the objects in memory and the
+        // deletions never reach the database.
+        $this->persistenceManager->persistAll();
+
         return new RedirectResponse($this->uriBuilder->uriFor(
             'show',
             ['formPersistenceIdentifier' => $formPersistenceIdentifier]
@@ -416,12 +512,12 @@ class FormResultsController extends FormManagerController
      */
     public function unDeleteFormDefinitionAction(string $formDefinitionPath, string $formIdentifier): RedirectResponse
     {
-        /** @var FilePersistenceSlot $formPersistenceSlot */
-        $formPersistenceSlot = GeneralUtility::makeInstance(FilePersistenceSlot::class);
-        $formPersistenceSlot->allowInvocation(
-            FilePersistenceSlot::COMMAND_FILE_MOVE,
-            str_replace('.deleted', '', $formDefinitionPath)
-        );
+        if (FormPersistenceIdentifierUtility::isDatabaseStored($formDefinitionPath)) {
+            $this->restoreDatabaseStoredFormDefinition((int)$formDefinitionPath);
+
+            return new RedirectResponse($this->uriBuilder->uriFor('index'));
+        }
+
         /** @var ResourceFactory $resourceFactory */
         $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
 
@@ -430,14 +526,32 @@ class FormResultsController extends FormManagerController
 
         if ($file !== null) {
             $filename = "{$formIdentifier}.form.yaml";
+
+            // Must allow the actual move *target* identifier ("{$formIdentifier}.form.yaml" in the
+            // same folder), not a transformation of the source path — FilePersistenceSlot::
+            // onPreFileMove() checks the destination identifier it's about to write.
+            /** @var FilePersistenceSlot $formPersistenceSlot */
+            $formPersistenceSlot = GeneralUtility::makeInstance(FilePersistenceSlot::class);
+            $formPersistenceSlot->allowInvocation(
+                FilePersistenceSlot::COMMAND_FILE_MOVE,
+                $file->getParentFolder()->getCombinedIdentifier() . $filename
+            );
+
             // @todo add to phpstan baseline, as this error is core made
             $newCombinedIdentifier = $file->moveTo($file->getParentFolder(), $filename)->getCombinedIdentifier();
-            $results = $this->formResultRepository->findByFormIdentifier($formIdentifier);
+            // TYPO3 v14's Extbase Repository dropped magic findBy<PropertyName>() methods
+            // entirely (no __call() fallback); the explicit array-based findBy() is required.
+            $results = $this->formResultRepository->findBy(['formIdentifier' => $formIdentifier]);
             /** @var FormResult $result */
             foreach ($results as $result) {
                 $result->setFormPersistenceIdentifier($newCombinedIdentifier);
                 $this->formResultRepository->update($result);
             }
+
+            // Backend module actions get no automatic persistAll() after dispatch (unlike frontend
+            // Extbase plugins) — without this, update() only marks the objects in memory and the
+            // re-pointed identifier never reaches the database.
+            $this->persistenceManager->persistAll();
         }
 
         return new RedirectResponse($this->uriBuilder->uriFor(
@@ -445,20 +559,50 @@ class FormResultsController extends FormManagerController
         ));
     }
 
-    public function updateItemListSelectAction(): RedirectResponse
+    /**
+     * @throws \RuntimeException
+     */
+    private function restoreDatabaseStoredFormDefinition(int $uid): void
     {
-        $formPersistenceIdentifier = $this->request->getArgument('formPersistenceIdentifier');
+        if (!$this->getBackendUser()->check('tables_modify', self::DATABASE_STORAGE_TABLE)) {
+            throw new \RuntimeException(
+                sprintf('Restoring form definition "%d" is not allowed: missing modify access to "%s"', $uid, self::DATABASE_STORAGE_TABLE),
+                1751500000
+            );
+        }
+
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::DATABASE_STORAGE_TABLE);
+        $queryBuilder->getRestrictions()->removeByType(DeletedRestriction::class);
+        $queryBuilder->update(self::DATABASE_STORAGE_TABLE)
+            ->set('deleted', 0)
+            ->where(
+                $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT))
+            )
+            ->executeStatement();
+    }
+
+    /**
+     * @param array<string, string> $field Selected columns; empty when all columns are deselected,
+     *                                      since unchecked checkboxes are not submitted at all
+     */
+    public function updateItemListSelectAction(string $formPersistenceIdentifier = '', array $field = []): RedirectResponse
+    {
+        if ($formPersistenceIdentifier === '') {
+            return new RedirectResponse($this->uriBuilder->uriFor('index'));
+        }
+
         $formDefinition = $this->getFormDefinition($formPersistenceIdentifier);
         /** @var FormDefinitionUtility $formDefinitionUtility */
         $formDefinitionUtility = GeneralUtility::makeInstance(FormDefinitionUtility::class);
         $formDefinitionUtility->addFieldStateIfDoesNotExist($formDefinition);
 
-        $this->BEUser->uc['tx_formtodatabase']['listViewStates'][$formDefinition['identifier']] = $this->request->getArgument('field');
+        $this->BEUser->uc['tx_formtodatabase']['listViewStates'][$formDefinition['identifier']] = $field;
         $this->BEUser->writeUC();
 
         return new RedirectResponse($this->uriBuilder->uriFor(
             'show',
-            ['formPersistenceIdentifier' => $this->request->getArgument('formPersistenceIdentifier')]
+            ['formPersistenceIdentifier' => $formPersistenceIdentifier]
         ));
     }
 
@@ -479,20 +623,22 @@ class FormResultsController extends FormManagerController
      *     identifier: string
      * }>
      */
-    protected function getAvailableFormDefinitions(array $formSettings, string $searchTerm = '', string $orderField = '', ?SortDirection $orderDirection = null): array
+    protected function getFormToDatabaseFormDefinitions(array $formSettings, string $searchTerm = '', string $orderField = '', ?string $orderDirection = null): array
     {
         $formResults = $this->formResultDatabaseService->getAllFormResultsForPersistenceIdentifier();
         $availableFormDefinitions = [];
-        foreach ($this->formPersistenceManager->listForms($formSettings) as $formDefinition) {
-            $form = $this->formPersistenceManager->load(
-                $formDefinition['persistenceIdentifier'],
-                $formSettings,
-                /**
-                 * Empty array in BE usages
-                 * @see FormPersistenceManagerInterface::load()
-                 */
-                []
-            );
+        $searchCriteria = new SearchCriteria(
+            searchTerm: $searchTerm !== '' ? $searchTerm : null,
+            orderField: $orderField !== '' ? $orderField : null,
+            orderDirection: $orderDirection,
+        );
+        // TYPO3 v14's listForms() returns FormMetadata objects (not arrays); toArray()
+        // gives back the array shape the rest of this method (and its callers) rely on.
+        foreach ($this->formPersistenceManager->listForms($formSettings, $searchCriteria) as $formMetadata) {
+            $formDefinition = $formMetadata->toArray();
+            // TYPO3 v14 dropped the $formSettings parameter from load() entirely
+            // (persisted separately internally) — identifier-only call in BE usages.
+            $form = $this->formPersistenceManager->load($formDefinition['persistenceIdentifier']);
             $finisherInVariant = false;
             if (isset($form['variants'])) {
                 foreach ($form['variants'] as $variant) {
@@ -536,7 +682,7 @@ class FormResultsController extends FormManagerController
     protected function getDeletedFormDefinitions(array $availableFormDefinitions): array
     {
         $accessibleDeletedFormDefinitions = [];
-        $storageFolders = $this->formPersistenceManager->getAccessibleFormStorageFolders($this->getFormSettings());
+        $storageFolders = $this->fileMountStorageAdapter->getAccessibleFormStorageFolders();
         /** @var FileExtensionFilter $filter */
         $filter = GeneralUtility::makeInstance(FileExtensionFilter::class);
         $filter->setAllowedFileExtensions(['deleted']);
@@ -601,7 +747,88 @@ class FormResultsController extends FormManagerController
                 $val['form_persistence_identifier']
             );
             $val['persistenceIdentifier'] = $val['form_persistence_identifier'];
+            $val['storageLocation'] = $val['form_persistence_identifier'];
         });
+
+        return array_merge($result, $this->getDeletedDatabaseFormDefinitions($availableFormDefinitions));
+    }
+
+    /**
+     * Database-storage counterpart to the file-based scan above. form_definition records are
+     * soft-deleted by DataHandler (deleted=1) rather than renamed like file-based forms, so the
+     * persistence identifier (the record's uid, see TYPO3\CMS\Form\Storage\DatabaseStorageAdapter::supports())
+     * never changes on delete.
+     *
+     * @param array<array-key, array{identifier: string, persistenceIdentifier?: string}> $availableFormDefinitions
+     * @return array<int, array<string, mixed>>
+     * @throws Exception
+     */
+    protected function getDeletedDatabaseFormDefinitions(array $availableFormDefinitions): array
+    {
+        $availablePersistenceIdentifiers = array_column($availableFormDefinitions, 'persistenceIdentifier') ?: [''];
+
+        /** @var QueryBuilder $formResultQueryBuilder */
+        $formResultQueryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_formtodatabase_domain_model_formresult');
+        $orphanedResults = $formResultQueryBuilder
+            ->select('form_persistence_identifier', 'form_identifier')
+            ->addSelectLiteral($formResultQueryBuilder->expr()->count('form_identifier', 'count'))
+            ->from('tx_formtodatabase_domain_model_formresult')
+            ->where(
+                $formResultQueryBuilder->expr()->notIn(
+                    'form_persistence_identifier',
+                    $formResultQueryBuilder->createNamedParameter($availablePersistenceIdentifiers, Connection::PARAM_STR_ARRAY)
+                )
+            )
+            ->groupBy('form_persistence_identifier', 'form_identifier')
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $databaseStoredOrphans = array_filter(
+            $orphanedResults,
+            static fn(array $row): bool => FormPersistenceIdentifierUtility::isDatabaseStored($row['form_persistence_identifier'])
+        );
+
+        if ($databaseStoredOrphans === []) {
+            return [];
+        }
+
+        $uids = array_map(static fn(array $row): int => (int)$row['form_persistence_identifier'], $databaseStoredOrphans);
+
+        /** @var QueryBuilder $formDefinitionQueryBuilder */
+        $formDefinitionQueryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::DATABASE_STORAGE_TABLE);
+        $formDefinitionQueryBuilder->getRestrictions()->removeByType(DeletedRestriction::class);
+        $deletedFormDefinitionRows = $formDefinitionQueryBuilder
+            ->select('uid', 'label')
+            ->from(self::DATABASE_STORAGE_TABLE)
+            ->where(
+                $formDefinitionQueryBuilder->expr()->eq('deleted', $formDefinitionQueryBuilder->createNamedParameter(1, Connection::PARAM_INT)),
+                $formDefinitionQueryBuilder->expr()->in(
+                    'uid',
+                    $formDefinitionQueryBuilder->createNamedParameter($uids, Connection::PARAM_INT_ARRAY)
+                )
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $deletedFormDefinitionsByUid = [];
+        foreach ($deletedFormDefinitionRows as $row) {
+            $deletedFormDefinitionsByUid[(int)$row['uid']] = $row;
+        }
+
+        $result = [];
+        foreach ($databaseStoredOrphans as $row) {
+            $uid = (int)$row['form_persistence_identifier'];
+            if (!isset($deletedFormDefinitionsByUid[$uid])) {
+                // Orphaned result with no matching soft-deleted form_definition row
+                // (e.g. hard-deleted directly by an admin) — nothing to display.
+                continue;
+            }
+            $row['name'] = $row['identifier'] = $deletedFormDefinitionsByUid[$uid]['label'];
+            $row['persistenceIdentifier'] = $row['form_persistence_identifier'];
+            $row['storageLocation'] = $this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:formManager.storage.database.label') ?: 'Database';
+            $result[] = $row;
+        }
+
         return $result;
     }
 
@@ -618,11 +845,7 @@ class FormResultsController extends FormManagerController
         string $formPersistenceIdentifier,
         bool $useFieldStateDataAsRenderables = false
     ): array {
-        $configuration = $this->formPersistenceManager->load(
-            $formPersistenceIdentifier,
-            $this->getFormSettings(),
-            []
-        );
+        $configuration = $this->formPersistenceManager->load($formPersistenceIdentifier);
 
         $this->hydrateRepeatableFields($configuration);
         $this->enrichFieldStateWithListViewStates($configuration);
@@ -1068,6 +1291,7 @@ class FormResultsController extends FormManagerController
                     ->setHref($this->uriBuilder->uriFor('downloadCsv', $urlParameters))
                     ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.download_csv'))
                     ->setShowLabelText(true)
+                    ->setAttributes(['download' => $this->getCsvFilename($formPersistenceIdentifier)])
                     ->setIcon($this->iconFactory->getIcon(
                         'actions-download',
                         IconSize::SMALL
@@ -1080,6 +1304,7 @@ class FormResultsController extends FormManagerController
                     ->setHref($this->uriBuilder->uriFor('downloadCsv', $urlParameters))
                     ->setTitle($this->getLanguageService()->sL('LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.download_csv_filtered'))
                     ->setShowLabelText(true)
+                    ->setAttributes(['download' => $this->getCsvFilename($formPersistenceIdentifier)])
                     ->setIcon($this->iconFactory->getIcon('actions-download', IconSize::SMALL));
                 $buttonBar->addButton($downloadCsvFormButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
 
@@ -1113,30 +1338,16 @@ class FormResultsController extends FormManagerController
             $buttonBar->addButton($backFormButton, ButtonBar::BUTTON_POSITION_LEFT);
         }
 
-        // Reload title
-        $reloadTitle = $this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload');
-        $reloadButton = $buttonBar->makeLinkButton()
-            ->setHref(GeneralUtility::getIndpEnv('REQUEST_URI'))
-            ->setTitle($reloadTitle)
-            ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
-        $buttonBar->addButton($reloadButton, ButtonBar::BUTTON_POSITION_RIGHT);
-
         // Shortcut
-        $mayMakeShortcut = $this->getBackendUser()->mayMakeShortcut();
-        if ($mayMakeShortcut) {
-            $extensionName = $currentRequest->getControllerExtensionName();
-            if (count($getVars) === 0) {
-                $modulePrefix = strtolower('tx_' . $extensionName . '_' . $moduleName);
-                $getVars = ['id', 'route', $modulePrefix];
-            }
-
-            $shortcutButton = $buttonBar
-                ->makeShortcutButton()
-                ->setRouteIdentifier($moduleName)
-                ->setDisplayName($this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:module.shortcut_name'))
-                ->setArguments($getVars);
-            $buttonBar->addButton($shortcutButton, ButtonBar::BUTTON_POSITION_RIGHT);
+        if (count($getVars) === 0) {
+            $modulePrefix = strtolower('tx_' . $currentRequest->getControllerExtensionName() . '_' . $moduleName);
+            $getVars = ['id', 'route', $modulePrefix];
         }
+        $this->moduleTemplate->getDocHeaderComponent()->setShortcutContext(
+            routeIdentifier: $moduleName,
+            displayName: $this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/Database.xlf:module.shortcut_name'),
+            arguments: $getVars,
+        );
     }
 
     /**

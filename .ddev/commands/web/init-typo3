@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2086
+set -e
+
+## Description: Set up a fresh TYPO3 instance with demo forms for manual QA
+## Usage: init-typo3
+## Example: ddev init-typo3
+
+readonly dbHost="db"
+readonly dbUser="db"
+readonly dbPassword="db"
+readonly dbName="db"
+readonly dbCredentials="-h${dbHost} -u${dbUser} -p${dbPassword}"
+readonly typo3Binary="/var/www/html/.Build/bin/typo3"
+readonly fixturePath="/var/www/html/.ddev/fixtures"
+readonly formDefinitionsDir="/var/www/html/.Build/Web/fileadmin/form_definitions"
+
+readonly adminUsername="admin"
+readonly adminPassword="Password123#"
+readonly adminEmail="admin@example.com"
+
+function _progress() {
+    printf "%s... " "$1"
+}
+
+function _done() {
+    printf "\e[32mDone\e[39m\n"
+}
+
+# Reset to an empty database and config, so this command is safe to re-run
+_progress "Resetting database"
+    mysql -Nse "SHOW TABLES" $dbCredentials "$dbName" | while read -r table; do
+        mysql -e "DROP TABLE ${table}" $dbCredentials "$dbName"
+    done
+_done
+
+_progress "Resetting TYPO3 configuration"
+    rm -f /var/www/html/config/system/settings.php
+    rm -rf /var/www/html/config/sites
+    rm -rf "$formDefinitionsDir"
+_done
+
+# Set up a fresh TYPO3 instance
+_progress "Setting up TYPO3 installation"
+    TYPO3_DB_DRIVER=mysqli \
+    TYPO3_DB_USERNAME="$dbUser" \
+    TYPO3_DB_PASSWORD="$dbPassword" \
+    TYPO3_DB_PORT=3306 \
+    TYPO3_DB_HOST="$dbHost" \
+    TYPO3_DB_DBNAME="$dbName" \
+    TYPO3_SETUP_ADMIN_USERNAME="$adminUsername" \
+    TYPO3_SETUP_ADMIN_PASSWORD="$adminPassword" \
+    TYPO3_SETUP_ADMIN_EMAIL="$adminEmail" \
+    TYPO3_SETUP_CREATE_SITE="${DDEV_PRIMARY_URL}/" \
+    TYPO3_SERVER_TYPE=apache \
+    TYPO3_PROJECT_NAME="form_to_database QA" \
+    "$typo3Binary" setup --no-interaction --quiet
+_done
+
+# Add the "Form Framework" site set, so the form content element (embedded in the
+# frontend page fixture below) actually has a rendering definition.
+_progress "Enabling form rendering on the site"
+    sed -i '/^dependencies:/a\  - typo3/form' /var/www/html/config/sites/main/config.yaml
+_done
+
+# Activate this extension and apply its database schema
+_progress "Setting up extensions"
+    "$typo3Binary" extension:setup --quiet
+_done
+
+# Import demo forms and form results (see .ddev/fixtures/)
+_progress "Importing database fixtures"
+    mysql $dbCredentials "$dbName" < "$fixturePath/database.sql"
+_done
+
+_progress "Copying file fixtures"
+    mkdir -p "$formDefinitionsDir"
+    cp -r "$fixturePath/files/form_definitions/." "$formDefinitionsDir/"
+_done
+
+_progress "Flushing caches"
+    "$typo3Binary" cache:flush --quiet
+_done
+
+echo
+echo "Backend: ${DDEV_PRIMARY_URL}/typo3/"
+echo "Login:   ${adminUsername} / ${adminPassword}"

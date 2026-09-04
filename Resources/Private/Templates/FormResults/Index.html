@@ -8,20 +8,17 @@
 <f:layout name="Module"/>
 
 <f:section name="Content">
-	<h1>
-		<f:translate key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.headline"/>
-	</h1>
+	<h1><f:translate key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.headline"/></h1>
 
-	<form class="mb-2" action="{f:uri.action(action:'index')}" method="POST">
+	<form class="form-inline" action="{f:uri.action(action:'index', arguments: '{orderField: orderField, orderDirection: orderDirection}')}">
 		<div class="form-row">
 			<div class="form-group">
-				<label for="search" class="form-label">{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:index.do_search')}</label>
+				<label for="search_field" class="form-label">{f:translate(id: 'LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.label.searchString')}</label>
 				<div class="input-group">
-				<input type="text" class="form-control" id="search" name="tx_form_to_database[search]" aria-describedby="emailHelp" value="{searchKey}">
-				<button class="btn btn-default" type="submit" name="search">
-					<span class="visually-hidden"><f:translate id="LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.title.search"/></span>
-					<core:icon identifier="actions-search" size="small" />
-				</button>
+					<input type="search" autocomplete="off" id="search_field" name="searchTerm" class="form-control" value="{searchKey}">
+					<button class="btn btn-default" type="submit">
+						{f:translate(id: 'LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.title.search')}
+					</button>
 				</div>
 			</div>
 		</div>

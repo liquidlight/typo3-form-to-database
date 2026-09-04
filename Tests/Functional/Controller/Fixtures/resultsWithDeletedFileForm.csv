@@ -1,0 +1,7 @@
+sys_file,,,,,
+,uid,pid,storage,identifier,extension,name
+,2,0,1,"/form_definitions/restoretest-deleted123456.form.yaml.deleted","deleted","restoretest-deleted123456.form.yaml.deleted"
+
+tx_formtodatabase_domain_model_formresult
+,uid,pid,form_persistence_identifier,form_identifier,site_identifier,crdate,form_plugin_uid,result
+,10,1,"1:/form_definitions/restoretest-deleted123456.form.yaml.deleted","restoretest","test-base",1699375063,1,"{""name"":""To Be Restored""}"

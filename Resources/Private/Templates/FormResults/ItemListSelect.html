@@ -1,0 +1,62 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+	  xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+	  data-namespace-typo3-fluid="true">
+
+	<f:form action="updateItemListSelect" id="itemListSelectForm">
+		<table class="table table-striped table-hover">
+			<thead>
+			<tr>
+				<th>
+					<f:translate
+							key="LLL:EXT:form/Resources/Private/Language/Database.xlf:formEditor.elements.FormElement.editor.label.label"/>
+				</th>
+				<th>
+					<f:translate
+							key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.table.elementtype"/>
+				</th>
+				<th>
+					<f:translate
+							key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.table.identifier"/>
+				</th>
+				<th>
+					<f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:enable"/>
+				</th>
+			</tr>
+			</thead>
+			<tbody>
+			<f:groupedFor groupBy="renderingOptions.deleted" groupKey="deleted" each="{formRenderables}" as="renderables">
+				<f:if condition="{deleted} == 1">
+					<tr>
+						<th colspan="4">
+							<f:translate
+									key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.deleted_fields"/>
+						</th>
+					</tr>
+				</f:if>
+				<f:for each="{renderables}" as="renderable">
+					<f:if condition="{fieldsWithData.{renderable.identifier}}">
+						<tr>
+							<th>{renderable.label}</th>
+							<td>{renderable.type}</td>
+							<td>{renderable.identifier}</td>
+							<td>
+								<f:form.checkbox
+										checked="{f:if(condition:'{renderable.renderingOptions.listView}', then:'checked')}"
+										name="field[{renderable.identifier}]" value="1"></f:form.checkbox>
+							</td>
+						</tr>
+					</f:if>
+				</f:for>
+			</f:groupedFor>
+			</tbody>
+		</table>
+		<f:if condition="{fieldsWithNoData}">
+			<f:translate
+					key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.fields_no_data"/><br/>
+			<f:for each="{fieldsWithNoData}" key="field" as="dataExists" iteration="iterator">
+				{field}<f:if condition="{iterator.isLast}"><f:else>,</f:else></f:if>
+			</f:for>
+		</f:if>
+		<f:form.hidden name="formPersistenceIdentifier" value="{formPersistenceIdentifier}"/>
+	</f:form>
+</html>

@@ -1,8 +1,18 @@
+name: liquidlight/typo3-form-to-database
+
 TYPO3:
   CMS:
     Form:
       prototypes:
         standard:
+          finishersDefinition:
+            FormToDatabase:
+              implementationClassName: 'LiquidLight\FormToDatabase\Domain\Finishers\FormToDatabaseFinisher'
+              formEditor:
+                iconIdentifier: form-finisher
+                label: formEditor.elements.Form.finisher.SaveToDatabase.editor.header.label
+                predefinedDefaults:
+                  options: []
           formElementsDefinition:
             Form:
               formEditor:
@@ -24,10 +34,3 @@ TYPO3:
                         9999:
                           identifier: removeButton
                           templateName: Inspector-RemoveElementEditor
-          finishersDefinition:
-            FormToDatabase:
-              formEditor:
-                iconIdentifier: form-finisher
-                label: formEditor.elements.Form.finisher.SaveToDatabase.editor.header.label
-                predefinedDefaults:
-                  options: []

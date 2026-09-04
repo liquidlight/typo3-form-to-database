@@ -1,0 +1,18 @@
+type: Form
+identifier: restoretest-deleted123456
+label: Restoretest
+prototypeName: standard
+finishers:
+  -
+    identifier: FormToDatabase
+renderables:
+  -
+    type: Page
+    identifier: page-1
+    label: Step
+    renderables:
+      -
+        defaultValue: ''
+        type: Text
+        identifier: name
+        label: 'Full name'

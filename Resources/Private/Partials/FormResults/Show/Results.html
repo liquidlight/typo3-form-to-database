@@ -2,68 +2,104 @@
 	  xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
 	  data-namespace-typo3-fluid="true">
 
-<div class="panel panel-space panel-default recordlist">
-	<div class="panel-heading">
-		<span>
-			<f:translate
-					key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.results_for"
-					arguments="{0: formDefinition.label}"/>
-			({f:count(subject: formResults)})
-		</span>
-	</div>
-	<div class="panel-collapse">
-		<div class="table-fit">
-			<table id="forms" class="table table-striped table-hover">
-				<thead>
-				<tr>
-					<f:if condition="{newDataExists}">
-						<th>
-							<f:translate
-									key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.new"/>
-						</th>
+<div class="table-fit">
+	<table id="forms" class="table table-striped table-hover">
+		<thead>
+		<tr>
+			<f:if condition="{newDataExists}">
+				<th>
+					<f:translate
+							key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.new"/>
+				</th>
+			</f:if>
+			<th>
+				<f:render section="listHeaderSorting" arguments="{field: 'crdate', labelKey: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.crdate', orderField: orderField, orderDirection: orderDirection, formPersistenceIdentifier: formPersistenceIdentifier}"/>
+			</th>
+			<f:for each="{formRenderables}" as="renderable">
+				<f:if condition="{renderable.renderingOptions.listView}">
+					<f:if condition="{renderable.renderingOptions.deleted}">
+						<f:then>
+							<th class="text-decoration-line-through help-teaser"
+								title="{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.field_deleted')}">
+								{renderable.label}
+								<core:icon identifier="content-info"></core:icon>
+							</th>
+						</f:then>
+						<f:else>
+							<th>{renderable.label}</th>
+						</f:else>
 					</f:if>
-					<th>
+				</f:if>
+			</f:for>
+			<th class="col-control nowrap">
+				<div class="btn-group" role="group">
+					<a href="#" class="btn btn-sm btn-default" data-item-list-select-trigger
+					   data-url="{f:uri.action(action: 'itemListSelect', arguments: '{formPersistenceIdentifier: formPersistenceIdentifier}')}"
+					   data-title="{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.itemListSelect.header')}"
+					   data-button-close-text="{f:translate(key: 'LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:close')}"
+					   data-button-ok-text="{f:translate(key: 'LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:saveAndClose')}"
+					>
+						<core:icon identifier="actions-cog" size="small"/>
 						<f:translate
-								key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.crdate"/>
-					</th>
-					<f:for each="{formRenderables}" as="renderable">
-						<f:if condition="{renderable.renderingOptions.listView}">
-							<f:if condition="{renderable.renderingOptions.deleted}">
-								<f:then>
-									<th class="text-decoration-line-through help-teaser"
-										title="{f:translate(key: 'LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.field_deleted')}">
-										{renderable.label}
-										<core:icon identifier="content-info"></core:icon>
-									</th>
-								</f:then>
-								<f:else>
-									<th>{renderable.label}</th>
-								</f:else>
-							</f:if>
-						</f:if>
-					</f:for>
-					<th class="col-control nowrap">
-						<div class="btn-group" role="group">
-							<a href="#" class="btn btn-sm btn-default" data-bs-toggle="modal"
-							   data-bs-target="#itemListSelect">
-								<core:icon identifier="actions-cog" size="small"/>
-								<f:translate
-										key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.column_settings"/>
-							</a>
-						</div>
-					</th>
-				</tr>
-				</thead>
-				<tbody>
-				<f:for each="{paginator.paginatedItems}" as="formResult" iteration="iterator">
-					<f:render partial="FormResults/Show/Results/Item" arguments="{_all}"/>
-				</f:for>
-				</tbody>
-			</table>
-		</div>
-	</div>
+								key="LLL:EXT:form_to_database/Resources/Private/Language/locallang_be.xlf:show.buttons.column_settings"/>
+					</a>
+				</div>
+			</th>
+		</tr>
+		</thead>
+		<tbody>
+		<f:for each="{paginator.paginatedItems}" as="formResult" iteration="iterator">
+			<f:render partial="FormResults/Show/Results/Item" arguments="{_all}"/>
+		</f:for>
+		</tbody>
+	</table>
 </div>
 
-<f:render partial="FormResults/Show/ItemListSelect" arguments="{_all}"/>
+<f:section name="listHeaderSorting">
+	<div class="dropdown dropdown-static">
+		<button class="dropdown-toggle dropdown-toggle-link" type="button" popovertarget="dropdown-menu-{field}">
+			<f:translate key="{labelKey}"/>
+			<f:if condition="{orderField} === {field}">
+				<f:then>
+					<div class="text-primary">
+						<f:if condition="{orderDirection} === 'asc'">
+							<f:then>
+								<core:icon identifier="actions-sort-amount-up"/>
+							</f:then>
+							<f:else>
+								<core:icon identifier="actions-sort-amount-down"/>
+							</f:else>
+						</f:if>
+					</div>
+				</f:then>
+				<f:else>
+					<div>
+						<core:icon identifier="empty-empty"/>
+					</div>
+				</f:else>
+			</f:if>
+		</button>
+		<ul class="dropdown-menu" id="dropdown-menu-{field}" popover="">
+			<li>
+				<a
+						class="dropdown-item"
+						href="{f:uri.action(action:'show', arguments:'{formPersistenceIdentifier: formPersistenceIdentifier, orderField: field, orderDirection: \'asc\'}')}"
+						title="{f:translate(key: 'LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.sorting.asc')}"
+				>
+					{f:translate(key: 'LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.sorting.asc')}
+				</a>
+			</li>
+			<li>
+				<a
+						class="dropdown-item"
+						href="{f:uri.action(action:'show', arguments:'{formPersistenceIdentifier: formPersistenceIdentifier, orderField: field, orderDirection: \'desc\'}')}"
+						title="{f:translate(key: 'LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.sorting.desc')}"
+				>
+					{f:translate(key: 'LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.sorting.desc')}
+				</a>
+			</li>
+		</ul>
+	</div>
+</f:section>
 
 </html>

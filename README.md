@@ -18,10 +18,24 @@ composer req liquidlight/typo3-form-to-database
 
 | Form to Database | TYPO3 Version |
 | ---------------- | ------------- |
+| 6.x              | 14.0          |
 | 5.x              | 13.4          |
 | 4.x              | 12.4          |
 | 3.x              | 11.5          |
 | 2.x              | 9.5 - 10.4    |
+
+### Database-stored forms (TYPO3 v14+)
+
+As of 6.0.0, this extension supports forms stored in TYPO3 v14's new database storage
+(`form_definition` table) as well as the traditional file-based (`.form.yaml`) storage — results,
+CSV/PDF export, and deletion/restoration all work for both.
+
+One limitation is inherited directly from TYPO3 core, not specific to this extension:
+database-stored forms currently have no per-editor-group permission isolation equivalent to
+file-mount access control — any backend user with `form_definition` table access can see all
+database-stored forms. If your installation relies on separating which forms different editor
+groups can see, keep using file-based storage until TYPO3 core adds an equivalent permission
+mechanism for database storage.
 
 ## Introduction
 
@@ -169,17 +183,32 @@ The extension uses a modified version of runTests.sh from [the TYPO3 core](https
 
 You need [Podman](https://podman.io/) installed and running to run the tests.
 
-- Install dependencies with TYPO3 13 and php 8.2:
-  - `Build/Scripts/runTests.sh -t 13 -p 8.2 -s composer install` (-t is currently obsolete, as only v13 is supported and set as default)
+- Install dependencies with TYPO3 14 and php 8.2:
+  - `Build/Scripts/runTests.sh -t 14 -p 8.2 -s composer install` (-t is currently obsolete, as only v14 is supported and set as default)
 - Run linter:
   - `Build/Scripts/runTests.sh -p 8.2 -s lintPhp`
-  - `Build/Scripts/runTests.sh -t 13 -p 8.2 -s lintTypoScript`
+  - `Build/Scripts/runTests.sh -t 14 -p 8.2 -s lintTypoScript`
 - Execute functional tests:
   - `Build/Scripts/runTests.sh -p 8.2 -s functional`
 
 See help menu for all options: `Build/Scripts/runTests.sh --help`
 
 Commits should follow [TYPO3 Commit Guidelines](https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Appendix/CommitMessage.html#commitmessage).
+
+**To manually test the backend module in a browser**
+
+The repository ships a [DDEV](https://ddev.com/) setup for spinning up a real, browsable TYPO3 instance:
+
+```bash
+ddev start
+ddev composer install
+ddev init-typo3
+```
+
+`ddev init-typo3` sets up a fresh TYPO3 instance and seeds it with a database-stored and a file-stored demo form (each with a couple of form results), so the "Form results" backend module has something to show immediately. It's safe to re-run at any time to reset back to a clean state. It prints the backend URL and admin login on completion:
+
+- Backend: `https://typo3-form-to-database.ddev.site/typo3/`
+- Login: `admin` / `Password123#`
 
 ## Support
 
