@@ -1081,7 +1081,10 @@ class FormResultsController extends FormManagerController
 
         /** @var AbstractFormElement $renderable */
         foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
-            if ($filterFormFields === false || $renderable instanceof AbstractFormElement) {
+            if (
+                ($filterFormFields === false || $renderable instanceof AbstractFormElement)
+                && !$renderable->getRenderingOptions()['deleted']
+            ) {
                 $formRenderables[$renderable->getIdentifier()] = $renderable;
             }
         }
