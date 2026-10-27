@@ -87,6 +87,8 @@ class FormToDatabaseFinisher extends AbstractFinisher
         $formValues = [];
 
         foreach ($fields as $fieldName => $fieldValue) {
+            // Repeatable container rows have integer keys; form element identifiers are strings
+            $fieldName = (string)$fieldName;
             $newNestedIdentifier = $nestedIdentifier;
 
             // Are we a valid field or a repeatable container?
