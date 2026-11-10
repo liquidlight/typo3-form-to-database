@@ -41,7 +41,7 @@ jobs:
     strategy:
       matrix:
         TYPO3: ['14']
-        PHP: ['8.2', '8.3', '8.4']
+        PHP: ['8.2', '8.3', '8.4', '8.5']
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -58,7 +58,7 @@ jobs:
       fail-fast: false
       matrix:
         TYPO3: ['14']
-        PHP: ['8.2', '8.3', '8.4']
+        PHP: ['8.2', '8.3', '8.4', '8.5']
     steps:
       - name: Checkout
         uses: actions/checkout@v6
