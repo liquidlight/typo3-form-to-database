@@ -19,6 +19,9 @@ return [
         'typeicon_classes' => [
             'default' => 'tx-formtodatabase',
         ],
+        'security' => [
+            'ignorePageTypeRestriction' => true,
+        ],
     ],
     'columns' => [
         'crdate' => [
