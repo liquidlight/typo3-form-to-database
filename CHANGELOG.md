@@ -1,3 +1,9 @@
+# 6.1.0
+
+- [FEATURE] Allow PHP 8.5 (#35)
+- [FIX] Save values from repeatable form elements (#32)
+- [FIX] Allow form results on all page types (#36)
+
 # 6.0.0
 
 - [BREAKING] Drop support for TYPO3 13
