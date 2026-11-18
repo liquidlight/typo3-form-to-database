@@ -1,3 +1,7 @@
+# 5.3.3
+
+- [FIX] Fix PHPStan errors caused by TYPO3 13.4.40's new query result types
+
 # 5.3.2
 
 - [FIX] Save values from repeatable form elements (#32)
