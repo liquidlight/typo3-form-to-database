@@ -19,7 +19,7 @@ use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
-use TYPO3\CMS\Extbase\Persistence\Generic\QueryResult;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Form\Mvc\Persistence\Exception\PersistenceManagerException;
 use TYPO3\CMS\Form\Mvc\Persistence\FormPersistenceManager;
 
@@ -69,7 +69,7 @@ final class FormHooks
 
         if ($file !== null) {
             $newCombinedIdentifier = $file->copyTo($file->getParentFolder(), $newFilename)->getCombinedIdentifier();
-            /** @var QueryResult<FormResult> $results */
+            /** @var QueryResultInterface<FormResult> $results */
             $results = $this->formResultRepository->findByFormPersistenceIdentifier($formPersistenceIdentifier);
             foreach ($results as $result) {
                 $result->setFormPersistenceIdentifier($newCombinedIdentifier);

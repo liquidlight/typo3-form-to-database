@@ -61,7 +61,9 @@ class FormResultRepository extends Repository
      */
     public function findByFormPersistenceIdentifier(string $formPersistenceIdentifier): QueryResultInterface
     {
-        return $this->createQueryByFormPersistenceIdentifier($formPersistenceIdentifier)->execute();
+        /** @var QueryResultInterface<FormResult> $result */
+        $result = $this->createQueryByFormPersistenceIdentifier($formPersistenceIdentifier)->execute();
+        return $result;
     }
 
     /**
@@ -231,6 +233,8 @@ class FormResultRepository extends Repository
         $maxDate->sub($dateInterval);
         $query = $this->createQuery();
         $query->matching($query->lessThan('tstamp', $maxDate));
-        return $query->execute();
+        /** @var QueryResultInterface<FormResult> $result */
+        $result = $query->execute();
+        return $result;
     }
 }
