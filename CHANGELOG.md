@@ -1,3 +1,8 @@
+# 5.3.2
+
+- [FIX] Save values from repeatable form elements (#32)
+- [FIX] Allow form results on all page types (#36)
+
 # 5.3.1
 
 - [FIX] Include BaseSetup yaml in the frontend (#2)
